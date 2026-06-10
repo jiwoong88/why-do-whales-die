@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="ko"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>고래 게임 — 진화 비교 릴</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;background:#000;overflow:hidden;font-family:-apple-system,"Apple SD Gothic Neo",sans-serif}
+#wrap{position:fixed;inset:0;background:#000}
+.scene{position:absolute;inset:0;opacity:0;transition:opacity .6s}
+.scene.on{opacity:1}
+.scene iframe{width:100%;height:100%;border:0;display:block;background:#aab4ba}
+.label{position:absolute;left:0;right:0;bottom:0;padding:54px 60px 64px;
+ background:linear-gradient(transparent,rgba(0,0,0,.78));color:#fff;pointer-events:none}
+.tag{font-size:26px;color:#ff6b4a;font-weight:800;letter-spacing:3px;margin-bottom:8px}
+.big{font-size:60px;font-weight:800;line-height:1.2}
+.sub{font-size:30px;color:#aab4c0;margin-top:10px;font-weight:500}
+#cap{position:absolute;top:40px;left:0;right:0;text-align:center;color:#fff;font-size:30px;font-weight:800;
+ text-shadow:0 2px 12px rgba(0,0,0,.7);letter-spacing:1px;pointer-events:none}
+#bar{position:absolute;top:0;left:0;height:7px;background:#ff6b4a;width:0;transition:width .25s linear;z-index:5}
+#hint{position:absolute;top:84px;left:0;right:0;text-align:center;color:#9aa6b2;font-size:18px;pointer-events:none}
+</style></head><body>
+<div id="wrap">
+  <div class="scene" data-src="v1_측면뷰_백업.html">
+    <iframe data-lazy="v1_측면뷰_백업.html"></iframe>
+    <div class="label"><div class="tag">처음 · DAY 1</div><div class="big">측면뷰 고래 게임 🐳</div><div class="sub">"음… 뭔가 밋밋한데"</div></div>
+  </div>
+  <div class="scene" data-src="index.html">
+    <iframe data-lazy="index.html"></iframe>
+    <div class="label"><div class="tag">지금 · 며칠 뒤</div><div class="big">실제 항로 데이터 지도 🛳️</div><div class="sub">진짜 화물선 항로 + 실측 기반</div></div>
+  </div>
+</div>
+<div id="cap">⚙️ 고래 게임, 이렇게 바뀜</div>
+<div id="hint">⌘R 로 다시 시작 · 이 화면을 화면녹화하면 릴 배경 완성</div>
+<div id="bar"></div>
+<script>
+const scenes=[...document.querySelectorAll('.scene')];
+const DUR=4500; let i=0;
+// iframe 지연 로드(앞 장면만 먼저)
+function load(n){const f=scenes[n].querySelector('iframe');if(f && !f.src && f.dataset.lazy)f.src=f.dataset.lazy;}
+load(0);
+const bar=document.getElementById('bar');
+function show(n){scenes.forEach((s,k)=>s.classList.toggle('on',k===n));load(n);load((n+1)%scenes.length);}
+function tick(){
+  show(i);
+  bar.style.transition='none';bar.style.width='0';
+  requestAnimationFrame(()=>{bar.style.transition='width '+(DUR/1000)+'s linear';bar.style.width='100%';});
+  i=(i+1)%scenes.length;
+  setTimeout(tick,DUR);
+}
+tick();
+</script></body></html>
