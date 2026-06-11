@@ -5,453 +5,337 @@
 <title>고래와 화물선</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-html,body{width:100%;height:100%;overflow:hidden;background:#aab4ba;font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo",sans-serif;-webkit-user-select:none;user-select:none}
+html,body{width:100%;height:100%;overflow:hidden;background:#eef1f0;
+ font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Segoe UI",sans-serif;
+ -webkit-user-select:none;user-select:none;color:#5b6b72}
 canvas{position:fixed;inset:0;display:block}
-.hud{position:fixed;color:#42505a;z-index:5;pointer-events:none}
-#tl{top:14px;left:16px;font-size:14px;line-height:1.7}
-#tl b{font-size:17px}
-#best{font-size:11.5px;color:#7a8790}
-#mode{color:#1e62a8;font-weight:600}
-#legend{top:14px;left:50%;transform:translateX(-50%);font-size:13px;display:flex;gap:14px;white-space:nowrap}
-.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:-1px}
-#tr{top:14px;right:16px;width:160px;font-size:12px;text-align:right}
-.bar{height:5px;background:rgba(255,255,255,.55);border-radius:3px;margin:4px 0 10px;overflow:hidden}
-.bar i{display:block;height:100%;border-radius:3px}
-#o2 i{background:#e05c3a}#hg i{background:#27904f}
-.ghost{position:fixed;right:16px;z-index:6;font-size:11px;color:#5a6770;background:rgba(255,255,255,.6);border:1px solid rgba(90,103,112,.3);border-radius:14px;padding:5px 12px;cursor:pointer;font-family:inherit}
-#live{top:118px}
-#live.on{color:#fff;background:#c0392b;border-color:#c0392b}
-#mapbtn{top:152px}
-#bl{bottom:16px;left:16px;font-size:11px;color:#5a6770}
-#sb{height:4px;background:#42505a;margin:5px 0 3px;position:relative}
-#sb:after{content:"";position:absolute;left:50%;top:0;width:1px;height:8px;background:#42505a}
-#cap{bottom:16px;right:16px;font-size:12px;letter-spacing:3px;color:#7a8790;text-align:right}
-#north{bottom:44px;right:20px;font-size:13px;color:#5a6770;text-align:center;line-height:1.1}
-#btn{position:fixed;bottom:26px;left:50%;transform:translateX(-50%);width:104px;height:104px;border-radius:50%;background:rgba(255,255,255,.82);border:2px solid #cfd8da;z-index:6;color:#42505a;font-size:16px;font-weight:600;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;touch-action:none;font-family:inherit}
-#btn small{font-size:10.5px;font-weight:400;color:#8a959c;margin-top:3px}
-#btn.hold{background:#dff0f8;border-color:#1e62a8;color:#1e62a8}
-#keys{position:fixed;left:16px;z-index:5;font-size:11px;color:#8a959c;line-height:1.8;bottom:72px}
-#card{position:fixed;bottom:150px;left:16px;z-index:7;max-width:320px;background:rgba(255,255,255,.93);border-radius:10px;padding:12px 15px;font-size:12.5px;color:#42505a;line-height:1.65;box-shadow:0 4px 18px rgba(0,0,0,.13);display:none}
-#card b{font-size:14px}
-#card .cs{color:#8c1d12;font-weight:700;margin-left:4px}
-#card .sub{color:#8a959c;font-size:11px}
-#flash{position:fixed;inset:0;background:radial-gradient(circle,rgba(120,210,255,.4),transparent 70%);opacity:0;z-index:4;pointer-events:none;transition:opacity .3s}
-#over{position:fixed;inset:0;z-index:10;background:rgba(206,214,217,.34);display:none;flex-direction:column;align-items:center;justify-content:space-between;color:#42505a;text-align:center}
-#otop{margin-top:46px;font-size:20px;font-weight:700;color:#1e3a52;text-shadow:0 1px 9px rgba(232,238,240,.95);line-height:1.5;padding:0 20px}
-#otop small{display:block;font-size:11.5px;font-weight:400;color:#5a6770;letter-spacing:1px;margin-top:5px}
-#ocard{width:100%;background:linear-gradient(to bottom,rgba(206,214,217,0),rgba(201,210,214,.96) 32%);padding:34px 20px 30px;display:flex;flex-direction:column;align-items:center}
-#over h1{font-size:26px;font-weight:700;margin-bottom:12px}
-#over p{font-size:14.5px;line-height:2}
-#rank{margin-top:18px;font-size:13px;line-height:1.9;color:#5a6770;background:rgba(255,255,255,.5);border-radius:10px;padding:10px 22px}
-#rank b{color:#1e62a8}
-#over .go{margin-top:22px;font-size:15px;color:#1e62a8;font-weight:600;cursor:pointer}
+.ui{position:fixed;z-index:5}
+.btn{display:flex;align-items:center;justify-content:center;background:#fff;border:none;border-radius:50%;
+ box-shadow:0 4px 14px rgba(60,80,90,.16);cursor:pointer;color:#6b7d85;transition:transform .1s}
+.btn:active{transform:scale(.92)}
+.btn svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+#back{top:18px;left:18px;width:42px;height:42px}
+#topr{top:16px;right:18px;display:flex;align-items:center;gap:12px}
+#flag{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;width:48px;height:58px}
+#flag svg{position:absolute;inset:0;width:48px;height:58px;fill:#2f74b8;stroke:none;filter:drop-shadow(0 3px 6px rgba(47,116,184,.3))}
+#flag b{position:relative;color:#fff;font-size:18px;font-weight:800;margin-top:-6px}
+#flag s{position:relative;color:#cfe6f6;font-size:8.5px;text-decoration:none;letter-spacing:.5px}
+#wd{font-size:15px;font-weight:700;color:#7c8c93;min-width:22px;text-align:center}
+#clock{width:42px;height:42px;border-radius:50%;background:#fff;box-shadow:0 4px 14px rgba(60,80,90,.16);position:relative}
+#clock i{position:absolute;left:50%;top:50%;width:2px;height:13px;background:#6b7d85;border-radius:2px;transform-origin:bottom center;transform:translate(-50%,-100%)}
+#clock i.h2{height:9px;background:#9fb0b7}
+#clock:after{content:"";position:absolute;left:50%;top:50%;width:4px;height:4px;background:#6b7d85;border-radius:50%;transform:translate(-50%,-50%)}
+#tctl{top:96px;right:22px;display:flex;flex-direction:column;gap:18px;align-items:center}
+#tctl .tb{cursor:pointer;color:#9fb0b7;display:flex;transition:color .15s,transform .1s}
+#tctl .tb svg{width:26px;height:26px;fill:currentColor;stroke:none}
+#tctl .tb.on{color:#2f74b8}
+#tctl .tb:active{transform:scale(.9)}
+#lctl{bottom:118px;left:50%;transform:translateX(-50%);display:flex;flex-direction:row;gap:16px}
+#lctl .btn{width:48px;height:48px}
+#lctl .badge span{position:absolute;right:-3px;bottom:-3px;background:#3f5560;color:#fff;font-size:11px;font-weight:700;
+ width:21px;height:21px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 5px rgba(0,0,0,.2)}
+#gauges{left:16px;top:60px;width:150px}
+.g{margin-bottom:11px}
+.g label{font-size:11px;font-weight:600;color:#8a979d;display:block;margin-bottom:4px}
+.g .bar{height:8px;background:rgba(255,255,255,.85);border-radius:6px;overflow:hidden;box-shadow:inset 0 1px 2px rgba(0,0,0,.05)}
+.g .bar i{display:block;height:100%;border-radius:6px;transition:width .15s}
+#o2 i{background:linear-gradient(90deg,#e0544a,#ef8a6f)}
+#hg i{background:linear-gradient(90deg,#46b87a,#86d6a6)}
+#breathe{bottom:32px;right:24px;width:92px;height:92px;border-radius:50%;
+ background:#fff;box-shadow:0 6px 20px rgba(60,80,90,.2);cursor:pointer;display:flex;flex-direction:column;
+ align-items:center;justify-content:center;color:#2f74b8;border:none;touch-action:none}
+#breathe span{font-size:15px;font-weight:700}
+#breathe small{font-size:9.5px;color:#a7b4ba;margin-top:2px}
+#breathe.on{background:#dceffb;box-shadow:0 0 0 4px rgba(47,116,184,.18),0 6px 20px rgba(60,80,90,.2)}
+#pad{position:fixed;left:22px;bottom:28px;width:132px;height:132px;border-radius:50%;z-index:6;touch-action:none;
+ background:rgba(255,255,255,.5);box-shadow:0 4px 16px rgba(60,80,90,.16),inset 0 0 0 2px rgba(255,255,255,.5)}
+#padknob{position:absolute;left:50%;top:50%;width:56px;height:56px;border-radius:50%;background:#fff;
+ box-shadow:0 3px 10px rgba(60,80,90,.28);transform:translate(-50%,-50%)}
+#pad.on #padknob{background:#dceffb}
+#hint{bottom:14px;left:50%;transform:translateX(-50%);font-size:11px;color:#a7b4ba;text-align:center;white-space:nowrap}
+#mode{top:18px;left:50%;transform:translateX(-50%);background:rgba(255,255,255,.8);border-radius:20px;
+ padding:6px 16px;font-size:12.5px;font-weight:600;box-shadow:0 3px 10px rgba(60,80,90,.1)}
+#card{left:20px;bottom:260px;max-width:300px;background:#fff;border-radius:16px;padding:13px 16px;
+ font-size:12.5px;line-height:1.6;box-shadow:0 8px 24px rgba(60,80,90,.18);display:none}
+#card b{font-size:14.5px;color:#3f5560}#card .cs{color:#e0544a;font-weight:700;margin-left:5px}#card .sub{color:#a7b4ba;font-size:11px}
+#card .track{display:inline-block;margin-top:10px;background:#2f74b8;color:#fff;padding:8px 13px;border-radius:11px;font-size:11.5px;font-weight:700;text-decoration:none;box-shadow:0 3px 10px rgba(47,116,184,.3)}
+#card .track:active{transform:scale(.96)}
+#info,#over{inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:28px}
+#info{background:rgba(238,241,240,.96);z-index:20}#over{background:rgba(238,241,240,.94);z-index:25}
+#info h2{font-size:22px;color:#3f5560;margin-bottom:16px}#info p{font-size:14px;line-height:2;max-width:340px}
+#info .close,#over .go{margin-top:22px;color:#fff;background:#2f74b8;padding:11px 28px;border-radius:24px;font-weight:700;cursor:pointer;box-shadow:0 6px 18px rgba(47,116,184,.3)}
+#over h1{font-size:26px;font-weight:800;color:#3f5560;margin-bottom:10px}#over p{font-size:15px;line-height:1.9}
+#over #rank{margin-top:18px;font-size:13px;line-height:1.85;color:#7c8c93;background:#fff;border-radius:16px;padding:14px 26px;box-shadow:0 6px 18px rgba(60,80,90,.12)}#over #rank b{color:#2f74b8}
+#flash{position:fixed;inset:0;background:radial-gradient(circle at center,rgba(120,210,255,.45),transparent 65%);opacity:0;z-index:4;pointer-events:none;transition:opacity .3s}
+#l_live{position:relative;color:#e0544a}
+#l_live .dot{position:absolute;top:7px;right:7px;width:8px;height:8px;background:#e0544a;border-radius:50%;animation:lp 1.6s infinite}
+@keyframes lp{0%{box-shadow:0 0 0 0 rgba(224,84,74,.5)}100%{box-shadow:0 0 0 9px rgba(224,84,74,0)}}
+#real{position:fixed;inset:0;z-index:30;opacity:0;pointer-events:none;transition:opacity 1.5s ease;background:#0b1418;display:flex;flex-direction:column}
+#real iframe{flex:1;width:100%;border:0}
+#realbar{position:absolute;top:0;left:0;right:0;padding:18px 18px 26px;background:linear-gradient(#0b1418ee,#0b1418aa 60%,transparent);color:#eef4f5;z-index:2;text-align:center;font-size:14px;line-height:1.65;text-shadow:0 1px 4px #000}
+#realbar b{color:#ff7a6b}
+#realclose{position:absolute;top:13px;left:13px;z-index:3;background:#fff;color:#3f5560;border:none;border-radius:22px;padding:9px 15px;font-weight:700;font-size:13px;cursor:pointer;box-shadow:0 3px 12px rgba(0,0,0,.4)}
+#realopen{position:absolute;bottom:14px;right:14px;z-index:3;color:#9fc2d0;font-size:11px;text-decoration:underline}
 </style></head><body>
-<canvas id="cv"></canvas>
-<div class="hud" id="tl">항해 <b id="st">0</b>일<br>숨 <b id="sb2">0</b> · 크릴 <b id="sk">0</b><br><span id="mode">잠수 중</span><br><span id="best"></span></div>
-<div class="hud" id="legend"><span><i class="dot" style="background:#1e62a8"></i>고래</span><span><i class="dot" style="background:#8c1d12"></i>선박</span><span><i class="dot" style="background:#27904f"></i>크릴</span></div>
-<div class="hud" id="tr">산소<div class="bar" id="o2"><i></i></div>허기<div class="bar" id="hg"><i></i></div></div>
-<button class="ghost" id="live">LIVE 실시간 AIS</button>
-<button class="ghost" id="mapbtn"></button>
-<div class="hud" id="bl"><span id="zone"></span><div id="sb" style="width:120px"></div><span id="sbt"></span></div>
-<div class="hud" id="keys">이동 ← ↑ ↓ → / WASD · 드래그<br>숨쉬기 Space (꾹) · 배 클릭 = 선박 정보</div>
-<div class="hud" id="north">↑<br>N</div>
-<div class="hud" id="cap">매년 수백 마리가 이렇게 사라진다</div>
-<div id="card"></div>
-<div id="btn"><span>숨쉬기</span><small>길게 누르기 · Space</small></div>
-<div id="flash"></div>
-<div id="over"><div id="otop">네가 헤엄친 길<small>너도 그저 추적되는 한 줄의 데이터였다</small></div><div id="ocard"><h1 id="oh"></h1><p id="op"></p><div id="rank"></div><div class="go">다시 잠수할까 — Enter</div></div></div>
+<canvas id="cv"></canvas><div id="flash"></div>
+<button class="ui btn" id="back"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
+<div class="ui" id="mode">잠수 중</div>
+<div class="ui" id="topr">
+ <div id="flag"><svg viewBox="0 0 48 58"><path d="M4 4h40v50l-20-12-20 12z"/></svg><b id="day">0</b><s>DAY</s></div>
+ <div id="wd">일</div>
+ <div id="clock"><i id="ch"></i><i class="h2" id="cm"></i></div>
+</div>
+<div class="ui" id="lctl">
+ <button class="btn badge" id="l_restart" style="position:relative"><svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 1 2.3 5.6M4 12V7m0 5h5"/></svg><span id="krc">0</span></button>
+ <button class="btn" id="l_live" title="실제 바다 보기"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="2.6"/><path d="M5.6 5.6a9 9 0 0 0 0 12.8M18.4 5.6a9 9 0 0 1 0 12.8M8.7 8.7a4.7 4.7 0 0 0 0 6.6M15.3 8.7a4.7 4.7 0 0 1 0 6.6"/></svg><span class="dot"></span></button>
+</div>
+<div id="real">
+ <div id="realbar">지금 이 순간의 <b>실제 바다</b>입니다.<br>저 점 하나하나가 진짜 화물선 — 고래는 이 사이를 헤엄칩니다.</div>
+ <iframe id="realframe" title="실시간 선박 위치(VesselFinder)" allow="fullscreen"></iframe>
+ <button id="realclose">← 게임으로</button>
+ <a id="realopen" href="https://www.marinetraffic.com/en/ais/home/centerx:-119.7/centery:34/zoom:8" target="_blank" rel="noopener">잘 안 보이면 실제 지도 열기 ↗</a>
+</div>
+<div class="ui" id="gauges">
+ <div class="g" id="o2"><label>산소</label><div class="bar"><i></i></div></div>
+ <div class="g" id="hg"><label>허기</label><div class="bar"><i></i></div></div>
+</div>
+<button class="ui" id="breathe"><span>숨쉬기</span><small>길게</small></button>
+<div id="pad"><div id="padknob"></div></div>
+<div class="ui" id="hint">왼쪽 방향패드로 헤엄 · 오른쪽 숨쉬기(길게) · 화물선을 피해</div>
+<div id="card" class="ui"></div>
+<div id="info" class="ui">
+ <h2>고래와 화물선</h2>
+ <p>당신은 대왕고래입니다.<br>잠수하면 안전하지만 산소가 닳고,<br>숨을 쉬려면 화물선이 다니는 수면으로 올라와야 합니다.<br>흩어진 <b style="color:#46b87a">크릴</b>을 먹어 허기를 채우고,<br>실제 항로를 달리는 <b style="color:#e0544a">화물선</b>을 피해 오래 살아남으세요.<br><br><span style="color:#a7b4ba;font-size:12px">선박과의 충돌은 대왕고래의 가장 큰 사망 원인 중 하나 —<br>해마다 전 세계에서 약 2만 마리의 고래가 배에 치여 죽습니다.</span></p>
+ <div class="close" id="info_close">시작</div>
+</div>
+<div id="over" class="ui"><h1 id="oh"></h1><p id="op"></p><div id="rank"></div><div class="go" id="goagain">다시 잠수 — Enter</div></div>
 <script>
 'use strict';
+const MM={"N":1000.0,"hexR":46.0,"landloops":[[[-91.0,0.0],[-68.0,40.0],[-91.0,80.0],[-68.0,120.0],[-91.0,160.0],[-68.0,199.0],[-91.0,239.0],[-68.0,279.0],[-91.0,319.0],[-68.0,359.0],[-91.0,399.0],[-68.0,438.0],[-91.0,478.0],[-68.0,518.0],[-91.0,558.0],[-68.0,598.0],[-91.0,638.0],[-68.0,677.0],[-91.0,717.0],[-68.0,757.0],[-91.0,797.0],[-68.0,837.0],[-91.0,877.0],[-68.0,916.0],[-91.0,956.0],[-68.0,996.0],[-91.0,1036.0],[-68.0,1076.0],[-22.0,1076.0],[1.0,1036.0],[47.0,1036.0],[70.0,1076.0],[116.0,1076.0],[139.0,1036.0],[185.0,1036.0],[208.0,1076.0],[254.0,1076.0],[277.0,1036.0],[254.0,996.0],[277.0,956.0],[254.0,916.0],[277.0,877.0],[254.0,837.0],[277.0,797.0],[254.0,757.0],[277.0,717.0],[323.0,717.0],[346.0,677.0],[323.0,638.0],[277.0,638.0],[254.0,598.0],[277.0,558.0],[254.0,518.0],[277.0,478.0],[254.0,438.0],[277.0,399.0],[323.0,399.0],[346.0,359.0],[323.0,319.0],[346.0,279.0],[323.0,239.0],[277.0,239.0],[254.0,199.0],[277.0,160.0],[254.0,120.0],[277.0,80.0],[254.0,40.0],[277.0,0.0],[254.0,-40.0],[208.0,-40.0],[185.0,-80.0],[139.0,-80.0],[116.0,-40.0],[70.0,-40.0],[47.0,-80.0],[1.0,-80.0],[-22.0,-40.0],[-68.0,-40.0]],[[323.0,0.0],[346.0,40.0],[323.0,80.0],[346.0,120.0],[323.0,160.0],[346.0,199.0],[392.0,199.0],[415.0,239.0],[392.0,279.0],[415.0,319.0],[392.0,359.0],[415.0,399.0],[461.0,399.0],[484.0,438.0],[530.0,438.0],[553.0,399.0],[599.0,399.0],[622.0,359.0],[599.0,319.0],[622.0,279.0],[599.0,239.0],[622.0,199.0],[668.0,199.0],[691.0,160.0],[668.0,120.0],[622.0,120.0],[599.0,80.0],[553.0,80.0],[530.0,40.0],[484.0,40.0],[461.0,0.0],[415.0,0.0],[392.0,-40.0],[346.0,-40.0]],[[323.0,956.0],[346.0,996.0],[323.0,1036.0],[346.0,1076.0],[392.0,1076.0],[415.0,1036.0],[461.0,1036.0],[484.0,1076.0],[530.0,1076.0],[553.0,1036.0],[599.0,1036.0],[622.0,1076.0],[668.0,1076.0],[691.0,1036.0],[668.0,996.0],[691.0,956.0],[668.0,916.0],[691.0,877.0],[668.0,837.0],[622.0,837.0],[599.0,797.0],[553.0,797.0],[530.0,837.0],[484.0,837.0],[461.0,877.0],[415.0,877.0],[392.0,916.0],[346.0,916.0]],[[668.0,279.0],[691.0,319.0],[668.0,359.0],[691.0,399.0],[737.0,399.0],[760.0,438.0],[737.0,478.0],[760.0,518.0],[737.0,558.0],[760.0,598.0],[737.0,638.0],[691.0,638.0],[668.0,677.0],[691.0,717.0],[737.0,717.0],[760.0,757.0],[737.0,797.0],[760.0,837.0],[737.0,877.0],[760.0,916.0],[737.0,956.0],[760.0,996.0],[737.0,1036.0],[760.0,1076.0],[806.0,1076.0],[829.0,1036.0],[875.0,1036.0],[898.0,1076.0],[944.0,1076.0],[967.0,1036.0],[1013.0,1036.0],[1036.0,996.0],[1013.0,956.0],[1036.0,916.0],[1013.0,877.0],[1036.0,837.0],[1013.0,797.0],[1036.0,757.0],[1013.0,717.0],[1036.0,677.0],[1013.0,638.0],[1036.0,598.0],[1013.0,558.0],[1036.0,518.0],[1013.0,478.0],[1036.0,438.0],[1013.0,399.0],[1036.0,359.0],[1013.0,319.0],[967.0,319.0],[944.0,279.0],[898.0,279.0],[875.0,239.0],[829.0,239.0],[806.0,199.0],[760.0,199.0],[737.0,239.0],[691.0,239.0]]],"oceanbox":[187.0,300.7,827.0,926.6],"cells":[[-1,0,1],[-1,1,1],[-1,2,1],[-1,3,1],[-1,4,1],[-1,5,1],[-1,6,1],[-1,7,1],[-1,8,1],[-1,9,1],[-1,10,1],[-1,11,1],[-1,12,1],[-1,13,1],[0,-1,1],[0,0,1],[0,1,1],[0,2,1],[0,3,1],[0,4,1],[0,5,1],[0,6,1],[0,7,1],[0,8,1],[0,9,1],[0,10,1],[0,11,1],[0,12,1],[1,-1,1],[1,0,1],[1,1,1],[1,2,1],[1,3,1],[1,4,1],[1,5,1],[1,6,1],[1,7,1],[1,8,1],[1,9,1],[1,10,1],[1,11,1],[1,12,1],[2,-2,1],[2,-1,1],[2,0,1],[2,1,1],[2,2,1],[2,3,1],[2,4,1],[2,5,1],[2,6,1],[2,7,1],[2,8,1],[2,9,1],[2,10,1],[2,11,1],[3,-2,1],[3,-1,1],[3,0,1],[3,1,1],[3,2,1],[3,3,1],[3,4,1],[3,5,1],[3,6,1],[3,7,1],[3,8,1],[3,9,1],[3,10,1],[3,11,1],[4,-3,0],[4,-2,0],[4,-1,0],[4,0,0],[4,1,1],[4,2,1],[4,3,0],[4,4,0],[4,5,0],[4,6,1],[4,7,0],[4,8,0],[4,9,0],[4,10,0],[5,-3,1],[5,-2,1],[5,-1,1],[5,0,0],[5,1,0],[5,2,0],[5,3,0],[5,4,0],[5,5,0],[5,6,0],[5,7,0],[5,8,0],[5,9,1],[5,10,1],[6,-3,1],[6,-2,1],[6,-1,1],[6,0,1],[6,1,1],[6,2,0],[6,3,0],[6,4,0],[6,5,0],[6,6,0],[6,7,0],[6,8,1],[6,9,1],[7,-3,1],[7,-2,1],[7,-1,1],[7,0,1],[7,1,1],[7,2,0],[7,3,0],[7,4,0],[7,5,0],[7,6,0],[7,7,1],[7,8,1],[7,9,1],[8,-3,1],[8,-2,1],[8,-1,1],[8,0,1],[8,1,0],[8,2,0],[8,3,0],[8,4,0],[8,5,0],[8,6,1],[8,7,1],[8,8,1],[9,-3,1],[9,-2,0],[9,-1,0],[9,0,0],[9,1,0],[9,2,0],[9,3,0],[9,4,0],[9,5,0],[9,6,1],[9,7,1],[9,8,1],[10,-3,0],[10,-2,1],[10,-1,1],[10,0,0],[10,1,0],[10,2,0],[10,3,1],[10,4,0],[10,5,0],[10,6,0],[10,7,0],[11,-3,1],[11,-2,1],[11,-1,1],[11,0,1],[11,1,1],[11,2,1],[11,3,1],[11,4,1],[11,5,1],[11,6,1],[11,7,1],[12,-3,1],[12,-2,1],[12,-1,1],[12,0,1],[12,1,1],[12,2,1],[12,3,1],[12,4,1],[12,5,1],[12,6,1],[13,-3,1],[13,-2,1],[13,-1,1],[13,0,1],[13,1,1],[13,2,1],[13,3,1],[13,4,1],[13,5,1],[13,6,1],[14,-3,1],[14,-2,1],[14,-1,1],[14,0,1],[14,1,1],[14,2,1],[14,3,1],[14,4,1],[14,5,1]],"hex":{"R":46.0,"ox":24.0,"oy":40.0},"ports":[{"name":"LOS ANGELES","c":"blue","x":300.0,"y":677.4},{"name":"NEW YORK","c":"red","x":231.0,"y":478.2},{"name":"PANAMA","c":"purple","x":231.0,"y":796.9},{"name":"SHANGHAI","c":"teal","x":783.0,"y":478.2},{"name":"SINGAPORE","c":"yellow","x":714.0,"y":677.4},{"name":"BUSAN","c":"red","x":783.0,"y":796.9},{"name":"ROTTERDAM","c":"purple","x":438.0,"y":358.7},{"name":"SUEZ","c":"orange","x":576.0,"y":358.7},{"name":"SYDNEY","c":"blue","x":507.0,"y":876.6},{"name":"MELBOURNE","c":"red","x":645.0,"y":876.6}],"lanes":[[[300.0,597.7],[301.1,598.3],[303.2,599.6],[306.5,601.5],[310.8,603.9],[316.2,607.1],[322.6,610.8],[330.2,615.1],[338.8,620.1],[347.4,623.9],[356.1,626.4],[364.7,627.6],[373.3,627.6],[381.9,626.4],[390.6,623.9],[399.2,620.1],[407.8,615.1],[416.4,610.2],[425.1,605.2],[433.7,600.2],[442.3,595.2],[450.9,590.3],[459.6,585.3],[468.2,580.3],[476.8,575.3],[485.4,570.3],[494.1,565.4],[502.7,560.4],[511.3,555.4],[519.9,550.4],[528.6,545.4],[537.2,540.5],[545.8,535.5],[554.4,530.5],[563.1,525.5],[571.7,520.5],[580.3,515.6],[588.9,510.6],[597.6,505.6],[606.2,500.6],[614.8,495.6],[623.4,490.7],[632.1,485.7],[640.7,480.7],[649.3,475.7],[657.9,470.7],[666.6,465.8],[675.2,460.8],[683.8,455.8],[691.4,451.4],[697.8,447.7],[703.2,444.6],[707.5,442.1],[710.8,440.2],[712.9,439.0],[714.0,438.4]],[[300.0,438.4],[301.1,439.0],[303.2,440.2],[306.5,442.1],[310.8,444.6],[316.2,447.7],[322.6,451.4],[330.2,455.8],[338.8,460.8],[347.4,464.5],[356.1,467.0],[364.7,468.2],[373.3,468.2],[381.9,467.0],[390.6,464.5],[399.2,460.8],[407.8,455.8],[415.4,451.4],[421.8,447.7],[427.2,444.6],[431.5,442.1],[434.8,440.2],[436.9,439.0],[438.0,438.4]],[[300.0,757.1],[301.1,757.7],[303.2,758.9],[306.5,760.8],[310.8,763.3],[316.2,766.4],[322.6,770.1],[330.2,774.5],[338.8,779.5],[347.4,783.2],[356.1,785.7],[364.7,786.9],[373.3,786.9],[381.9,785.7],[390.6,783.2],[399.2,779.5],[407.8,774.5],[416.4,769.5],[425.1,764.5],[433.7,759.6],[442.3,754.6],[450.9,749.6],[459.6,744.6],[468.2,739.6],[476.8,734.7],[485.4,729.7],[494.1,724.7],[502.7,719.7],[511.3,714.7],[519.9,709.8],[528.6,704.8],[537.2,699.8],[545.8,694.8],[554.4,689.8],[563.1,684.9],[571.7,679.9],[580.3,674.9],[588.9,669.9],[597.6,664.9],[606.2,660.0],[614.8,655.0],[623.4,650.0],[632.1,645.0],[640.7,640.0],[649.3,635.1],[657.9,630.1],[666.6,625.1],[675.2,620.1],[683.8,615.1],[691.4,610.8],[697.8,607.1],[703.2,603.9],[707.5,601.5],[710.8,599.6],[712.9,598.3],[714.0,597.7]],[[714.0,438.4],[712.9,439.0],[710.8,440.2],[707.5,442.1],[703.2,444.6],[697.8,447.7],[691.4,451.4],[683.8,455.8],[675.2,460.8],[666.6,465.8],[657.9,470.7],[649.3,475.7],[640.7,480.7],[632.1,485.7],[623.4,490.7],[614.8,495.6],[606.2,500.6],[597.6,505.6],[588.9,510.6],[580.3,515.6],[571.7,520.5],[563.1,525.5],[554.4,530.5],[545.8,535.5],[537.2,540.5],[528.6,545.4],[519.9,550.4],[511.3,555.4],[502.7,560.4],[494.1,565.4],[485.4,570.3],[476.8,575.3],[468.2,580.3],[460.6,585.9],[454.2,592.1],[448.8,599.0],[444.5,606.4],[441.2,614.5],[439.1,623.2],[438.0,632.6],[438.0,642.5],[438.0,652.5],[438.0,662.5],[438.0,672.4],[438.0,682.4],[438.0,692.3],[438.0,702.3],[438.0,712.3],[438.0,722.2],[438.0,732.2],[438.0,742.1],[438.0,752.1],[438.0,762.0],[438.0,772.0],[438.0,782.0],[438.0,791.9],[438.0,801.9],[438.0,810.6],[438.0,818.1],[438.0,824.3],[438.0,829.3],[438.0,833.0],[438.0,835.5],[438.0,836.7]],[[576.0,438.4],[577.1,439.0],[579.2,440.2],[582.5,442.1],[586.8,444.6],[592.2,447.7],[598.6,451.4],[606.2,455.8],[614.8,460.8],[623.4,465.8],[632.1,470.7],[640.7,475.7],[649.3,480.7],[657.9,485.7],[666.6,490.7],[675.2,495.6],[683.8,500.6],[691.4,506.2],[697.8,512.4],[703.2,519.3],[707.5,526.8],[710.8,534.9],[712.9,543.6],[714.0,552.9],[714.0,562.9],[714.0,571.6],[714.0,579.0],[714.0,585.3],[714.0,590.3],[714.0,594.0],[714.0,596.5],[714.0,597.7]],[[714.0,757.1],[712.9,756.4],[710.8,755.2],[707.5,753.3],[703.2,750.8],[697.8,747.7],[691.4,744.0],[683.8,739.6],[675.2,734.7],[666.6,729.7],[657.9,724.7],[649.3,719.7],[640.7,714.7],[632.1,709.8],[623.4,704.8],[614.8,699.8],[606.2,694.8],[597.6,689.8],[588.9,684.9],[580.3,679.9],[571.7,674.9],[563.1,669.9],[554.4,664.9],[545.8,660.0],[537.2,655.0],[528.6,650.0],[519.9,645.0],[511.3,640.0],[502.7,635.1],[494.1,630.1],[485.4,625.1],[476.8,620.1],[468.2,615.1],[459.6,610.2],[450.9,605.2],[442.3,600.2],[433.7,595.2],[425.1,590.3],[416.4,585.3],[407.8,580.3],[399.2,575.3],[390.6,571.6],[381.9,569.1],[373.3,567.8],[364.7,567.8],[356.1,569.1],[347.4,571.6],[338.8,575.3],[330.2,580.3],[322.6,584.6],[316.2,588.4],[310.8,591.5],[306.5,594.0],[303.2,595.9],[301.1,597.1],[300.0,597.7]],[[438.0,438.4],[436.9,437.7],[434.8,436.5],[431.5,434.6],[427.2,432.1],[421.8,429.0],[415.4,425.3],[407.8,420.9],[399.2,416.0],[390.6,412.2],[381.9,409.7],[373.3,408.5],[364.7,408.5],[356.1,409.7],[347.4,412.2],[338.8,416.0],[330.2,420.9],[322.6,425.3],[316.2,429.0],[310.8,432.1],[306.5,434.6],[303.2,436.5],[301.1,437.7],[300.0,438.4]],[[645.0,796.9],[645.0,795.7],[645.0,793.2],[645.0,789.4],[645.0,784.5],[645.0,778.2],[645.0,770.8],[645.0,762.0],[645.0,752.1],[645.0,742.1],[645.0,732.2],[645.0,722.2],[645.0,712.3],[645.0,702.3],[645.0,692.3],[645.0,682.4],[645.0,672.4],[646.1,663.1],[648.2,654.4],[651.5,646.3],[655.8,638.8],[661.2,632.0],[667.6,625.7],[675.2,620.1],[683.8,615.1],[691.4,609.5],[697.8,603.3],[703.2,596.5],[707.5,589.0],[710.8,580.9],[712.9,572.2],[714.0,562.9],[714.0,552.9],[714.0,542.9],[714.0,533.0],[714.0,523.0],[714.0,513.1],[714.0,503.1],[714.0,493.1],[714.0,483.2],[714.0,473.2],[714.0,464.5],[714.0,457.0],[714.0,450.8],[714.0,445.8],[714.0,442.1],[714.0,439.6],[714.0,438.4]],[[300.0,597.7],[301.1,598.3],[303.2,599.6],[306.5,601.5],[310.8,603.9],[316.2,607.1],[322.6,610.8],[330.2,615.1],[338.8,620.1],[347.4,625.1],[356.1,630.1],[364.7,635.1],[373.3,640.0],[381.9,645.0],[390.6,650.0],[399.2,655.0],[407.8,660.0],[416.4,664.9],[425.1,669.9],[433.7,674.9],[442.3,679.9],[450.9,684.9],[459.6,689.8],[468.2,694.8],[476.8,699.8],[485.4,703.5],[494.1,706.0],[502.7,707.3],[511.3,707.3],[519.9,706.0],[528.6,703.5],[537.2,699.8],[545.8,694.8],[554.4,689.8],[563.1,684.9],[571.7,679.9],[580.3,674.9],[588.9,669.9],[597.6,664.9],[606.2,660.0],[614.8,655.0],[623.4,650.0],[632.1,645.0],[640.7,640.0],[649.3,635.1],[657.9,630.1],[666.6,625.1],[675.2,620.1],[683.8,615.1],[691.4,610.8],[697.8,607.1],[703.2,603.9],[707.5,601.5],[710.8,599.6],[712.9,598.3],[714.0,597.7]],[[438.0,836.7],[439.1,836.1],[441.2,834.9],[444.5,833.0],[448.8,830.5],[454.2,827.4],[460.6,823.7],[468.2,819.3],[476.8,814.3],[485.4,809.4],[494.1,804.4],[502.7,799.4],[511.3,794.4],[519.9,789.4],[528.6,784.5],[537.2,779.5],[545.8,774.5],[554.4,770.8],[563.1,768.3],[571.7,767.0],[580.3,767.0],[588.9,768.3],[597.6,770.8],[606.2,774.5],[614.8,779.5],[623.4,783.2],[632.1,785.7],[640.7,786.9],[649.3,786.9],[657.9,785.7],[666.6,783.2],[675.2,779.5],[683.8,774.5],[691.4,770.1],[697.8,766.4],[703.2,763.3],[707.5,760.8],[710.8,758.9],[712.9,757.7],[714.0,757.1]]],"ships":[{"lane":0,"rev":0,"n":"EVER GIVEN","tk":"EVER GIVEN","t":"컨테이너선 (수에즈 좌초의 그 배)","cs":"H3RC","kn":18,"ends":["LOS ANGELES","SHANGHAI"],"dest":"SHANGHAI"},{"lane":0,"rev":1,"n":"COSCO UNIVERSE","tk":"COSCO SHIPPING UNIVERSE","t":"컨테이너선","cs":"BOCD5","kn":18,"ends":["SHANGHAI","LOS ANGELES"],"dest":"LOS ANGELES"},{"lane":1,"rev":0,"n":"MSC IRINA","tk":"MSC IRINA","t":"컨테이너선 (세계 최대급)","cs":"5LJC8","kn":17,"ends":["NEW YORK","ROTTERDAM"],"dest":"ROTTERDAM"},{"lane":2,"rev":0,"n":"HMM ALGECIRAS","tk":"HMM ALGECIRAS","t":"컨테이너선","cs":"3FQW7","kn":18,"ends":["PANAMA","SINGAPORE"],"dest":"SINGAPORE"},{"lane":2,"rev":1,"n":"MSC GULSUN","tk":"MSC GULSUN","t":"컨테이너선","cs":"3EPD4","kn":17,"ends":["SINGAPORE","PANAMA"],"dest":"PANAMA"},{"lane":3,"rev":0,"n":"CMA CGM J. SAADE","tk":"CMA CGM JACQUES SAADE","t":"컨테이너선 (LNG)","cs":"FLSU","kn":17,"ends":["SHANGHAI","SYDNEY"],"dest":"SYDNEY"},{"lane":4,"rev":0,"n":"MAERSK MC-KINNEY","tk":"MAERSK MC-KINNEY MOLLER","t":"컨테이너선","cs":"OWJE2","kn":16,"ends":["SUEZ","SINGAPORE"],"dest":"SINGAPORE"},{"lane":4,"rev":1,"n":"APL SENTOSA","tk":"APL SENTOSA","t":"컨테이너선","cs":"9VHH8","kn":17,"ends":["SINGAPORE","SUEZ"],"dest":"SUEZ"},{"lane":5,"rev":0,"n":"COSCO UNIVERSE","tk":"COSCO SHIPPING UNIVERSE","t":"컨테이너선","cs":"BOCD5","kn":18,"ends":["BUSAN","LOS ANGELES"],"dest":"LOS ANGELES"},{"lane":6,"rev":0,"n":"EVER ACE","tk":"EVER ACE","t":"컨테이너선","cs":"3EWQ5","kn":17,"ends":["ROTTERDAM","NEW YORK"],"dest":"NEW YORK"},{"lane":6,"rev":1,"n":"MSC IRINA","tk":"MSC IRINA","t":"컨테이너선 (세계 최대급)","cs":"5LJC8","kn":17,"ends":["NEW YORK","ROTTERDAM"],"dest":"ROTTERDAM"},{"lane":7,"rev":0,"n":"MSC GULSUN","tk":"MSC GULSUN","t":"컨테이너선","cs":"3EPD4","kn":17,"ends":["MELBOURNE","SHANGHAI"],"dest":"SHANGHAI"},{"lane":8,"rev":0,"n":"FRONT ALTAIR","tk":"FRONT ALTAIR","t":"원유운반선","cs":"LAUM7","kn":13,"ends":["LOS ANGELES","SINGAPORE"],"dest":"SINGAPORE"},{"lane":8,"rev":1,"n":"CMA CGM J. SAADE","tk":"CMA CGM JACQUES SAADE","t":"컨테이너선 (LNG)","cs":"FLSU","kn":17,"ends":["SINGAPORE","LOS ANGELES"],"dest":"LOS ANGELES"},{"lane":9,"rev":0,"n":"APL SENTOSA","tk":"APL SENTOSA","t":"컨테이너선","cs":"9VHH8","kn":17,"ends":["SYDNEY","BUSAN"],"dest":"BUSAN"}],"krillspots":[[369.0,557.9],[369.0,796.9],[645.0,557.9],[576.0,597.7],[507.0,637.6],[438.0,677.4],[369.0,478.2],[576.0,518.0],[645.0,478.2],[438.0,597.7],[507.0,557.9],[576.0,677.4],[438.0,757.1],[507.0,717.2],[438.0,518.0]],"start":[507.0,557.9],"labels":[["아메리카",110,500],["아시아",900,500],["유럽·아프리카",500,90],["오세아니아",520,960]]};
 const cv=document.getElementById('cv'),ctx=cv.getContext('2d');
 const tc=document.createElement('canvas'),tctx=tc.getContext('2d');
 const $=id=>document.getElementById(id);
-let W,H,dpr=Math.min(window.devicePixelRatio||1,2);
-const rev=r=>r.slice().reverse(),KLA=111;
-const wrap=d=>((d+540)%360)-180;
+let W,H,dpr=Math.min(window.devicePixelRatio||1,2),SC=1,OX=0,OY=0;
+const N=MM.N, HR=MM.hex.R, HOX=MM.hex.ox, HOY=MM.hex.oy, SQ3=Math.sqrt(3);
+const PRE={'H3':'파나마','3E':'파나마','3F':'파나마','5L':'라이베리아','9H':'몰타','9V':'싱가포르','OW':'덴마크','FL':'프랑스','BO':'중국','BV':'대만','D7':'대한민국','LA':'노르웨이','7J':'일본'};
+const flagOf=cs=>cs?(PRE[cs.slice(0,2).toUpperCase()]||null):null;
+const COL={red:'#ef6f6f',blue:'#5aa9e6',teal:'#46c2b8',yellow:'#f2c14e',purple:'#9a8cd0',orange:'#ef9a51'};
+const cellLand={};for(const c of MM.cells)cellLand[c[0]+','+c[1]]=c[2];
+const KS=MM.krillspots;
+/* 고래 시야: 원 안의 배만 보이고 가장자리는 안개처럼 흐려짐 */
+const VIS=N*0.19;
+let visR=VIS, vinR=VIS*0.62;  // 산소 부족 시 점점 줄어듦
+function seeAlpha(x,y){if(!wh)return 1;const d=Math.hypot(x-wh.x,y-wh.y);if(d<=vinR)return 1;if(d>=visR)return 0;const t=(visR-d)/(visR-vinR);return t*t*(3-2*t)}
 
-/* ════ 지도 1: 지구 전체 — 4대양 위에서 본 실제 화물 항로 ════ */
-const WORLD={
- key:'world',title:'지구 — 실제 컨테이너·유조선 간선 항로 재현 · 1초=3시간',
- BB:{lo1:-180,lo2:180,la1:-62,la2:78},kmlon:78,spd:10800,labels:false,shipR:4,
- start:[-152,22],
- LAND:[
-  {nm:'북아메리카',lb:[-100,45],pts:[[-168,65],[-160,59],[-150,59],[-144,60],[-133,55],[-126,49],[-124,40],[-117,33],[-110,24],[-105,20],[-97,16],[-92,15],[-86,13],[-82,9],[-77,8],[-81,12],[-84,16],[-88,17],[-90,21],[-87,22],[-91,29],[-97,28],[-94,30],[-84,30],[-81,25],[-80,27],[-76,35],[-74,40],[-70,42],[-66,44],[-60,46],[-64,49],[-58,51],[-55,53],[-60,56],[-65,60],[-72,62],[-78,63],[-86,67],[-95,70],[-110,69],[-128,70],[-140,70],[-156,72],[-166,69]]},
-  {nm:'남아메리카',lb:[-60,-12],pts:[[-77,8],[-72,12],[-64,11],[-60,9],[-52,5],[-50,0],[-44,-3],[-35,-7],[-39,-14],[-40,-22],[-48,-28],[-53,-34],[-58,-39],[-65,-41],[-65,-47],[-68,-52],[-75,-54],[-73,-44],[-73,-37],[-71,-30],[-70,-18],[-76,-14],[-81,-6],[-80,0],[-77,3]]},
-  {nm:'그린란드',lb:[-42,72],pts:[[-43,60],[-50,65],[-55,70],[-60,76],[-30,78],[-20,75],[-22,70],[-25,66],[-33,62]]},
-  {nm:'유라시아',lb:[80,55],pts:[[-10,36],[-9,43],[-2,46],[0,49],[5,53],[8,56],[12,57],[18,60],[24,66],[30,71],[45,69],[60,70],[75,73],[95,76],[110,77],[130,72],[150,70],[162,67],[170,66],[179,65],[179,62],[163,59],[157,52],[142,54],[141,46],[132,43],[129,35],[126,35],[122,37],[118,38],[121,32],[122,30],[114,22],[108,16],[105,9],[100,13],[98,9],[101,3],[95,6],[91,22],[87,21],[80,8],[77,8],[72,20],[68,23],[60,25],[57,26],[52,25],[56,22],[52,16],[44,12],[39,21],[35,29],[33,31],[36,36],[30,36],[27,38],[22,38],[19,42],[14,40],[12,44],[8,44],[3,43],[0,40],[-2,37],[-6,36]]},
-  {nm:'아프리카',lb:[20,8],pts:[[-6,35],[3,37],[11,37],[20,32],[32,31],[33,28],[37,18],[43,11],[51,12],[46,4],[40,-5],[36,-15],[33,-25],[28,-33],[19,-35],[15,-28],[12,-15],[9,-2],[9,4],[2,6],[-5,5],[-8,4],[-13,9],[-17,15],[-17,21],[-13,28],[-10,31]]},
-  {nm:'호주',lb:[133,-25],pts:[[114,-22],[122,-17],[130,-12],[136,-12],[142,-11],[143,-15],[146,-19],[150,-23],[153,-27],[152,-33],[146,-39],[140,-38],[136,-35],[131,-32],[124,-33],[116,-35],[113,-27]]},
-  {nm:'',lb:[140,37],pts:[[130,31],[133,34],[137,35],[140,36],[141,40],[143,42],[145,44],[141,43],[136,37],[132,34],[129,32]]},
-  {nm:'',lb:[-3,54],pts:[[-5,50],[1,51],[0,53],[-2,56],[-5,58],[-7,55],[-5,53],[-3,52]]},
-  {nm:'',lb:[101,0],pts:[[95,5],[99,3],[104,1],[106,-3],[103,-5],[97,2]]},
-  {nm:'',lb:[114,0],pts:[[109,1],[111,4],[116,6],[119,1],[115,-3],[110,-2]]},
-  {nm:'',lb:[47,-19],pts:[[44,-12],[49,-15],[47,-25],[44,-22],[43,-16]]},
-  {nm:'',lb:[172,-41],pts:[[173,-35],[177,-38],[174,-41],[172,-44],[167,-46],[170,-41],[172,-37]]}],
- FLEET:(()=>{const R={
-  transpac:[[122,31],[131,33],[142,36],[160,43],[175,47],[-175,48],[-160,49],[-145,47],[-132,42],[-124,37],[-118,34]],
-  asiaeu:[[122,31],[117,23],[110,14],[105,4],[101,2],[97,5],[88,6],[80,6],[68,12],[57,14],[48,13],[44,12],[39,17],[34,26],[32,30],[31,32],[25,34],[14,37],[5,37],[-6,36],[-10,37],[-9,44],[-3,47],[0,50],[3,52]],
-  transatl:[[2,51],[-6,49],[-20,48],[-40,46],[-58,42],[-70,40],[-74,40]],
-  panama:[[-74,40],[-75,32],[-77,22],[-79,12],[-80,9],[-83,7],[-90,9],[-100,14],[-110,22],[-118,33]],
-  brasil:[[-46,-25],[-40,-18],[-35,-8],[-30,2],[-25,14],[-18,26],[-12,34],[-10,38],[-6,42],[0,48],[3,52]],
-  cape:[[104,1],[95,-5],[80,-13],[60,-22],[42,-28],[28,-36],[19,-35],[12,-22],[6,-8],[0,2],[-8,6],[-15,12],[-17,20],[-12,30],[-9,38],[0,48],[3,52]],
-  oil:[[57,25],[60,22],[68,18],[76,8],[80,6],[90,6],[97,5],[101,2],[105,4],[110,9],[114,15],[119,22],[124,28],[129,32],[135,34]],
-  aus:[[104,1],[107,-5],[110,-9],[112,-20],[112,-33],[118,-37],[127,-38],[136,-39],[143,-40],[150,-36],[152,-33]],
-  chile:[[-72,-33],[-75,-22],[-79,-10],[-82,0],[-81,6],[-80,9]],
-  nopac:[[140,36],[155,45],[170,52],[-175,54],[-160,55],[-148,58],[-136,57],[-130,52]]};
- return[
-  {n:'EVER GIVEN',t:'컨테이너선 (수에즈 좌초의 그 배)',cs:'H3RC',kn:18,dest:'ROTTERDAM',rt:R.asiaeu},
-  {n:'EVER ACE',t:'컨테이너선',cs:'3EWQ5',kn:17.5,dest:'SHANGHAI',rt:rev(R.asiaeu)},
-  {n:'MSC IRINA',t:'컨테이너선 (세계 최대급)',cs:'5LJC8',kn:17,dest:'LOS ANGELES',rt:R.transpac},
-  {n:'HMM ALGECIRAS',t:'컨테이너선',cs:'3FQW7',kn:18,dest:'SHANGHAI',rt:rev(R.transpac)},
-  {n:'ONE INNOVATION',t:'컨테이너선',cs:'7JLK3',kn:18,dest:'LOS ANGELES',rt:R.transpac},
-  {n:'CMA CGM J. SAADE',t:'컨테이너선 (LNG 추진)',cs:'FLSU',kn:17,dest:'SINGAPORE',rt:rev(R.asiaeu)},
-  {n:'MAERSK MC-KINNEY',t:'컨테이너선',cs:'OWJE2',kn:16.5,dest:'NEW YORK',rt:R.transatl},
-  {n:'MSC GULSUN',t:'컨테이너선',cs:'3EPD4',kn:17,dest:'ROTTERDAM',rt:rev(R.transatl)},
-  {n:'COSCO UNIVERSE',t:'컨테이너선',cs:'BOCD5',kn:18,dest:'PANAMA',rt:R.panama},
-  {n:'GLOVIS SPLENDOR',t:'자동차운반선',cs:'D7GS9',kn:17,dest:'NEW YORK',rt:rev(R.panama)},
-  {n:'CSAV TYNDALL',t:'컨테이너선',cs:'CB5512',kn:16,dest:'PANAMA',rt:R.chile},
-  {n:'LOG-IN POLARIS',t:'컨테이너선',cs:'PPNV',kn:15,dest:'ROTTERDAM',rt:R.brasil},
-  {n:'SANTA ISABEL',t:'벌크선',cs:'DAHQ',kn:14,dest:'SANTOS',rt:rev(R.brasil)},
-  {n:'FRONT ALTAIR',t:'원유운반선',cs:'LAUM7',kn:13,dest:'YOKOHAMA',rt:R.oil},
-  {n:'TI EUROPE',t:'초대형 원유운반선',cs:'9HKL2',kn:12.5,dest:'RAS TANURA',rt:rev(R.oil)},
-  {n:'PACIFIC TRIANGLE',t:'벌크선',cs:'VRHX3',kn:13.5,dest:'CAPE TOWN',rt:R.cape},
-  {n:'OCEAN GRAND',t:'벌크선',cs:'9VQT6',kn:14,dest:'SYDNEY',rt:R.aus},
-  {n:'SPIRIT OF AUCKLAND',t:'컨테이너선',cs:'GBSA2',kn:16,dest:'SINGAPORE',rt:rev(R.aus)},
-  {n:'NYK ORION',t:'컨테이너선',cs:'7KKQ5',kn:17,dest:'VANCOUVER',rt:R.nopac},
-  {n:'APL SENTOSA',t:'컨테이너선',cs:'9VHH8',kn:17,dest:'TOKYO',rt:rev(R.nopac)}]})(),
- note:'세계 간선 항로(태평양·수에즈·파나마·희망봉) 실측 기반 재현'};
+function px(x,y){return{x:OX+x*SC,y:OY+y*SC}}
+function toD(sx,sy){return{x:(sx-OX)/SC,y:(sy-OY)/SC}}
+function hexCorners(q,r){const cx=HOX+1.5*HR*q,cy=HOY+HR*SQ3*(r+q/2),o=[];for(let i=0;i<6;i++){const a=Math.PI/3*i;o.push([cx+HR*Math.cos(a),cy+HR*Math.sin(a)])}return o}
+function hexAt(x,y){const q=(2/3*(x-HOX))/HR,r=(-1/3*(x-HOX)+SQ3/3*(y-HOY))/HR;
+ let cx=q,cz=r,cy=-cx-cz,rx=Math.round(cx),ry=Math.round(cy),rz=Math.round(cz);
+ const dx=Math.abs(rx-cx),dy=Math.abs(ry-cy),dz=Math.abs(rz-cz);
+ if(dx>dy&&dx>dz)rx=-ry-rz;else if(dy>dz)ry=-rx-rz;else rz=-rx-ry;return rx+','+rz}
+const inSea=(x,y)=>x>16&&x<N-16&&y>16&&y<N-16&&cellLand[hexAt(x,y)]===0;
+function rr(c,x,y,w,h,r){c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath()}
+function roundPath(c,pts,r){const n=pts.length;if(n<3)return;const m=(a,b)=>[(a[0]+b[0])/2,(a[1]+b[1])/2];const s=m(pts[n-1],pts[0]);c.beginPath();c.moveTo(s[0],s[1]);for(let i=0;i<n;i++){const cur=pts[i],nx=pts[(i+1)%n],mm=m(cur,nx);c.arcTo(cur[0],cur[1],mm[0],mm[1],r)}c.closePath()}
+function drawAnchor(cx,cy,s){ctx.save();ctx.strokeStyle='#fff';ctx.lineWidth=Math.max(1,s*0.12);ctx.lineCap='round';ctx.lineJoin='round';
+ ctx.beginPath();ctx.arc(cx,cy-s*0.42,s*0.14,0,6.283);ctx.stroke();
+ ctx.beginPath();ctx.moveTo(cx,cy-s*0.30);ctx.lineTo(cx,cy+s*0.40);ctx.stroke();
+ ctx.beginPath();ctx.moveTo(cx-s*0.25,cy-s*0.07);ctx.lineTo(cx+s*0.25,cy-s*0.07);ctx.stroke();
+ ctx.beginPath();ctx.arc(cx,cy+s*0.04,s*0.36,Math.PI*0.17,Math.PI*0.83);ctx.stroke();ctx.restore()}
 
-/* ════ 지도 2: 안쿠드만(원작 무대) ════ */
-const ANCUD={
- key:'ancud',title:'안쿠드만, 칠레 — 2019년 3월, 그 고래의 일주일 (원작 데이터 무대) · 1초=10분',
- BB:{lo1:-74.0,lo2:-72.3,la1:-43.3,la2:-41.3},kmlon:82.5,spd:600,labels:true,shipR:5,
- start:[-73.05,-42.3],
- LAND:[
-  {nm:'칠로에 섬',lb:[-73.82,-42.45],pts:[[-74.0,-41.87],[-73.53,-41.83],[-73.42,-41.92],[-73.5,-42.1],[-73.38,-42.25],[-73.45,-42.38],[-73.32,-42.55],[-73.42,-42.7],[-73.3,-42.9],[-73.45,-43.1],[-73.55,-43.3],[-74.0,-43.3]]},
-  {nm:'본토 · 파타고니아',lb:[-72.62,-41.95],pts:[[-73.35,-41.3],[-72.3,-41.3],[-72.3,-43.3],[-72.55,-43.3],[-72.5,-43.0],[-72.65,-42.7],[-72.55,-42.4],[-72.72,-42.1],[-72.6,-41.9],[-72.75,-41.65],[-73.0,-41.6],[-73.2,-41.45]]},
-  {nm:'칼부코',lb:[-73.2,-41.74],pts:[[-73.18,-41.74],[-73.08,-41.76],[-73.1,-41.82],[-73.2,-41.8]]},
-  {nm:'데세르토레스',lb:[-73.04,-42.72],pts:[[-73.0,-42.72],[-72.92,-42.74],[-72.94,-42.82],[-73.02,-42.8]]},
-  {nm:'킨차오',lb:[-73.52,-42.52],pts:[[-73.5,-42.42],[-73.42,-42.47],[-73.48,-42.56],[-73.56,-42.5]]}],
- FLEET:(()=>{const R={
-  chaiten:[[-72.96,-41.52],[-73.0,-41.75],[-72.9,-42.2],[-72.78,-42.6],[-72.7,-42.9]],
-  castro:[[-72.96,-41.52],[-73.1,-41.78],[-73.28,-42.0],[-73.33,-42.3],[-73.42,-42.42]],
-  quellon:[[-72.96,-41.52],[-73.03,-41.85],[-73.18,-42.3],[-73.27,-42.8],[-73.42,-43.05]],
-  calbuco:[[-73.1,-41.82],[-72.93,-41.95],[-73.02,-42.12],[-73.25,-42.05],[-73.1,-41.82]],
-  cross:[[-73.4,-42.48],[-73.1,-42.62],[-72.78,-42.85]],
-  south:[[-73.38,-43.0],[-73.1,-42.88],[-72.98,-42.7]],
-  dalca:[[-73.36,-42.33],[-73.2,-42.38],[-73.26,-42.55],[-73.4,-42.5],[-73.36,-42.33]]};
- return[
-  {n:'DON BALDO',t:'카페리 푸에르토몬트–차이텐',cs:'CB3550',kn:12,dest:'CHAITEN',rt:R.chaiten},
-  {n:'PATAGON SUR',t:'양식장 보급선',cs:'CB2741',kn:9.5,dest:'CASTRO',rt:R.castro},
-  {n:'DON RAUL II',t:'양식장 보급선',cs:'CB3318',kn:9,dest:'QUELLON',rt:R.quellon},
-  {n:'ORCA AUSTRAL',t:'웰보트 (활어 운반선)',cs:'CB4102',kn:11,dest:'PUERTO MONTT',rt:rev(R.quellon)},
-  {n:'CALBUCO EXPRESS',t:'양식장 인력수송선',cs:'CB2890',kn:18,dest:'CALBUCO',rt:R.calbuco},
-  {n:'MAR DE CHILOE',t:'양식장 보급선',cs:'CB1984',kn:9,dest:'CHAITEN',rt:R.cross},
-  {n:'SALMO REY',t:'웰보트 (활어 운반선)',cs:'CB3077',kn:10.5,dest:'CASTRO',rt:rev(R.cross)},
-  {n:'ALEJANDRINA',t:'양식장 보급선',cs:'CB2215',kn:8.5,dest:'DALCAHUE',rt:R.dalca},
-  {n:'AUSTRAL BRAVE',t:'양식장 보급선',cs:'CB3661',kn:9.5,dest:'DESERTORES',rt:R.south},
-  {n:'PINCOYA II',t:'양식장 인력수송선',cs:'CB2502',kn:16,dest:'PUERTO MONTT',rt:rev(R.castro)},
-  {n:'GOLFO AZUL',t:'양식장 보급선',cs:'CB1893',kn:9,dest:'QUELLON',rt:rev(R.south)},
-  {n:'RELONCAVI',t:'웰보트 (활어 운반선)',cs:'CB3940',kn:11,dest:'CALBUCO',rt:rev(R.calbuco)}]})(),
- note:'원작(칠레 안쿠드만 연구 시각화)의 실제 선단 — 양식 보급선 항로 재현'};
+/* ── whale (top-down, parametric) ── */
+const PROF=[[0,.12],[.12,.34],[.25,.6],[.4,.86],[.55,1],[.68,.95],[.8,.72],[.9,.46],[.97,.22],[1,.03]];
+function wprof(t){for(let i=0;i<PROF.length-1;i++){const a=PROF[i],b=PROF[i+1];if(t<=b[0]){const f=(t-a[0])/(b[0]-a[0]+1e-9);return a[1]+(b[1]-a[1])*f}}return 0}
+const CD=[.62,.67,.72],CS=[.25,.30,.36],ED=[.52,.57,.62],ES=[.16,.20,.25];
+const lerpC=(a,b,f)=>'rgb('+a.map((v,i)=>Math.round((v+(b[i]-v)*f)*255)).join(',')+')';
+const chaik=(p,it)=>{for(let k=0;k<it;k++){let n=[];for(let i=0;i<p.length;i++){const a=p[i],b=p[(i+1)%p.length];n.push([a[0]*.75+b[0]*.25,a[1]*.75+b[1]*.25]);n.push([a[0]*.25+b[0]*.75,a[1]*.25+b[1]*.75])}p=n}return p};
+function drawWhale(sx,sy,ang,breath,phase,L,wag){
+ const Wm=L*.205,A=Wm*.5*wag,n=40,ca=Math.cos(ang),sa=Math.sin(ang);
+ const T=(p)=>[sx+p[0]*ca-p[1]*sa, sy+p[0]*sa+p[1]*ca];
+ let spine=[];for(let i=0;i<=n;i++){const t=i/n,x=(t-.46)*L,yo=A*Math.sin(2.3*Math.PI*(1-t)+phase)*(1-t);spine.push([x,yo,wprof(t)*Wm])}
+ let top=[],bot=[];for(let i=0;i<spine.length;i++){const s=spine[i],p0=spine[Math.max(0,i-1)],p1=spine[Math.min(spine.length-1,i+1)];
+  let tx=p1[0]-p0[0],ty=p1[1]-p0[1];const tl=Math.hypot(tx,ty)+1e-9,nx=-ty/tl,ny=tx/tl;top.push([s[0]+nx*s[2],s[1]+ny*s[2]]);bot.push([s[0]-nx*s[2],s[1]-ny*s[2]])}
+ const body=top.concat(bot.reverse());
+ // fluke
+ const s0=spine[0],s1=spine[1];let bx=s0[0]-s1[0],by=s0[1]-s1[1];const bl=Math.hypot(bx,by)+1e-9;bx/=bl;by/=bl;
+ const wag2=Math.sin(phase)*.45*wag,cw=Math.cos(wag2),sw=Math.sin(wag2);
+ const rbx=bx*cw-by*sw,rby=bx*sw+by*cw,rpx=-rby,rpy=rbx,FB=Wm*1.1,FW=Wm*2.3;
+ const PF=(b,w)=>[s0[0]+rbx*b+rpx*w,s0[1]+rby*b+rpy*w];
+ const fluke=chaik([PF(0,Wm*.32),PF(FB*.9,FW*.8),PF(FB*.75,FW),PF(FB*.22,FW*.55),PF(FB*.04,0),PF(FB*.22,-FW*.55),PF(FB*.75,-FW),PF(FB*.9,-FW*.8),PF(0,-Wm*.32)],2);
+ // pecs
+ const idx=Math.floor(spine.length*.62),sp=spine[idx],q0=spine[idx-2],q1=spine[idx+2];
+ let tx=q1[0]-q0[0],ty=q1[1]-q0[1];const tl=Math.hypot(tx,ty)+1e-9,nx=-ty/tl,ny=tx/tl,FL=Wm*1.5,FWp=Wm*.5;let pcs=[];
+ for(const s of [1,-1]){const bx2=sp[0]+nx*sp[2]*s*.7,by2=sp[1]+ny*sp[2]*s*.7;
+  let dx=nx*s*.7-tx/tl*.7,dy=ny*s*.7-ty/tl*.7;const dl=Math.hypot(dx,dy)+1e-9;dx/=dl;dy/=dl;const pp=[-dy,dx];
+  pcs.push(chaik([[bx2+pp[0]*FWp,by2+pp[1]*FWp],[bx2+dx*FL,by2+dy*FL],[bx2-pp[0]*FWp,by2-pp[1]*FWp]],1))}
+ const C=lerpC(CD,CS,breath),E=lerpC(ED,ES,breath),al=.72+.28*breath;
+ const fillP=(pts)=>{ctx.beginPath();pts.forEach((p,i)=>{const t=T(p);i?ctx.lineTo(t[0],t[1]):ctx.moveTo(t[0],t[1])});ctx.closePath()};
+ if(breath>.5){const t=T([0,0]);ctx.beginPath();ctx.arc(t[0],t[1],L*.62,0,6.283);ctx.strokeStyle='rgba(95,196,232,.55)';ctx.lineWidth=2.2;ctx.stroke()}
+ ctx.globalAlpha=al;
+ ctx.fillStyle=E;for(const p of pcs){fillP(p);ctx.fill()}fillP(fluke);ctx.fill();
+ fillP(body);ctx.fillStyle=C;ctx.fill();ctx.strokeStyle=E;ctx.lineWidth=Math.max(.7,L*.02);ctx.stroke();
+ ctx.strokeStyle=lerpC(C.match(/\d+/g).map(Number).map(v=>v/255),[1,1,1],.25);ctx.lineWidth=L*.08;ctx.lineCap='round';
+ ctx.beginPath();spine.forEach((s,i)=>{const t=T([s[0],s[1]]);i?ctx.lineTo(t[0],t[1]):ctx.moveTo(t[0],t[1])});ctx.globalAlpha=al*.6;ctx.stroke();
+ const bh=T([spine[Math.floor(spine.length*.78)][0],spine[Math.floor(spine.length*.78)][1]]);ctx.fillStyle=E;ctx.globalAlpha=al;ctx.beginPath();ctx.arc(bh[0],bh[1],L*.04,0,6.283);ctx.fill();
+ ctx.globalAlpha=1;
+}
 
-/* ════ 지도 3: 대한해협 ════ */
-const KOREA={
- key:'korea',title:'대한해협 — 실제 항로·통항 선박 기반 재현 · 1초=10분',
- BB:{lo1:128.0,lo2:130.6,la1:33.7,la2:35.6},kmlon:91.2,spd:600,labels:true,shipR:5,
- start:[128.85,34.75],
- LAND:[
-  {nm:'한반도 · 부산',lb:[128.75,35.32],pts:[[128.0,35.6],[128.0,34.95],[128.35,34.9],[128.6,34.98],[128.95,35.02],[129.18,35.12],[129.42,35.3],[129.62,35.45],[129.72,35.6]]},
-  {nm:'쓰시마',lb:[129.3,34.43],pts:[[129.20,34.10],[129.34,34.22],[129.44,34.45],[129.38,34.62],[129.24,34.70],[129.18,34.50],[129.24,34.36],[129.15,34.22]]},
-  {nm:'규슈',lb:[130.33,33.86],pts:[[129.95,33.7],[130.6,33.7],[130.6,34.08],[130.35,33.98],[130.08,33.84]]}],
- FLEET:(()=>{const R={
-  A:[[129.06,35.02],[128.7,34.75],[128.2,34.45],[128.0,34.35]],
-  C:[[128.05,33.75],[129.1,33.98],[129.85,34.35],[130.6,34.85]],
-  D:[[128.0,34.05],[128.75,34.5],[129.3,34.95],[129.75,35.35],[129.95,35.6]],
-  E:[[129.06,35.02],[129.55,34.5],[129.88,34.0],[130.2,33.72]],
-  F:[[129.6,35.55],[129.35,35.05],[128.8,34.45],[128.25,34.0],[128.0,33.9]]};
- return[
-  {n:'HMM HAMBURG',t:'컨테이너선',cs:'D7HB8',kn:18,dest:'SHANGHAI',rt:R.A},
-  {n:'EVER ACE',t:'컨테이너선',cs:'3EWQ5',kn:17.5,dest:'TOKYO',rt:R.C},
-  {n:'ONE COLUMBA',t:'컨테이너선',cs:'7JKD2',kn:18,dest:'QINGDAO',rt:rev(R.C)},
-  {n:'MSC ARIES',t:'컨테이너선',cs:'D5QT7',kn:16,dest:'ULSAN',rt:R.D},
-  {n:'PACIFIC GLORY',t:'원유운반선',cs:'9VLM3',kn:12.5,dest:'SINGAPORE',rt:R.F},
-  {n:'NEW CAMELLIA',t:'카페리 부산–하카타',cs:'7JNC4',kn:20,dest:'HAKATA',rt:R.E},
-  {n:'SUNNY OAK',t:'벌크선',cs:'VRPX4',kn:13,dest:'NINGBO',rt:rev(R.D)},
-  {n:'GLOVIS SONIC',t:'자동차운반선',cs:'DSGV7',kn:17,dest:'PUSAN',rt:rev(R.A)}]})(),
- note:'대한해협 실제 통항 선박·항로 기반 재현'};
-
-/* ════ 지도 0: 동중국해 — 바다가 가운데, 대륙이 가장자리 (레퍼런스 구도) ════ */
-const ECS={
- key:'ecs',title:'동중국해 — 부산·상하이·규슈·타이완 사이, 세계에서 가장 붐비는 바다 · 1초=10분',titleShort:'동중국해',
- BB:{lo1:118.5,lo2:130.5,la1:24.5,la2:35.5},kmlon:95,spd:600,labels:true,shipR:5,
- start:[124.8,30.6],
- LAND:[
-  {nm:'중국',lb:[119.6,31.5],pts:[[118.5,35.5],[119.5,34.8],[120.3,34.3],[120.9,33.2],[121.4,32.2],[121.9,31.3],[121.2,30.4],[121.9,29.9],[121.5,28.8],[120.6,28.0],[119.9,26.9],[119.6,25.9],[118.9,24.9],[118.5,24.5]]},
-  {nm:'한반도',lb:[127.2,35.15],pts:[[125.0,35.5],[126.2,35.1],[126.5,34.5],[127.5,34.4],[128.4,34.8],[129.2,35.1],[129.5,35.5]]},
-  {nm:'제주',lb:[126.32,33.65],pts:[[126.15,33.5],[126.6,33.57],[126.95,33.45],[126.55,33.22],[126.2,33.3]]},
-  {nm:'규슈',lb:[129.95,32.9],pts:[[129.55,33.35],[130.0,33.55],[130.5,33.8],[130.5,31.0],[130.15,31.0],[129.8,31.6],[130.1,32.4],[129.6,32.8]]},
-  {nm:'오키나와',lb:[127.6,26.95],pts:[[127.65,26.1],[127.95,26.45],[128.3,26.85],[128.1,26.6],[127.8,26.15]]},
-  {nm:'아마미',lb:[129.0,28.6],pts:[[129.15,28.1],[129.45,28.4],[129.3,28.55],[129.1,28.25]]},
-  {nm:'타이완',lb:[120.6,24.95],pts:[[121.0,25.3],[121.95,25.05],[121.6,24.5],[120.0,24.5],[120.75,25.0]]}],
- FLEET:(()=>{const R={
-  sb:[[122.3,31.2],[123.5,31.9],[125.5,33.2],[127.5,34.3],[128.9,34.9]],
-  sj:[[122.3,31.1],[125.0,31.8],[128.0,32.4],[129.5,32.75]],
-  np:[[122.2,29.8],[124.0,28.8],[126.5,27.6],[128.6,26.9],[130.4,26.2]],
-  hb:[[119.4,24.6],[121.1,26.3],[122.9,28.4],[124.8,30.9],[126.6,33.1],[128.8,34.85]],
-  qs:[[119.9,35.4],[121.1,34.0],[121.9,32.4],[122.3,31.3]],
-  bt:[[128.9,34.85],[127.0,32.6],[125.0,29.8],[122.9,26.8],[121.9,25.3]],
-  jj:[[126.3,35.45],[126.15,34.5],[126.45,33.7]],
-  ko:[[130.15,31.05],[129.5,29.5],[128.8,27.9],[128.15,26.75]]};
- return[
-  {n:'HMM NURI',t:'컨테이너선',cs:'D7NR5',kn:18,dest:'BUSAN',rt:R.sb},
-  {n:'COSCO SHANGHAI',t:'컨테이너선',cs:'BQXT2',kn:17,dest:'SHANGHAI',rt:rev(R.sb)},
-  {n:'KMTC ULSAN',t:'컨테이너선',cs:'D8KM3',kn:16,dest:'NAGASAKI',rt:R.sj},
-  {n:'SINOKOR AKITA',t:'컨테이너선',cs:'D9SK7',kn:15.5,dest:'SHANGHAI',rt:rev(R.sj)},
-  {n:'EVER LUCID',t:'컨테이너선',cs:'3ELC9',kn:18,dest:'LOS ANGELES',rt:R.np},
-  {n:'ONE TRADITION',t:'컨테이너선',cs:'7JTD4',kn:17.5,dest:'NINGBO',rt:rev(R.np)},
-  {n:'WAN HAI 521',t:'컨테이너선',cs:'BVWH1',kn:16.5,dest:'BUSAN',rt:R.hb},
-  {n:'YANG MING WORTH',t:'컨테이너선',cs:'BVYM6',kn:17,dest:'KAOHSIUNG',rt:rev(R.hb)},
-  {n:'PAN OCEAN GLORY',t:'벌크선',cs:'D7PO2',kn:13,dest:'SHANGHAI',rt:R.qs},
-  {n:'XIN QINGDAO',t:'컨테이너선',cs:'BXQD8',kn:16,dest:'QINGDAO',rt:rev(R.qs)},
-  {n:'HEUNG-A TOKYO',t:'컨테이너선',cs:'D8HA4',kn:15,dest:'TAIPEI',rt:R.bt},
-  {n:'T.S. KEELUNG',t:'컨테이너선',cs:'BVTS3',kn:16,dest:'BUSAN',rt:rev(R.bt)},
-  {n:'QUEEN JENUVIA',t:'카페리 목포–제주',cs:'D7QJ8',kn:21,dest:'JEJU',rt:R.jj},
-  {n:'SANTA LUCINO',t:'카페리 제주–목포',cs:'D7SL2',kn:20,dest:'MOKPO',rt:rev(R.jj)},
-  {n:'MARIX AMAMI',t:'카페리 가고시마–나하',cs:'7JMA6',kn:18,dest:'NAHA',rt:R.ko},
-  {n:'RYUKYU EXPRESS',t:'컨테이너선',cs:'7JRE3',kn:16,dest:'KAGOSHIMA',rt:rev(R.ko)}]})(),
- note:'동중국해 실제 항로(부산–상하이, 타이완–한일, 류큐 라인) 기반 재현'};
-
-const MAPS=[ECS,WORLD,ANCUD,KOREA];
-let MI=0,MAP=MAPS[0];
-const PRE={'CA':'칠레','CB':'칠레','CC':'칠레','CD':'칠레','CE':'칠레','D7':'대한민국','DS':'대한민국','D8':'대한민국','D9':'대한민국','6K':'대한민국','6L':'대한민국','6M':'대한민국','6N':'대한민국','HL':'대한민국','3E':'파나마','3F':'파나마','H3':'파나마','H8':'파나마','HO':'파나마','HP':'파나마','9V':'싱가포르','VR':'홍콩','D5':'라이베리아','A8':'라이베리아','EL':'라이베리아','5L':'라이베리아','C6':'바하마','9H':'몰타','7J':'일본','7K':'일본','7L':'일본','7M':'일본','7N':'일본','JA':'일본','FL':'프랑스','FN':'프랑스','OW':'덴마크','OU':'덴마크','BO':'중국','BA':'중국','BQ':'중국','BX':'중국','BV':'대만','PP':'브라질','DA':'독일','LA':'노르웨이','GB':'영국','CS':'포르투갈'};
-const MID={440:'대한민국',441:'대한민국',431:'일본',432:'일본',477:'홍콩',563:'싱가포르',564:'싱가포르',565:'싱가포르',566:'싱가포르',352:'파나마',353:'파나마',354:'파나마',355:'파나마',356:'파나마',357:'파나마',370:'파나마',371:'파나마',372:'파나마',373:'파나마',636:'라이베리아',637:'라이베리아',412:'중국',413:'중국',538:'마셜제도',311:'바하마',229:'몰타',249:'몰타',725:'칠레'};
-const flagOf=cs=>cs?PRE[cs.slice(0,2).toUpperCase()]||null:null;
-
-/* ── 투영 ── */
-let SC=1,OX=0,OY=0,landPx=[];
-function px(lo,la){let l=lo;while(l<MAP.BB.lo1)l+=360;while(l>MAP.BB.lo2)l-=360;
- return{x:OX+(l-MAP.BB.lo1)*MAP.kmlon*SC,y:OY+(MAP.BB.la2-la)*KLA*SC}}
-function inPoly(x,y,p){let c=false;for(let i=0,j=p.length-1;i<p.length;j=i++){if((p[i].y>y)!==(p[j].y>y)&&x<(p[j].x-p[i].x)*(y-p[i].y)/(p[j].y-p[i].y)+p[i].x)c=!c}return c}
-const onLand=(x,y)=>landPx.some(p=>inPoly(x,y,p.px));
-
-/* ── 상태 ── */
-let ships=[],krill=[],parts=[],wh,o2,hg,cnB,cnK,t0,dead,hold=false,breath=0,canB=true,ts=1,ptr=null,last=0,wpath=[],deadPt=null;
-const keys={};
-function segKm(a,b){const dx=wrap(b[0]-a[0])*MAP.kmlon,dy=(b[1]-a[1])*KLA;return Math.hypot(dx,dy)}
-function mkShips(){ships=MAP.FLEET.map(f=>{let segs=[],tot=0;
- for(let j=1;j<f.rt.length;j++){const d=segKm(f.rt[j-1],f.rt[j]);segs.push(d);tot+=d}
- return Object.assign({},f,{segs,tot,d:Math.random()*tot,r:f.kn>15?MAP.shipR+1:MAP.shipR,px:0,py:0,pp:null})})}
+/* ── state ── */
+let ships=[],krill=[],parts=[],wh,o2,hg,cnB,cnK,gtime,dead;
+let hold=false,breath=0,canB=true,ts=1,tscale=1,ptr=null,pd=null,last=0,wphase=0;
+const keys={};const DAYRATE=0.2,SHIP_K=1.35;
+function seglen(a,b){return Math.hypot(b[0]-a[0],b[1]-a[1])}
+function mkShips(){ships=MM.ships.map(s=>{const lane=MM.lanes[s.lane],rt=s.rev?lane.slice().reverse():lane;
+ let segs=[],tot=0;for(let i=1;i<rt.length;i++){const d=seglen(rt[i-1],rt[i]);segs.push(d);tot+=d}
+ return Object.assign({},s,{rt,segs,tot,d:Math.random()*tot,dir:Math.random()<0.5?1:-1,fade:1,dx:rt[0][0],dy:rt[0][1],ang:0,pp:null})})}
 function shipPos(s){let d=s.d,i=0;while(i<s.segs.length-1&&d>s.segs[i]){d-=s.segs[i];i++}
- const a=s.rt[i],b=s.rt[i+1],f=Math.min(1,d/s.segs[i]);
- const lo=a[0]+wrap(b[0]-a[0])*f,la=a[1]+(b[1]-a[1])*f,q=px(lo,la);
- if(s.pp&&Math.abs(q.x-s.px)>innerWidth/2)s.pp=null; /* 날짜변경선 */
- s.px=q.x;s.py=q.y}
-function seaSpot(minD){const wk=(MAP.BB.lo2-MAP.BB.lo1)*MAP.kmlon*SC,hk=(MAP.BB.la2-MAP.BB.la1)*KLA*SC;
- for(let i=0;i<500;i++){const x=OX+20+Math.random()*(wk-40),y=OY+20+Math.random()*(hk-40);
-  if(onLand(x,y))continue;if(wh&&Math.hypot(x-wh.x,y-wh.y)<minD)continue;return{x,y}}return{x:W/2,y:H*0.7}}
-const mkKrill=far=>{const sp=seaSpot(far?Math.min(W,H)*0.38:0);return{x:sp.x,y:sp.y,amt:1,seed:Math.random()*9}};
-const gameDays=sec=>sec*MAP.spd/86400;
-function recs(){try{return JSON.parse(localStorage.getItem('whale_rec_'+MAP.key)||'[]')}catch(e){return[]}}
-function bestTxt(){const r=recs();$('best').textContent=r.length?('최고 기록 '+r[0].d.toFixed(1)+'일'):''}
-function reset(){let s=px(MAP.start[0],MAP.start[1]);
- if(onLand(s.x,s.y))s=seaSpot(0);
- wh={x:s.x,y:s.y,vx:0,vy:0,ang:0};
- o2=1;hg=1;cnB=0;cnK=0;t0=performance.now();dead=false;breath=0;canB=true;ts=1;parts=[];wpath=[[wh.x,wh.y]];deadPt=null;
- krill=[mkKrill(false),mkKrill(true)];$('over').style.display='none';$('card').style.display='none';bestTxt()}
-
-/* ── 기존 항적 프리워밍 (그 화면의 쌓인 트레일) ── */
-function prewarm(){tctx.lineCap='round';tctx.strokeStyle='rgba(224,138,96,.14)';
- for(const f of MAP.FLEET){tctx.lineWidth=(f.kn>15?MAP.shipR+1:MAP.shipR)*1.3;
-  let prev=null;
-  for(const p of f.rt){const q=px(p[0],p[1]);
-   if(prev&&Math.abs(q.x-prev.x)<innerWidth/2){tctx.beginPath();tctx.moveTo(prev.x,prev.y);tctx.lineTo(q.x,q.y);tctx.stroke()}
-   prev=q}}}
-
-/* ── 리사이즈 / 지도 ── */
-function applyMap(){$('zone').textContent=MAP.title;
- $('mapbtn').textContent='지도 ⇄ '+MAPS[(MI+1)%MAPS.length].titleShort;
- document.title='고래와 화물선 — '+MAP.titleShort}
-WORLD.titleShort='지구 전체';ANCUD.titleShort='안쿠드만(원작)';KOREA.titleShort='대한해협';
-function resize(){W=innerWidth;H=innerHeight;
- [cv,tc].forEach(c=>{c.width=W*dpr;c.height=H*dpr});
- cv.style.width=W+'px';cv.style.height=H+'px';
- ctx.setTransform(dpr,0,0,dpr,0,0);tctx.setTransform(dpr,0,0,dpr,0,0);
- const wk=(MAP.BB.lo2-MAP.BB.lo1)*MAP.kmlon,hk=(MAP.BB.la2-MAP.BB.la1)*KLA;
- SC=Math.min(W/wk,H/hk)*0.99;OX=(W-wk*SC)/2;OY=(H-hk*SC)/2;
- landPx=MAP.LAND.map(L=>({nm:L.nm,lb:px(L.lb[0],L.lb[1]),px:L.pts.map(p=>px(p[0],p[1]))}));
- const km=MAP.key==='world'?2000:(MAP.key==='ecs'?200:20);
- $('sb').style.width=(km*SC)+'px';
- $('sbt').textContent=MAP.key==='world'?'0        1000      2000 km':(MAP.key==='ecs'?'0         100       200 km':'0          10        20 km');
- mkShips();ships.forEach(s=>{shipPos(s);s.pp=null});
- tctx.clearRect(0,0,W,H);prewarm()}
+ const a=s.rt[i],b=s.rt[i+1],f=Math.min(1,d/(s.segs[i]||1));s.dx=a[0]+(b[0]-a[0])*f;s.dy=a[1]+(b[1]-a[1])*f;const dr=s.dir||1;s.ang=Math.atan2((b[1]-a[1])*dr,(b[0]-a[0])*dr)}
+function seaSpot(minD){for(let i=0;i<500;i++){const x=60+Math.random()*(N-120),y=60+Math.random()*(N-120);
+ if(!inSea(x,y))continue;if(wh&&Math.hypot(x-wh.x,y-wh.y)<minD)continue;return{x,y}}return{x:MM.start[0],y:MM.start[1]}}
+const mkKrill=()=>{let b=null;for(let i=0;i<60;i++){const s=KS[(Math.random()*KS.length)|0];if(wh&&Math.hypot(s[0]-wh.x,s[1]-wh.y)<N*0.18)continue;b=s;break}if(!b)b=KS[(Math.random()*KS.length)|0];return{x:b[0],y:b[1],amt:1,grow:0,cd:0,seed:Math.random()*9}};
+const gameDays=()=>gtime*DAYRATE;
+function recs(){try{return JSON.parse(localStorage.getItem('mm2_rec')||'[]')}catch(e){return[]}}
+function reset(){let s=MM.start.slice();if(!inSea(s[0],s[1])){const p=seaSpot(0);s=[p.x,p.y]}
+ wh={x:s[0],y:s[1],vx:0,vy:0,ang:0};o2=1;hg=1;cnB=0;cnK=0;gtime=0;dead=false;breath=0;canB=true;ts=1;parts=[];wphase=0;
+ krill=[mkKrill(),mkKrill()];mkShips();ships.forEach(shipPos);
+ $('over').style.display='none';$('card').style.display='none';tctx.clearRect(0,0,W,H);prewarm()}
+function prewarm(){/* 항로 미리 표시 안 함(난이도) */}
+function resize(){W=innerWidth;H=innerHeight;[cv,tc].forEach(c=>{c.width=W*dpr;c.height=H*dpr});
+ cv.style.width=W+'px';cv.style.height=H+'px';ctx.setTransform(dpr,0,0,dpr,0,0);tctx.setTransform(dpr,0,0,dpr,0,0);
+ const ob=MM.oceanbox,bw=ob[2]-ob[0],bh=ob[3]-ob[1];
+ const topM=46,botM=Math.min(160,H*0.18),availH=Math.max(140,H-topM-botM);
+ SC=Math.min(W/bw,availH/bh)*0.99;OX=W/2-(ob[0]+bw/2)*SC;
+ OY=topM+(availH-bh*SC)*0.30-ob[1]*SC;  /* 위로 치우치게 — 하단 UI 공간 확보 */
+ tctx.clearRect(0,0,W,H)}
 addEventListener('resize',resize);
-$('mapbtn').addEventListener('click',()=>{if(liveOn)try{ws.close()}catch(e){}
- MI=(MI+1)%MAPS.length;MAP=MAPS[MI];applyMap();resize();reset()});
 
-/* ── 입력 ── */
-addEventListener('keydown',e=>{keys[e.code]=1;
- if(e.code==='Space'){hold=true;e.preventDefault()}
- if(e.code==='Enter'&&dead)reset()});
+addEventListener('keydown',e=>{keys[e.code]=1;if(e.code==='Space'){hold=true;e.preventDefault()}if(e.code==='Enter'&&dead)reset()});
 addEventListener('keyup',e=>{keys[e.code]=0;if(e.code==='Space')hold=false});
-const btn=$('btn');
-btn.addEventListener('pointerdown',e=>{hold=true;btn.classList.add('hold');e.preventDefault()});
-['pointerup','pointercancel','pointerleave'].forEach(ev=>btn.addEventListener(ev,()=>{hold=false;btn.classList.remove('hold')}));
-let pd=null;
+const bb=$('breathe');
+bb.addEventListener('pointerdown',e=>{hold=true;bb.classList.add('on');e.preventDefault()});
+['pointerup','pointercancel','pointerleave'].forEach(ev=>bb.addEventListener(ev,()=>{hold=false;bb.classList.remove('on')}));
+/* 방향패드(아날로그 썸스틱) — 키보드만큼 즉각 반응 */
+const pad=$('pad'),knob=$('padknob'),stick={x:0,y:0,active:false};
+function padMove(e){const r=pad.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2,mx=r.width*0.36;
+ let dx=e.clientX-cx,dy=e.clientY-cy;const d=Math.hypot(dx,dy);if(d>mx){dx=dx/d*mx;dy=dy/d*mx}
+ stick.x=dx/mx;stick.y=dy/mx;knob.style.transform=`translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`}
+pad.addEventListener('pointerdown',e=>{pad.setPointerCapture(e.pointerId);stick.active=true;pad.classList.add('on');padMove(e);e.preventDefault()});
+pad.addEventListener('pointermove',e=>{if(stick.active)padMove(e)});
+['pointerup','pointercancel','pointerleave'].forEach(ev=>pad.addEventListener(ev,()=>{stick.active=false;stick.x=0;stick.y=0;pad.classList.remove('on');knob.style.transform='translate(-50%,-50%)'}));
 cv.addEventListener('pointerdown',e=>{ptr={x:e.clientX,y:e.clientY};pd={x:e.clientX,y:e.clientY,t:performance.now()}});
 cv.addEventListener('pointermove',e=>{if(ptr)ptr={x:e.clientX,y:e.clientY}});
-cv.addEventListener('pointerup',e=>{
- if(pd&&performance.now()-pd.t<260&&Math.hypot(e.clientX-pd.x,e.clientY-pd.y)<8)inspect(e.clientX,e.clientY);
- ptr=null;pd=null});
-$('over').addEventListener('click',()=>{if(dead)reset()});
+cv.addEventListener('pointerup',e=>{if(pd&&performance.now()-pd.t<260&&Math.hypot(e.clientX-pd.x,e.clientY-pd.y)<8)inspect(e.clientX,e.clientY);ptr=null;pd=null});
+$('l_restart').onclick=()=>reset();
+$('back').onclick=()=>$('info').style.display='flex';
+/* 실제 바다(라이브 AIS) — 디졸브로 전환해 심각성을 체감 */
+let paused=false;
+const VF='https://www.vesselfinder.com/aismap?zoom=2&lat=25&lon=-20&width=1280&height=900&names=true&clicktoact=false';
+$('l_live').onclick=()=>{const fr=$('realframe');if(!fr.getAttribute('src'))fr.setAttribute('src',VF);$('real').style.opacity=1;$('real').style.pointerEvents='auto';paused=true};
+$('realclose').onclick=()=>{$('real').style.opacity=0;$('real').style.pointerEvents='none';paused=false};
+$('info_close').onclick=()=>$('info').style.display='none';$('goagain').onclick=$('over').onclick=()=>{if(dead)reset()};
+const PORTINFO={'SHANGHAI':['세계 1위 컨테이너항 · 중국',170],'SINGAPORE':['세계 최대 환적 허브 · 싱가포르',150],'BUSAN':['한국 최대 항만 · 동북아 허브',85],'LOS ANGELES':['미국 서안 최대 컨테이너항',45],'NEW YORK':['미 동안 최대 항만',42],'ROTTERDAM':['유럽 최대 항만 · 네덜란드',95],'SUEZ':['수에즈 운하 · 아시아–유럽 최단 항로',50],'SYDNEY':['호주 동안 관문항',22],'MELBOURNE':['호주 최대 컨테이너항',28],'PANAMA':['파나마 운하 · 태평양–대서양 연결',36]};
+function inspect(sx,sy){
+ let bp=null,pd2=34*34;for(const p of MM.ports){const q=px(p.x,p.y),d=(sx-q.x)**2+(sy-q.y)**2;if(d<pd2){pd2=d;bp=p}}
+ if(bp){const inf=PORTINFO[bp.name]||['주요 항만',30];
+  $('card').innerHTML=`<b>⚓ ${bp.name}</b><br>${inf[0]}<br>하루 평균 <b>약 ${inf[1]}척</b>이 드나듭니다<br><span class="sub">전 세계에서 매일 약 2만 척 이상의 화물선이 바다를 가로지릅니다 (대략치)</span>`;
+  $('card').style.display='block';return}
+ let best=null,bd=30;for(const s of ships){const p=px(s.dx,s.dy);const d=Math.hypot(sx-p.x,sy-p.y);if(d<bd){bd=d;best=s}}
+ if(!best){$('card').style.display='none';return}const fl=flagOf(best.cs);
+ const kw=encodeURIComponent(best.tk||best.n);
+ const dest=best.ends?((best.dir||1)>0?best.ends[1]:best.ends[0]):best.dest;
+ $('card').innerHTML=`<b>${best.n}</b><span class="cs">${best.cs}</span><br>${best.t} · ${best.kn}kn · 행선지 ${dest}<br>호출부호 ${best.cs} — 앞 '${best.cs.slice(0,2)}' = <b>${fl||'?'}</b> 선적<br><span class="sub">실제 운항 중인 선박입니다</span><br><a class="track" href="https://www.marinetraffic.com/en/ais/index/search/all?keyword=${kw}" target="_blank" rel="noopener">🔗 실시간 위치 보기 — MarineTraffic</a>`;
+ $('card').style.display='block'}
 
-/* ── 선박 정보 카드 ── */
-function inspect(x,y){let best=null,bd=26;
- for(const s of (liveOn?Object.values(liveShips):ships)){const d=Math.hypot(x-s.px,y-s.py);if(d<bd){bd=d;best=s}}
- if(!best){$('card').style.display='none';return}
- let html;
- if(liveOn){const st=liveStatic[best.mmsi]||{};const fl=flagOf(st.cs)||MID[Math.floor(best.mmsi/1e6)];
-  html=`<b>${best.name||'선명 수신 대기'}</b>${st.cs?`<span class="cs">${st.cs}</span>`:''}<br>`+
-   `MMSI ${best.mmsi} · ${(best.sog||0).toFixed(1)}kn${st.dest?` · 행선지 ${st.dest}`:''}<br>`+
-   (fl?`식별 부호 → <b>${fl}</b> 선적<br>`:'')+`<span class="sub">aisstream.io 실시간 수신 중</span>`}
- else{const fl=flagOf(best.cs);
-  html=`<b>${best.n}</b><span class="cs">${best.cs}</span><br>`+
-   `${best.t} · ${best.kn}kn · 행선지 ${best.dest}<br>`+
-   `호출부호 ${best.cs} — 앞 '${best.cs.slice(0,2)}' = <b>${fl||'?'}</b> 선적<br>`+
-   `<span class="sub">${MAP.note}</span>`}
- $('card').innerHTML=html;$('card').style.display='block'}
-
-/* ── LIVE AIS ── */
-let liveOn=false,ws=null,liveShips={},liveStatic={};
-$('live').addEventListener('click',()=>{
- if(MAP.key==='world'){alert('LIVE 는 지역 지도(안쿠드만·대한해협)에서만 — 전 지구 실시간은 데이터가 폭주해서 막아뒀어.');return}
- if(liveOn){try{ws.close()}catch(e){}return}
- let k=localStorage.getItem('aiskey');
- if(!k){k=prompt('aisstream.io 무료 API 키 입력\n(aisstream.io 가입 → API Keys 발급, 무료)');if(!k)return;localStorage.setItem('aiskey',k.trim())}
- connectAIS(localStorage.getItem('aiskey'))});
-function connectAIS(k){try{ws=new WebSocket('wss://stream.aisstream.io/v0/stream')}catch(e){alert('연결 실패: '+e);return}
- ws.onopen=()=>{ws.send(JSON.stringify({APIKey:k,BoundingBoxes:[[[MAP.BB.la1,MAP.BB.lo1],[MAP.BB.la2,MAP.BB.lo2]]],FilterMessageTypes:['PositionReport','ShipStaticData']}));
-  liveOn=true;liveShips={};$('live').classList.add('on');$('live').textContent='● LIVE — 탭하면 종료';
-  $('zone').textContent=MAP.title.split('—')[0]+'— 실시간 AIS (실제 속도라 느림)';tctx.clearRect(0,0,W,H)};
- ws.onmessage=ev=>{let m;try{m=JSON.parse(ev.data)}catch(e){return}
-  const md=m.MetaData||{},id=md.MMSI;if(!id)return;
-  if(m.MessageType==='PositionReport'){const p=(m.Message||{}).PositionReport||{};
-   const q=px(md.longitude??p.Longitude,md.latitude??p.Latitude);
-   const prev=liveShips[id];
-   liveShips[id]={mmsi:id,name:(md.ShipName||'').trim(),sog:p.Sog||0,px:q.x,py:q.y,r:5,pp:prev?{x:prev.px,y:prev.py}:null}}
-  else if(m.MessageType==='ShipStaticData'){const s=(m.Message||{}).ShipStaticData||{};
-   liveStatic[id]={cs:(s.CallSign||'').trim(),dest:(s.Destination||'').trim()}}};
- ws.onclose=ws.onerror=()=>{liveOn=false;$('live').classList.remove('on');
-  $('live').textContent='LIVE 실시간 AIS';$('zone').textContent=MAP.title;tctx.clearRect(0,0,W,H);prewarm()}}
-
-/* ── 메인 루프 ── */
-function frame(now){requestAnimationFrame(frame);
- let dt=Math.min(0.05,(now-last)/1000);last=now;
- if(ts<1)ts=Math.min(1,ts+dt*1.6);
- const gdt=dt*ts;
- if(!dead){
-  breath=Math.max(0,Math.min(1,breath+(hold?dt*2.4:-dt*2.4)));
-  const surf=breath>0.7;
-  if(surf){const was=o2;o2=Math.min(1,o2+dt/2.2);
-   if(o2<0.6)canB=true;
+function frame(now){requestAnimationFrame(frame);let dt=Math.min(0.05,(now-last)/1000);last=now;
+ if(ts<1)ts=Math.min(1,ts+dt*1.6);const gdt=dt*ts*tscale;
+ if(!dead&&tscale>0&&!paused){gtime+=gdt;
+  breath=Math.max(0,Math.min(1,breath+(hold?dt*2.4:-dt*2.4)));const surf=breath>0.7;
+  if(surf){const was=o2;o2=Math.min(1,o2+dt/2.2);if(o2<0.6)canB=true;
    if(was<1&&o2>=1&&canB){canB=false;cnB++;ts=0.25;$('flash').style.opacity=1;setTimeout(()=>$('flash').style.opacity=0,320);
-    for(let i=0;i<40;i++){const a=Math.random()*6.283,v=30+Math.random()*120;parts.push({x:wh.x,y:wh.y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,l:0.6+Math.random()*0.5})}}}
+    for(let i=0;i<42;i++){const a=Math.random()*6.283,v=40+Math.random()*150;parts.push({x:wh.x,y:wh.y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,l:0.6+Math.random()*0.5})}}}
   else o2-=dt/24;
-  hg-=dt/38;
-  /* 산소 부족 → 둔해짐 (난이도 — 50%부터 급감, 바닥에선 거의 정지) */
-  const slow=o2>=0.5?1:(0.15+1.7*o2);
-  const SPD=Math.min(W,H)*0.17*(surf?0.45:1)*slow;
-  let tx=0,ty=0;
-  if(keys.ArrowLeft||keys.KeyA)tx-=1;if(keys.ArrowRight||keys.KeyD)tx+=1;
-  if(keys.ArrowUp||keys.KeyW)ty-=1;if(keys.ArrowDown||keys.KeyS)ty+=1;
-  if(tx||ty){const m=Math.hypot(tx,ty);tx=tx/m*SPD;ty=ty/m*SPD}
-  else if(ptr){const dx=ptr.x-wh.x,dy=ptr.y-wh.y,d=Math.hypot(dx,dy);
-   if(d>16){tx=dx/d*SPD;ty=dy/d*SPD}}
-  wh.vx+=(tx-wh.vx)*Math.min(1,dt*4.5);wh.vy+=(ty-wh.vy)*Math.min(1,dt*4.5);
+  hg-=dt/40;const slow=o2>=0.8?1:o2>=0.5?0.65:o2>=0.3?0.4:Math.max(0.12,o2/0.3*0.4),SPD=N*0.13*(surf?0.05:1)*slow;
+  let tx=0,ty=0;if(keys.ArrowLeft||keys.KeyA)tx-=1;if(keys.ArrowRight||keys.KeyD)tx+=1;if(keys.ArrowUp||keys.KeyW)ty-=1;if(keys.ArrowDown||keys.KeyS)ty+=1;
+  if(!tx&&!ty&&stick.active){const sm=Math.hypot(stick.x,stick.y);if(sm>0.18){tx=stick.x;ty=stick.y}}
+  if(tx||ty){const m=Math.hypot(tx,ty);tx=tx/m*SPD;ty=ty/m*SPD}else if(ptr&&!stick.active){const d=toD(ptr.x,ptr.y),dx=d.x-wh.x,dy=d.y-wh.y,dd=Math.hypot(dx,dy);if(dd>14){tx=dx/dd*SPD;ty=dy/dd*SPD}}
+  const wasMoving=Math.hypot(wh.vx,wh.vy)>SPD*0.28;
+  if(tx||ty){wh.vx=tx;wh.vy=ty}else{const f=Math.min(1,dt*7);wh.vx-=wh.vx*f;wh.vy-=wh.vy*f}  /* 브롤스타즈식: 스틱 방향 즉시 이동(관성 최소), 떼면 미끄러져 정지 */
   let nx=wh.x+wh.vx*gdt,ny=wh.y+wh.vy*gdt;
-  const x1=OX+10,x2=OX+(MAP.BB.lo2-MAP.BB.lo1)*MAP.kmlon*SC-10,y1=OY+10,y2=OY+(MAP.BB.la2-MAP.BB.la1)*KLA*SC-10;
-  nx=Math.max(x1,Math.min(x2,nx));ny=Math.max(y1,Math.min(y2,ny));
-  if(!onLand(nx,ny)){wh.x=nx;wh.y=ny}
-  else if(!onLand(nx,wh.y))wh.x=nx;
-  else if(!onLand(wh.x,ny))wh.y=ny;
-  {const lp=wpath[wpath.length-1];if(!lp||Math.hypot(wh.x-lp[0],wh.y-lp[1])>3){wpath.push([wh.x,wh.y]);if(wpath.length>2200)wpath.shift()}}
-  if(Math.hypot(wh.vx,wh.vy)>8)wh.ang=Math.atan2(wh.vy,wh.vx);
-  for(const k of krill){if(k.amt<=0)continue;
-   if(Math.hypot(wh.x-k.x,wh.y-k.y)<20){k.amt-=dt*1.6;hg=Math.min(1,hg+dt*0.55);
-    if(k.amt<=0){cnK++;Object.assign(k,mkKrill(true))}}}
-  if(!liveOn)for(const s of ships){s.pp={x:s.px,y:s.py};s.d+=s.kn*1.852/3600*MAP.spd*gdt;if(s.d>=s.tot){s.d=0;s.pp=null}shipPos(s)}
-  const wr=surf?15:9;
-  for(const s of (liveOn?Object.values(liveShips):ships)){if(Math.hypot(wh.x-s.px,wh.y-s.py)<s.r+wr){die('충돌');break}}
+  const ob=MM.oceanbox;nx=Math.max(ob[0]+12,Math.min(ob[2]-12,nx));ny=Math.max(ob[1]+12,Math.min(ob[3]-12,ny));
+  if(inSea(nx,ny)){wh.x=nx;wh.y=ny}else if(inSea(nx,wh.y))wh.x=nx;else if(inSea(wh.x,ny))wh.y=ny;
+  const sp=Math.hypot(wh.vx,wh.vy);
+  /* 몸 각도는 속도와 무관하게 조타 방향으로 부드럽게 회전(저속에서도 잘 돌도록) */
+  let hx=tx,hy=ty;if(!hx&&!hy){hx=wh.vx;hy=wh.vy}
+  if(Math.hypot(hx,hy)>0.01){const ta=Math.atan2(hy,hx);
+   if((tx||ty)&&!wasMoving){wh.ang=ta}  /* 정지→재입력: 즉시 그 방향을 봄(샥) */
+   else{let da=ta-wh.ang;while(da>Math.PI)da-=6.2832;while(da<-Math.PI)da+=6.2832;wh.ang+=da*Math.min(1,dt*12)}}
+  wphase+=dt*(3+sp*0.02);wh.wag=(wh.wag||0)+((Math.min(1,sp/(N*0.22)))-(wh.wag||0))*Math.min(1,dt*5);
+  for(const k of krill){if(k.amt<=0){if(k.cd>0){k.cd-=dt;if(k.cd<=0)Object.assign(k,mkKrill())}continue}
+   k.grow=Math.min(1,(k.grow||0)+dt*1.5);
+   if(Math.hypot(wh.x-k.x,wh.y-k.y)<26){k.amt-=dt*1.6;hg=Math.min(1,hg+dt*0.34);if(k.amt<=0){cnK++;k.cd=7+Math.random()*4}}}
+  for(const s of ships){const p0=px(s.dx,s.dy);s.pp={x:p0.x,y:p0.y};
+   s.d+=(s.dir||1)*s.kn*SHIP_K*gdt;
+   if(s.d>=s.tot){s.d=s.tot;s.dir=-1;s.pp=null}else if(s.d<=0){s.d=0;s.dir=1;s.pp=null}
+   s.fade=Math.min(1,Math.min(s.d,s.tot-s.d)/Math.min(40,s.tot*0.18));shipPos(s)}
+  const wr=surf?15:9;for(const s of ships){if(s.fade>0.3&&Math.hypot(wh.x-s.dx,wh.y-s.dy)<wr+8){die('충돌');break}}
   if(!dead){if(o2<=0)die('질식');else if(hg<=0)die('굶주림')}
-  $('mode').textContent=surf?'수면 — 숨 쉬는 중 (둔해짐)':(o2<0.5?'잠수 중 — 숨이 모자라 느려짐!':'잠수 중');
-  $('mode').style.color=surf?'#0e8aa8':(o2<0.5?'#c0392b':'#1e62a8');
-  $('st').textContent=gameDays((now-t0)/1000).toFixed(1);
-  $('sb2').textContent=cnB;$('sk').textContent=cnK;
-  document.querySelector('#o2 i').style.width=(o2*100)+'%';
-  document.querySelector('#hg i').style.width=(hg*100)+'%'}
+  $('mode').textContent=surf?'수면 — 숨 쉬는 중':(o2<0.5?'잠수 중 — 숨이 줄어 느려진다':'잠수 중');
+  $('day').textContent=Math.floor(gameDays());$('wd').textContent='일월화수목금토'[Math.floor(gameDays())%7];
+  const cang=gameDays()*6.283;$('ch').style.transform=`translate(-50%,-100%) rotate(${cang}rad)`;$('cm').style.transform=`translate(-50%,-100%) rotate(${cang/12}rad)`;
+  $('krc').textContent=cnK;document.querySelector('#o2 i').style.width=(o2*100)+'%';document.querySelector('#hg i').style.width=(hg*100)+'%';
+ }
+ draw(dt)}
 
- /* 그리기 */
- ctx.fillStyle='#aab4ba';ctx.fillRect(0,0,W,H);
- ctx.strokeStyle='rgba(255,255,255,.35)';ctx.lineWidth=1;ctx.font='10px sans-serif';
- const step=MAP.key==='world'?30:0.5;
- const lst=Math.ceil(MAP.BB.lo1/step)*step,lat0=Math.ceil(MAP.BB.la1/step)*step;
- for(let lo=lst;lo<MAP.BB.lo2;lo+=step){const p=px(lo,MAP.BB.la1);
-  ctx.beginPath();ctx.moveTo(p.x,OY);ctx.lineTo(p.x,p.y);ctx.stroke()}
- for(let la=lat0;la<MAP.BB.la2;la+=step){const p=px(MAP.BB.lo1,la);
-  ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(px(MAP.BB.lo2-0.001,la).x,p.y);ctx.stroke()}
- for(const L of landPx){if(!L.px.length)continue;
-  ctx.beginPath();L.px.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.closePath();
-  ctx.fillStyle='#9ba792';ctx.fill();ctx.strokeStyle='rgba(120,132,114,.6)';ctx.stroke();
-  if(L.nm){ctx.fillStyle='rgba(78,90,74,.7)';ctx.font='11px sans-serif';ctx.fillText(L.nm,L.lb.x,L.lb.y)}}
- tctx.globalCompositeOperation='destination-out';tctx.fillStyle='rgba(0,0,0,.006)';tctx.fillRect(0,0,W,H);
+function draw(dt){
+ // 산소가 부족할수록 시야 반경이 점점 좁아진다(터널 비전)
+ const vm=Math.min(1,0.42+o2*1.15);visR=VIS*vm;vinR=visR*0.62;
+ // ocean fills the whole view (zoomed in on the sea)
+ ctx.fillStyle='#a9ddd8';ctx.fillRect(0,0,W,H);
+ ctx.fillStyle='rgba(188,230,226,.45)';[[500,520,320],[340,560,170],[700,640,200]].forEach(c=>{const p=px(c[0],c[1]);ctx.beginPath();ctx.arc(p.x,p.y,c[2]*SC,0,6.283);ctx.fill()});
+ // continents — rounded merged outlines (no hex grid shown)
+ const RR=HR*SC*0.34;
+ ctx.fillStyle='rgba(60,80,90,.06)';for(const loop of MM.landloops){const pts=loop.map(p=>{const s=px(p[0],p[1]+6);return[s.x,s.y]});roundPath(ctx,pts,RR);ctx.fill()}
+ for(const loop of MM.landloops){const pts=loop.map(p=>{const s=px(p[0],p[1]);return[s.x,s.y]});roundPath(ctx,pts,RR);ctx.fillStyle='#f1ece2';ctx.fill();ctx.strokeStyle='#e0d8c8';ctx.lineWidth=2.2*SC;ctx.lineJoin='round';ctx.stroke()}
+ // region labels
+ ctx.fillStyle='rgba(140,150,140,.6)';ctx.font=`700 ${Math.max(10,13*SC)}px sans-serif`;ctx.textAlign='center';
+ for(const L of [['아메리카',238,560],['아시아',778,560],['유럽·아프리카',505,338],['오세아니아',505,892]]){const p=px(L[1],L[2]);ctx.fillText(L[0],p.x,p.y)}
+ // trails
+ tctx.globalCompositeOperation='destination-out';tctx.fillStyle='rgba(0,0,0,.03)';tctx.fillRect(0,0,W,H);
  tctx.globalCompositeOperation='source-over';tctx.lineCap='round';
- const all=liveOn?Object.values(liveShips):ships;
- for(const s of all){if(s.pp){tctx.strokeStyle='rgba(224,138,96,.5)';tctx.lineWidth=s.r*1.4;
-  tctx.beginPath();tctx.moveTo(s.pp.x,s.pp.y);tctx.lineTo(s.px,s.py);tctx.stroke();if(liveOn)s.pp=null}}
+ for(const s of ships){if(s.pp&&s.fade>0.3&&seeAlpha(s.dx,s.dy)>0.35){const p=px(s.dx,s.dy);tctx.strokeStyle='rgba(224,138,96,.42)';tctx.lineWidth=7*SC;tctx.beginPath();tctx.moveTo(s.pp.x,s.pp.y);tctx.lineTo(p.x,p.y);tctx.stroke()}}
  ctx.drawImage(tc,0,0,W,H);
- /* 고래 자취 — 네가 헤엄친 길 (self.in.frame: 너도 추적되는 한 줄의 데이터) */
- if(wpath.length>1){ctx.lineCap='round';ctx.lineJoin='round';
-  ctx.strokeStyle=dead?'rgba(30,98,168,.92)':'rgba(40,110,190,.38)';
-  ctx.lineWidth=dead?3.4:2;
-  if(dead){ctx.shadowColor='rgba(95,170,235,.95)';ctx.shadowBlur=11}
-  ctx.beginPath();ctx.moveTo(wpath[0][0],wpath[0][1]);
-  for(let i=1;i<wpath.length;i++)ctx.lineTo(wpath[i][0],wpath[i][1]);
-  ctx.stroke();ctx.shadowBlur=0;
-  if(dead){ctx.fillStyle='#1e62a8';ctx.beginPath();ctx.arc(wpath[0][0],wpath[0][1],5,0,6.283);ctx.fill();
-   ctx.fillStyle='rgba(78,90,74,.95)';ctx.font='11px sans-serif';ctx.fillText('시작',wpath[0][0]+8,wpath[0][1]+4);
-   if(deadPt){ctx.strokeStyle='#8c1d12';ctx.lineWidth=2.6;ctx.beginPath();
-    ctx.moveTo(deadPt[0]-7,deadPt[1]-7);ctx.lineTo(deadPt[0]+7,deadPt[1]+7);
-    ctx.moveTo(deadPt[0]+7,deadPt[1]-7);ctx.lineTo(deadPt[0]-7,deadPt[1]+7);ctx.stroke()}}}
- for(const k of krill){if(k.amt<=0)continue;
-  ctx.fillStyle='rgba(39,144,79,.18)';ctx.beginPath();ctx.arc(k.x,k.y,16*k.amt+6,0,6.283);ctx.fill();
-  ctx.fillStyle='#27904f';
-  for(let i=0;i<6;i++){if(i/6>k.amt)break;const a=k.seed+i*2.1,r=4+(i%3)*4;
-   ctx.beginPath();ctx.arc(k.x+Math.cos(a)*r,k.y+Math.sin(a)*r,2.1,0,6.283);ctx.fill()}}
- ctx.font='10px sans-serif';
- for(const s of all){ctx.fillStyle='#8c1d12';ctx.beginPath();ctx.arc(s.px,s.py,s.r,0,6.283);ctx.fill();
-  if(MAP.labels||liveOn){const nm=liveOn?(s.name||''):s.n;
-   if(nm){ctx.fillStyle='rgba(90,70,64,.85)';ctx.fillText(nm,s.px+s.r+4,s.py-4)}}}
- if(!dead&&wh){const surf=breath>0.7;
-  ctx.save();ctx.translate(wh.x,wh.y);ctx.rotate(wh.ang);
-  if(surf){ctx.strokeStyle='rgba(95,196,232,.7)';ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(0,0,20,0,6.283);ctx.stroke()}
-  ctx.fillStyle=surf?'#5fc4e8':'#1e62a8';
-  ctx.beginPath();ctx.ellipse(0,0,16,8.5,0,0,6.283);ctx.fill();
-  ctx.beginPath();ctx.moveTo(-13,0);ctx.lineTo(-24,-7);ctx.lineTo(-24,7);ctx.closePath();ctx.fill();
-  if(surf){ctx.fillStyle='rgba(255,255,255,.85)';ctx.beginPath();ctx.arc(4,-6,2,0,6.283);ctx.fill()}
-  ctx.restore()}
- for(let i=parts.length-1;i>=0;i--){const p=parts[i];p.l-=dt;
-  if(p.l<=0){parts.splice(i,1);continue}
-  p.x+=p.vx*dt;p.y+=p.vy*dt;p.vx*=0.96;p.vy*=0.96;
-  ctx.fillStyle=`rgba(120,200,255,${p.l})`;ctx.beginPath();ctx.arc(p.x,p.y,2.2,0,6.283);ctx.fill()}
+ // ports + name
+ ctx.textAlign='center';
+ for(const pt of MM.ports){const p=px(pt.x,pt.y),s=27*SC;
+  rr(ctx,p.x-s/2+2*SC,p.y-s/2+3*SC,s,s,8*SC);ctx.fillStyle='rgba(60,80,90,.18)';ctx.fill();
+  rr(ctx,p.x-s/2,p.y-s/2,s,s,8*SC);ctx.fillStyle=COL[pt.c];ctx.fill();
+  drawAnchor(p.x,p.y,s*0.66);
+  ctx.fillStyle='rgba(70,84,92,.95)';ctx.font=`700 ${Math.max(7,9*SC)}px sans-serif`;ctx.textAlign='center';ctx.fillText(pt.name,p.x,p.y-s/2-5*SC)}
+ // krill
+ for(const k of krill){if(k.amt<=0)continue;const g=k.grow==null?1:k.grow*k.grow*(3-2*k.grow),f=k.amt*g,p=px(k.x,k.y);
+  ctx.fillStyle='rgba(70,184,122,.16)';ctx.beginPath();ctx.arc(p.x,p.y,(24*f+8)*SC,0,6.283);ctx.fill();
+  ctx.fillStyle='#46b87a';for(let i=0;i<6;i++){if(i/6>=f)break;const a=k.seed+i*1.2,r=(5+(i%3)*5)*SC;ctx.beginPath();ctx.arc(p.x+Math.cos(a)*r,p.y+Math.sin(a)*r,3*SC,0,6.283);ctx.fill()}}
+ // ships + name labels
+ for(const s of ships){const fa=(s.fade==null?1:s.fade)*seeAlpha(s.dx,s.dy);if(fa<=0.02)continue;const p=px(s.dx,s.dy),w=20*SC,h=15*SC;ctx.globalAlpha=fa;
+  ctx.save();ctx.translate(p.x,p.y+4*SC);rr(ctx,-w/2,-h/2,w,h,5*SC);ctx.fillStyle='rgba(60,80,90,.13)';ctx.fill();ctx.restore();
+  ctx.save();ctx.translate(p.x,p.y);ctx.rotate(s.ang);rr(ctx,-w/2,-h*0.42,w,h*0.84,4*SC);ctx.fillStyle='#e0544a';ctx.fill();
+  ctx.fillStyle='rgba(255,255,255,.85)';rr(ctx,w*0.1,-h*0.2,w*0.26,h*0.4,2*SC);ctx.fill();ctx.restore();
+  if(SC>0.22&&fa>0.5){ctx.font=`600 ${Math.max(7,8.5*SC)}px sans-serif`;ctx.textAlign='center';
+   ctx.lineWidth=3*SC;ctx.strokeStyle='rgba(238,241,240,.85)';ctx.strokeText(s.n,p.x,p.y-h/2-5*SC);
+   ctx.fillStyle='rgba(120,80,72,.92)';ctx.fillText(s.n,p.x,p.y-h/2-5*SC)}
+  ctx.globalAlpha=1}
+ // whale
+ if(!dead&&wh){const w=px(wh.x,wh.y);drawWhale(w.x,w.y,wh.ang,breath,wphase,19*SC,wh.wag||0)}
+ // blow particles
+ for(let i=parts.length-1;i>=0;i--){const pa=parts[i];pa.l-=dt;if(pa.l<=0){parts.splice(i,1);continue}
+  pa.x+=pa.vx*dt;pa.y+=pa.vy*dt;pa.vx*=0.95;pa.vy*=0.95;const p=px(pa.x,pa.y);ctx.fillStyle=`rgba(120,200,255,${pa.l})`;ctx.beginPath();ctx.arc(p.x,p.y,2.6*SC,0,6.283);ctx.fill()}
 }
-function die(r){dead=true;deadPt=[wh.x,wh.y];
- const d=gameDays((performance.now()-t0)/1000);
- let R=recs();R.push({d,b:cnB,k:cnK,t:Date.now()});R.sort((a,b)=>b.d-a.d);R=R.slice(0,5);
- try{localStorage.setItem('whale_rec_'+MAP.key,JSON.stringify(R))}catch(e){}
+function die(r){dead=true;const d=gameDays();let R=recs();R.push({d,b:cnB,k:cnK});R.sort((a,b)=>b.d-a.d);R=R.slice(0,5);
+ try{localStorage.setItem('mm2_rec',JSON.stringify(R))}catch(e){}
  const rank=R.findIndex(x=>Math.abs(x.d-d)<1e-9)+1;
- $('oh').textContent={'충돌':'선박과 충돌했다','질식':'숨이 다했다','굶주림':'크릴에 닿지 못했다'}[r];
- $('op').innerHTML=`버틴 항해 <b>${d.toFixed(1)}일</b>${rank===1?' — 🏆 신기록!':rank<=5?` — ${rank}위`:''}<br>살아 쉰 숨 <b>${cnB}번</b> · 먹은 크릴 <b>${cnK}덩이</b>`;
- $('rank').innerHTML='🏆 기록 ('+MAP.titleShort+')<br>'+R.map((x,i)=>`${i+1}. <b>${x.d.toFixed(1)}일</b> — 숨 ${x.b} · 크릴 ${x.k}`).join('<br>');
+ $('oh').textContent={'충돌':'화물선과 충돌했다','질식':'숨이 다했다','굶주림':'크릴에 닿지 못했다'}[r];
+ $('op').innerHTML=`버틴 항해 <b>${Math.floor(d)}일</b>${rank===1?' — 🏆 신기록!':rank<=5?` — ${rank}위`:''}<br>살아 쉰 숨 <b>${cnB}번</b> · 먹은 크릴 <b>${cnK}덩이</b>`;
+ $('rank').innerHTML='🏆 최고 기록<br>'+R.map((x,i)=>`${i+1}. <b>${Math.floor(x.d)}일</b> — 숨 ${x.b} · 크릴 ${x.k}`).join('<br>');
  $('over').style.display='flex'}
-applyMap();resize();reset();last=performance.now();requestAnimationFrame(frame);
+resize();reset();last=performance.now();requestAnimationFrame(frame);
 </script></body></html>
