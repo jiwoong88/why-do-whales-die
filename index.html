@@ -30,7 +30,7 @@ canvas{position:fixed;inset:0;display:block}
 #tctl .tb svg{width:26px;height:26px;fill:currentColor;stroke:none}
 #tctl .tb.on{color:#2f74b8}
 #tctl .tb:active{transform:scale(.9)}
-#lctl{bottom:118px;left:50%;transform:translateX(-50%);display:flex;flex-direction:row;gap:16px}
+#lctl{bottom:206px;left:50%;transform:translateX(-50%);display:flex;flex-direction:row;gap:18px}
 #lctl .btn{width:48px;height:48px}
 #lctl .badge span{position:absolute;right:-3px;bottom:-3px;background:#3f5560;color:#fff;font-size:11px;font-weight:700;
  width:21px;height:21px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 5px rgba(0,0,0,.2)}
@@ -39,7 +39,7 @@ canvas{position:fixed;inset:0;display:block}
 .g .gi{width:19px;height:19px;flex:none}
 .g .bar{flex:1;height:8px;background:rgba(255,255,255,.8);border-radius:6px;overflow:hidden;box-shadow:inset 0 1px 2px rgba(0,0,0,.05)}
 .g .bar i{display:block;height:100%;border-radius:6px;transition:width .15s}
-#o2 i{background:linear-gradient(90deg,#e0544a,#ef8a6f)}
+#o2 i{background:linear-gradient(90deg,#2f74b8,#6fc0ef)}
 #hg i{background:linear-gradient(90deg,#46b87a,#86d6a6)}
 #breathe{bottom:32px;right:24px;width:92px;height:92px;border-radius:50%;
  background:#fff;box-shadow:0 6px 20px rgba(60,80,90,.2);cursor:pointer;display:flex;flex-direction:column;
@@ -96,7 +96,7 @@ canvas{position:fixed;inset:0;display:block}
  <a id="realopen" href="https://www.marinetraffic.com/en/ais/home/centerx:-119.7/centery:34/zoom:8" target="_blank" rel="noopener">잘 안 보이면 실제 지도 열기 ↗</a>
 </div>
 <div class="ui" id="gauges">
- <div class="g"><svg class="gi" viewBox="0 0 24 24"><circle cx="12" cy="12.5" r="7.5" fill="#e0544a"/><circle cx="9.3" cy="9.6" r="2.3" fill="#fff" opacity=".75"/></svg><div class="bar" id="o2"><i></i></div></div>
+ <div class="g"><svg class="gi" viewBox="0 0 24 24"><circle cx="12" cy="12.5" r="7.5" fill="#3a93d6"/><circle cx="9.3" cy="9.4" r="2.6" fill="#fff" opacity=".85"/></svg><div class="bar" id="o2"><i></i></div></div>
  <div class="g"><svg class="gi" viewBox="0 0 24 24"><path d="M2.5 12c3.5-5 12-5 16 0-4 5-12.5 5-16 0z" fill="#46b87a"/><path d="M18 12l4-3.2v6.4z" fill="#46b87a"/><circle cx="8" cy="10.6" r="1.1" fill="#fff"/></svg><div class="bar" id="hg"><i></i></div></div>
 </div>
 <button class="ui" id="breathe"><span>숨쉬기</span><small>길게</small></button>
@@ -238,17 +238,19 @@ $('l_live').onclick=()=>{const fr=$('realframe');if(!fr.getAttribute('src'))fr.s
 $('realclose').onclick=()=>{$('real').style.opacity=0;$('real').style.pointerEvents='none';paused=false};
 $('info_close').onclick=()=>$('info').style.display='none';$('goagain').onclick=$('over').onclick=()=>{if(dead)reset()};
 const PORTINFO={'SHANGHAI':['세계 1위 컨테이너항 · 중국',170],'SINGAPORE':['세계 최대 환적 허브 · 싱가포르',150],'BUSAN':['한국 최대 항만 · 동북아 허브',85],'LOS ANGELES':['미국 서안 최대 컨테이너항',45],'NEW YORK':['미 동안 최대 항만',42],'ROTTERDAM':['유럽 최대 항만 · 네덜란드',95],'SUEZ':['수에즈 운하 · 아시아–유럽 최단 항로',50],'SYDNEY':['호주 동안 관문항',22],'MELBOURNE':['호주 최대 컨테이너항',28],'PANAMA':['파나마 운하 · 태평양–대서양 연결',36]};
+function showCard(html,ax,ay){const c=$('card');c.innerHTML=html;c.style.display='block';
+ const cw=Math.min(c.offsetWidth||186,W-16),ch=c.offsetHeight||60;
+ let x=Math.max(8,Math.min(W-cw-8,ax-cw/2)),y=ay+22;if(y+ch>H-8)y=ay-ch-18;
+ c.style.left=x+'px';c.style.top=y+'px';c.style.bottom='auto'}
 function inspect(sx,sy){
  let bp=null,pd2=34*34;for(const p of MM.ports){const q=px(p.x,p.y),d=(sx-q.x)**2+(sy-q.y)**2;if(d<pd2){pd2=d;bp=p}}
- if(bp){const inf=PORTINFO[bp.name]||['주요 항만',30];
-  $('card').innerHTML=`<b>⚓ ${bp.name}</b><br>${inf[0]}<br>하루 약 <b>${inf[1]}척</b> 입·출항 <span class="sub">(대략)</span>`;
-  $('card').style.display='block';return}
+ if(bp){const inf=PORTINFO[bp.name]||['주요 항만',30],q=px(bp.x,bp.y);
+  showCard(`<b>⚓ ${bp.name}</b><br>${inf[0]}<br>하루 약 <b>${inf[1]}척</b> 입·출항 <span class="sub">(대략)</span>`,q.x,q.y+15);return}
  let best=null,bd=30;for(const s of ships){const p=px(s.dx,s.dy);const d=Math.hypot(sx-p.x,sy-p.y);if(d<bd){bd=d;best=s}}
  if(!best){$('card').style.display='none';return}const fl=flagOf(best.cs);
  const kw=encodeURIComponent(best.tk||best.n);
- const dest=best.ends?((best.dir||1)>0?best.ends[1]:best.ends[0]):best.dest;
- $('card').innerHTML=`<b>${best.n}</b><span class="cs">${best.cs}</span><br>${best.t} · ${best.kn}kn · 행선지 ${dest}<br>호출부호 ${best.cs} — 앞 '${best.cs.slice(0,2)}' = <b>${fl||'?'}</b> 선적<br><span class="sub">실제 운항 중인 선박입니다</span><br><a class="track" href="https://www.marinetraffic.com/en/ais/index/search/all?keyword=${kw}" target="_blank" rel="noopener">🔗 실시간 위치 보기 — MarineTraffic</a>`;
- $('card').style.display='block'}
+ const dest=best.ends?((best.dir||1)>0?best.ends[1]:best.ends[0]):best.dest,bsp=px(best.dx,best.dy);
+ showCard(`<b>${best.n}</b><span class="cs">${best.cs}</span><br>${best.t} · ${best.kn}kn · 행선지 ${dest}<br>호출부호 ${best.cs} — 앞 '${best.cs.slice(0,2)}' = <b>${fl||'?'}</b> 선적<br><span class="sub">실제 운항 중인 선박입니다</span><br><a class="track" href="https://www.marinetraffic.com/en/ais/index/search/all?keyword=${kw}" target="_blank" rel="noopener">🔗 실시간 위치 보기 — MarineTraffic</a>`,bsp.x,bsp.y+12)}
 
 function frame(now){requestAnimationFrame(frame);let dt=Math.min(0.05,(now-last)/1000);last=now;
  if(ts<1)ts=Math.min(1,ts+dt*1.6);const gdt=dt*ts*tscale;
@@ -303,7 +305,7 @@ function draw(dt){
  for(const loop of MM.landloops){const pts=loop.map(p=>{const s=px(p[0],p[1]);return[s.x,s.y]});roundPath(ctx,pts,RR);ctx.fillStyle='#f1ece2';ctx.fill();ctx.strokeStyle='#e0d8c8';ctx.lineWidth=2.2*SC;ctx.lineJoin='round';ctx.stroke()}
  // region labels
  ctx.fillStyle='rgba(140,150,140,.6)';ctx.font=`700 ${Math.max(10,13*SC)}px sans-serif`;ctx.textAlign='center';
- for(const L of [['아메리카',238,560],['아시아',778,560],['유럽·아프리카',505,338],['오세아니아',505,892]]){const p=px(L[1],L[2]);ctx.fillText(L[0],p.x,p.y)}
+ for(const L of [['아메리카',238,520],['아시아',778,560],['유럽·아프리카',505,300],['오세아니아',505,908]]){const p=px(L[1],L[2]);ctx.fillText(L[0],p.x,p.y)}
  // trails
  tctx.globalCompositeOperation='destination-out';tctx.fillStyle='rgba(0,0,0,.03)';tctx.fillRect(0,0,W,H);
  tctx.globalCompositeOperation='source-over';tctx.lineCap='round';
