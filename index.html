@@ -3,6 +3,18 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>고래와 화물선</title>
+<meta name="description" content="매년 약 2만 마리의 고래가 화물선에 치여 죽습니다. 당신은 대왕고래 — 실제 항로의 배를 피해 살아남으세요.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://gorae-hwamulseon.vercel.app">
+<meta property="og:title" content="고래와 화물선">
+<meta property="og:description" content="매년 약 2만 마리의 고래가 화물선에 치여 죽습니다. 당신은 대왕고래 — 실제 항로의 배를 피해 살아남으세요.">
+<meta property="og:image" content="https://gorae-hwamulseon.vercel.app/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="고래와 화물선">
+<meta name="twitter:description" content="실제 항로의 화물선을 피해 살아남는 대왕고래 생존 게임.">
+<meta name="twitter:image" content="https://gorae-hwamulseon.vercel.app/og.png">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{width:100%;height:100%;overflow:hidden;background:#eef1f0;
@@ -76,6 +88,8 @@ canvas{position:fixed;inset:0;display:block}
 #realbar b{color:#ff7a6b}
 #realclose{position:absolute;top:13px;left:13px;z-index:3;background:#fff;color:#3f5560;border:none;border-radius:22px;padding:9px 15px;font-weight:700;font-size:13px;cursor:pointer;box-shadow:0 3px 12px rgba(0,0,0,.4)}
 #realopen{position:absolute;bottom:14px;right:14px;z-index:3;color:#9fc2d0;font-size:11px;text-decoration:underline}
+#share{display:inline-block;margin-top:11px;background:#46b87a;color:#fff;border:none;border-radius:24px;padding:11px 24px;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(70,184,122,.32)}
+#share:active{transform:scale(.97)}
 .orglink{display:inline-block;margin-top:16px;color:#3a93d6;font-size:12px;font-weight:600;cursor:pointer;border-bottom:1px dashed #8fc0e6;padding-bottom:1px}
 .orglink:active{opacity:.6}
 #orgs{position:fixed;inset:0;z-index:40;background:rgba(233,241,240,.97);backdrop-filter:blur(5px);display:none;flex-direction:column;align-items:center;overflow-y:auto;padding:40px 18px 32px;text-align:center}
@@ -125,7 +139,7 @@ canvas{position:fixed;inset:0;display:block}
  <div class="close" id="info_close">시작</div>
  <span class="orglink" onclick="openOrgs()">🐋 고래를 지키는 사람들</span>
 </div>
-<div id="over" class="ui"><h1 id="oh"></h1><p id="op"></p><div id="rank"></div><div class="go" id="goagain">다시 잠수 — Enter</div><br><span class="orglink" onclick="openOrgs()">🐋 고래를 지키는 사람들</span></div>
+<div id="over" class="ui"><h1 id="oh"></h1><p id="op"></p><div id="rank"></div><div class="go" id="goagain">다시 잠수 — Enter</div><button id="share">📤 내 기록 공유하기</button><br><span class="orglink" onclick="openOrgs()">🐋 고래를 지키는 사람들</span></div>
 <div id="orgs">
  <h3>고래를 지키는 사람들</h3>
  <p class="lead">이 게임은 실화입니다. 해마다 전 세계에서 약 2만 마리의 고래가 화물선과 충돌해 죽습니다.<br>이 문제를 직접 다루는 사람들을 모았습니다.</p>
@@ -272,7 +286,15 @@ $('l_live').onclick=openLive;
 $('realclose').onclick=()=>{$('real').style.opacity=0;$('real').style.pointerEvents='none';paused=false};
 function openOrgs(){$('orgs').style.display='flex';$('orgs').scrollTop=0;paused=true}
 $('orgsclose').onclick=()=>{$('orgs').style.display='none';paused=false};
-$('info_close').onclick=()=>$('info').style.display='none';$('goagain').onclick=$('over').onclick=()=>{if(dead)reset()};
+let lastDays=0;
+function shareScore(){const url='https://gorae-hwamulseon.vercel.app';
+ const txt=`고래와 화물선에서 ${lastDays}일 살아남았어요 🐋 화물선을 피해 더 버틸 수 있나요?`;
+ if(navigator.share){navigator.share({title:'고래와 화물선',text:txt,url}).catch(()=>{});return}
+ const full=txt+'\n'+url;
+ if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(full).then(()=>{const b=$('share'),o=b.textContent;b.textContent='✅ 링크 복사됨!';setTimeout(()=>b.textContent=o,1800)}).catch(()=>prompt('복사해서 공유하세요:',full))}
+ else prompt('복사해서 공유하세요:',full)}
+$('share').onclick=shareScore;
+$('info_close').onclick=()=>$('info').style.display='none';$('goagain').onclick=()=>{if(dead)reset()};$('over').onclick=(e)=>{if(dead&&e.target===$('over'))reset()};
 const PORTINFO={'SHANGHAI':['세계 1위 컨테이너항 · 중국',170],'SINGAPORE':['세계 최대 환적 허브 · 싱가포르',150],'BUSAN':['한국 최대 항만 · 동북아 허브',85],'LOS ANGELES':['미국 서안 최대 컨테이너항',45],'NEW YORK':['미 동안 최대 항만',42],'ROTTERDAM':['유럽 최대 항만 · 네덜란드',95],'SUEZ':['수에즈 운하 · 아시아–유럽 최단 항로',50],'SYDNEY':['호주 동안 관문항',22],'MELBOURNE':['호주 최대 컨테이너항',28],'PANAMA':['파나마 운하 · 태평양–대서양 연결',36]};
 function showCard(html,ax,ay){const c=$('card');c.innerHTML=html;c.style.display='block';
  const cw=Math.min(c.offsetWidth||186,W-16),ch=c.offsetHeight||60;
@@ -378,7 +400,7 @@ function draw(dt){
  for(let i=parts.length-1;i>=0;i--){const pa=parts[i];pa.l-=dt;if(pa.l<=0){parts.splice(i,1);continue}
   pa.x+=pa.vx*dt;pa.y+=pa.vy*dt;pa.vx*=0.95;pa.vy*=0.95;const p=px(pa.x,pa.y);ctx.fillStyle=`rgba(120,200,255,${pa.l})`;ctx.beginPath();ctx.arc(p.x,p.y,2.6*SC,0,6.283);ctx.fill()}
 }
-function die(r){dead=true;const d=gameDays();let R=recs();R.push({d,b:cnB,k:cnK});R.sort((a,b)=>b.d-a.d);R=R.slice(0,5);
+function die(r){dead=true;const d=gameDays();lastDays=Math.floor(d);let R=recs();R.push({d,b:cnB,k:cnK});R.sort((a,b)=>b.d-a.d);R=R.slice(0,5);
  try{localStorage.setItem('mm2_rec',JSON.stringify(R))}catch(e){}
  const rank=R.findIndex(x=>Math.abs(x.d-d)<1e-9)+1;
  $('oh').textContent={'충돌':'화물선과 충돌했다','질식':'숨이 다했다','굶주림':'크릴에 닿지 못했다'}[r];
