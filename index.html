@@ -34,10 +34,10 @@ canvas{position:fixed;inset:0;display:block}
 #lctl .btn{width:48px;height:48px}
 #lctl .badge span{position:absolute;right:-3px;bottom:-3px;background:#3f5560;color:#fff;font-size:11px;font-weight:700;
  width:21px;height:21px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 5px rgba(0,0,0,.2)}
-#gauges{left:16px;top:60px;width:150px}
-.g{margin-bottom:11px}
-.g label{font-size:11px;font-weight:600;color:#8a979d;display:block;margin-bottom:4px}
-.g .bar{height:8px;background:rgba(255,255,255,.85);border-radius:6px;overflow:hidden;box-shadow:inset 0 1px 2px rgba(0,0,0,.05)}
+#gauges{left:14px;top:56px;width:116px}
+.g{display:flex;align-items:center;gap:7px;margin-bottom:7px}
+.g .gi{width:19px;height:19px;flex:none}
+.g .bar{flex:1;height:8px;background:rgba(255,255,255,.8);border-radius:6px;overflow:hidden;box-shadow:inset 0 1px 2px rgba(0,0,0,.05)}
 .g .bar i{display:block;height:100%;border-radius:6px;transition:width .15s}
 #o2 i{background:linear-gradient(90deg,#e0544a,#ef8a6f)}
 #hg i{background:linear-gradient(90deg,#46b87a,#86d6a6)}
@@ -55,10 +55,10 @@ canvas{position:fixed;inset:0;display:block}
 #hint{bottom:14px;left:50%;transform:translateX(-50%);font-size:11px;color:#a7b4ba;text-align:center;white-space:nowrap}
 #mode{top:18px;left:50%;transform:translateX(-50%);background:rgba(255,255,255,.8);border-radius:20px;
  padding:6px 16px;font-size:12.5px;font-weight:600;box-shadow:0 3px 10px rgba(60,80,90,.1)}
-#card{left:20px;bottom:260px;max-width:300px;background:#fff;border-radius:16px;padding:13px 16px;
- font-size:12.5px;line-height:1.6;box-shadow:0 8px 24px rgba(60,80,90,.18);display:none}
-#card b{font-size:14.5px;color:#3f5560}#card .cs{color:#e0544a;font-weight:700;margin-left:5px}#card .sub{color:#a7b4ba;font-size:11px}
-#card .track{display:inline-block;margin-top:10px;background:#2f74b8;color:#fff;padding:8px 13px;border-radius:11px;font-size:11.5px;font-weight:700;text-decoration:none;box-shadow:0 3px 10px rgba(47,116,184,.3)}
+#card{left:16px;bottom:230px;max-width:188px;background:#fff;border-radius:11px;padding:7px 10px;
+ font-size:9.5px;line-height:1.45;box-shadow:0 5px 16px rgba(60,80,90,.18);display:none}
+#card b{font-size:11px;color:#3f5560}#card .cs{color:#e0544a;font-weight:700;margin-left:4px;font-size:9px}#card .sub{color:#a7b4ba;font-size:8.5px}
+#card .track{display:inline-block;margin-top:6px;background:#2f74b8;color:#fff;padding:5px 9px;border-radius:8px;font-size:9px;font-weight:700;text-decoration:none}
 #card .track:active{transform:scale(.96)}
 #info,#over{inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:28px}
 #info{background:rgba(238,241,240,.96);z-index:20}#over{background:rgba(238,241,240,.94);z-index:25}
@@ -96,8 +96,8 @@ canvas{position:fixed;inset:0;display:block}
  <a id="realopen" href="https://www.marinetraffic.com/en/ais/home/centerx:-119.7/centery:34/zoom:8" target="_blank" rel="noopener">잘 안 보이면 실제 지도 열기 ↗</a>
 </div>
 <div class="ui" id="gauges">
- <div class="g" id="o2"><label>산소</label><div class="bar"><i></i></div></div>
- <div class="g" id="hg"><label>허기</label><div class="bar"><i></i></div></div>
+ <div class="g"><svg class="gi" viewBox="0 0 24 24"><circle cx="12" cy="12.5" r="7.5" fill="#e0544a"/><circle cx="9.3" cy="9.6" r="2.3" fill="#fff" opacity=".75"/></svg><div class="bar" id="o2"><i></i></div></div>
+ <div class="g"><svg class="gi" viewBox="0 0 24 24"><path d="M2.5 12c3.5-5 12-5 16 0-4 5-12.5 5-16 0z" fill="#46b87a"/><path d="M18 12l4-3.2v6.4z" fill="#46b87a"/><circle cx="8" cy="10.6" r="1.1" fill="#fff"/></svg><div class="bar" id="hg"><i></i></div></div>
 </div>
 <button class="ui" id="breathe"><span>숨쉬기</span><small>길게</small></button>
 <div id="pad"><div id="padknob"></div></div>
@@ -203,9 +203,10 @@ function prewarm(){/* 항로 미리 표시 안 함(난이도) */}
 function resize(){W=innerWidth;H=innerHeight;[cv,tc].forEach(c=>{c.width=W*dpr;c.height=H*dpr});
  cv.style.width=W+'px';cv.style.height=H+'px';ctx.setTransform(dpr,0,0,dpr,0,0);tctx.setTransform(dpr,0,0,dpr,0,0);
  const ob=MM.oceanbox,bw=ob[2]-ob[0],bh=ob[3]-ob[1];
- const topM=46,botM=Math.min(160,H*0.18),availH=Math.max(140,H-topM-botM);
- SC=Math.min(W/bw,availH/bh)*0.99;OX=W/2-(ob[0]+bw/2)*SC;
- OY=topM+(availH-bh*SC)*0.30-ob[1]*SC;  /* 위로 치우치게 — 하단 UI 공간 확보 */
+ const vy0=ob[1]+14,vy1=ob[3]-16,vbh=vy1-vy0;
+ const topM=54,botM=Math.min(150,H*0.165),availH=Math.max(150,H-topM-botM);
+ SC=Math.min(W/bw,availH/vbh)*0.99;OX=W/2-(ob[0]+bw/2)*SC;
+ OY=topM+(availH-vbh*SC)*0.42-vy0*SC;  /* 빈 위아래 잘라 꽉 채우고 살짝 아래로 */
  tctx.clearRect(0,0,W,H)}
 addEventListener('resize',resize);
 
@@ -215,11 +216,11 @@ const bb=$('breathe');
 bb.addEventListener('pointerdown',e=>{hold=true;bb.classList.add('on');e.preventDefault()});
 ['pointerup','pointercancel','pointerleave'].forEach(ev=>bb.addEventListener(ev,()=>{hold=false;bb.classList.remove('on')}));
 /* 방향패드(아날로그 썸스틱) — 키보드만큼 즉각 반응 */
-const pad=$('pad'),knob=$('padknob'),stick={x:0,y:0,active:false};
+const pad=$('pad'),knob=$('padknob'),stick={x:0,y:0,active:false,fresh:false};
 function padMove(e){const r=pad.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2,mx=r.width*0.36;
  let dx=e.clientX-cx,dy=e.clientY-cy;const d=Math.hypot(dx,dy);if(d>mx){dx=dx/d*mx;dy=dy/d*mx}
  stick.x=dx/mx;stick.y=dy/mx;knob.style.transform=`translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`}
-pad.addEventListener('pointerdown',e=>{pad.setPointerCapture(e.pointerId);stick.active=true;pad.classList.add('on');padMove(e);e.preventDefault()});
+pad.addEventListener('pointerdown',e=>{pad.setPointerCapture(e.pointerId);stick.active=true;stick.fresh=true;pad.classList.add('on');padMove(e);e.preventDefault()});
 pad.addEventListener('pointermove',e=>{if(stick.active)padMove(e)});
 ['pointerup','pointercancel','pointerleave'].forEach(ev=>pad.addEventListener(ev,()=>{stick.active=false;stick.x=0;stick.y=0;pad.classList.remove('on');knob.style.transform='translate(-50%,-50%)'}));
 cv.addEventListener('pointerdown',e=>{ptr={x:e.clientX,y:e.clientY};pd={x:e.clientX,y:e.clientY,t:performance.now()}});
@@ -237,7 +238,7 @@ const PORTINFO={'SHANGHAI':['세계 1위 컨테이너항 · 중국',170],'SINGAP
 function inspect(sx,sy){
  let bp=null,pd2=34*34;for(const p of MM.ports){const q=px(p.x,p.y),d=(sx-q.x)**2+(sy-q.y)**2;if(d<pd2){pd2=d;bp=p}}
  if(bp){const inf=PORTINFO[bp.name]||['주요 항만',30];
-  $('card').innerHTML=`<b>⚓ ${bp.name}</b><br>${inf[0]}<br>하루 평균 <b>약 ${inf[1]}척</b>이 드나듭니다<br><span class="sub">전 세계에서 매일 약 2만 척 이상의 화물선이 바다를 가로지릅니다 (대략치)</span>`;
+  $('card').innerHTML=`<b>⚓ ${bp.name}</b><br>${inf[0]}<br>하루 약 <b>${inf[1]}척</b> 입·출항 <span class="sub">(대략)</span>`;
   $('card').style.display='block';return}
  let best=null,bd=30;for(const s of ships){const p=px(s.dx,s.dy);const d=Math.hypot(sx-p.x,sy-p.y);if(d<bd){bd=d;best=s}}
  if(!best){$('card').style.display='none';return}const fl=flagOf(best.cs);
@@ -267,8 +268,9 @@ function frame(now){requestAnimationFrame(frame);let dt=Math.min(0.05,(now-last)
   /* 몸 각도는 속도와 무관하게 조타 방향으로 부드럽게 회전(저속에서도 잘 돌도록) */
   let hx=tx,hy=ty;if(!hx&&!hy){hx=wh.vx;hy=wh.vy}
   if(Math.hypot(hx,hy)>0.01){const ta=Math.atan2(hy,hx);
-   if((tx||ty)&&!wasMoving){wh.ang=ta}  /* 정지→재입력: 즉시 그 방향을 봄(샥) */
+   if((tx||ty)&&(stick.fresh||!wasMoving)){wh.ang=ta;stick.fresh=false}  /* 첫 터치/정지 후: 즉시 그 방향을 봄(샥) */
    else{let da=ta-wh.ang;while(da>Math.PI)da-=6.2832;while(da<-Math.PI)da+=6.2832;wh.ang+=da*Math.min(1,dt*12)}}
+  else stick.fresh=false;
   wphase+=dt*(3+sp*0.02);wh.wag=(wh.wag||0)+((Math.min(1,sp/(N*0.22)))-(wh.wag||0))*Math.min(1,dt*5);
   for(const k of krill){if(k.amt<=0){if(k.cd>0){k.cd-=dt;if(k.cd<=0)Object.assign(k,mkKrill())}continue}
    k.grow=Math.min(1,(k.grow||0)+dt*1.5);
