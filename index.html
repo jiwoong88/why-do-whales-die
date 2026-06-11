@@ -58,7 +58,7 @@ canvas{position:fixed;inset:0;display:block}
 #card{left:16px;bottom:230px;max-width:188px;background:rgba(255,255,255,.82);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);border-radius:11px;padding:7px 10px;
  font-size:9.5px;line-height:1.45;box-shadow:0 5px 16px rgba(60,80,90,.18);display:none}
 #card b{font-size:11px;color:#3f5560}#card .cs{color:#e0544a;font-weight:700;margin-left:4px;font-size:9px}#card .sub{color:#a7b4ba;font-size:8.5px}
-#card .track{display:inline-block;margin-top:6px;background:#2f74b8;color:#fff;padding:5px 9px;border-radius:8px;font-size:9px;font-weight:700;text-decoration:none}
+#card .track{display:inline-block;margin-top:6px;background:#2f74b8;color:#fff;padding:5px 9px;border-radius:8px;font-size:9px;font-weight:700;text-decoration:none;cursor:pointer}
 #card .track:active{transform:scale(.96)}
 #info,#over{inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:28px}
 #info{background:rgba(238,241,240,.96);z-index:20}#over{background:rgba(238,241,240,.94);z-index:25}
@@ -67,6 +67,15 @@ canvas{position:fixed;inset:0;display:block}
 #over h1{font-size:26px;font-weight:800;color:#3f5560;margin-bottom:10px}#over p{font-size:15px;line-height:1.9}
 #over #rank{margin-top:18px;font-size:13px;line-height:1.85;color:#7c8c93;background:#fff;border-radius:16px;padding:14px 26px;box-shadow:0 6px 18px rgba(60,80,90,.12)}#over #rank b{color:#2f74b8}
 #flash{position:fixed;inset:0;background:radial-gradient(circle at center,rgba(120,210,255,.45),transparent 65%);opacity:0;z-index:4;pointer-events:none;transition:opacity .3s}
+#l_live{position:relative;color:#e0544a}
+#l_live .dot{position:absolute;top:7px;right:7px;width:8px;height:8px;background:#e0544a;border-radius:50%;animation:lp 1.6s infinite}
+@keyframes lp{0%{box-shadow:0 0 0 0 rgba(224,84,74,.5)}100%{box-shadow:0 0 0 9px rgba(224,84,74,0)}}
+#real{position:fixed;inset:0;z-index:30;opacity:0;pointer-events:none;transition:opacity 1.5s ease;background:#0b1418;display:flex;flex-direction:column}
+#real iframe{flex:1;width:100%;border:0}
+#realbar{position:absolute;top:0;left:0;right:0;padding:18px 18px 26px;background:linear-gradient(#0b1418ee,#0b1418aa 60%,transparent);color:#eef4f5;z-index:2;text-align:center;font-size:14px;line-height:1.65;text-shadow:0 1px 4px #000}
+#realbar b{color:#ff7a6b}
+#realclose{position:absolute;top:13px;left:13px;z-index:3;background:#fff;color:#3f5560;border:none;border-radius:22px;padding:9px 15px;font-weight:700;font-size:13px;cursor:pointer;box-shadow:0 3px 12px rgba(0,0,0,.4)}
+#realopen{position:absolute;bottom:14px;right:14px;z-index:3;color:#9fc2d0;font-size:11px;text-decoration:underline}
 </style></head><body>
 <canvas id="cv"></canvas><div id="flash"></div>
 <button class="ui btn" id="back"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
@@ -78,6 +87,13 @@ canvas{position:fixed;inset:0;display:block}
 </div>
 <div class="ui" id="lctl">
  <button class="btn badge" id="l_restart" style="position:relative"><svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 1 2.3 5.6M4 12V7m0 5h5"/></svg><span id="krc">0</span></button>
+ <button class="btn" id="l_live" title="실제 바다 보기"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="2.6"/><path d="M5.6 5.6a9 9 0 0 0 0 12.8M18.4 5.6a9 9 0 0 1 0 12.8M8.7 8.7a4.7 4.7 0 0 0 0 6.6M15.3 8.7a4.7 4.7 0 0 1 0 6.6"/></svg><span class="dot"></span></button>
+</div>
+<div id="real">
+ <div id="realbar">지금 이 순간의 <b>실제 바다</b>입니다.<br>저 점 하나하나가 진짜 화물선 — 고래는 이 사이를 헤엄칩니다.</div>
+ <iframe id="realframe" title="실시간 선박 위치(VesselFinder)" allow="fullscreen"></iframe>
+ <button id="realclose">← 게임으로</button>
+ <a id="realopen" href="https://www.marinetraffic.com/en/ais/home/centerx:-119.7/centery:34/zoom:8" target="_blank" rel="noopener">잘 안 보이면 실제 지도 열기 ↗</a>
 </div>
 <div class="ui" id="gauges">
  <div class="g"><svg class="gi" id="gi_o2" style="cursor:pointer;pointer-events:auto" viewBox="0 0 24 24"><circle cx="12" cy="12.5" r="7.5" fill="#3a93d6"/><circle cx="9.3" cy="9.4" r="2.6" fill="#fff" opacity=".85"/></svg><div class="bar" id="o2"><i></i></div></div>
@@ -219,6 +235,10 @@ $('gi_hg').onclick=()=>{cardTarget=null;const r=$('gi_hg').getBoundingClientRect
 $('back').onclick=()=>$('info').style.display='flex';
 /* 실제 바다(라이브 AIS) — 디졸브로 전환해 심각성을 체감 */
 let paused=false;
+const VF='https://www.vesselfinder.com/aismap?zoom=2&lat=25&lon=-20&width=1280&height=900&names=true&clicktoact=false';
+function openLive(){const fr=$('realframe');if(!fr.getAttribute('src'))fr.setAttribute('src',VF);$('real').style.opacity=1;$('real').style.pointerEvents='auto';paused=true}
+$('l_live').onclick=openLive;
+$('realclose').onclick=()=>{$('real').style.opacity=0;$('real').style.pointerEvents='none';paused=false};
 $('info_close').onclick=()=>$('info').style.display='none';$('goagain').onclick=$('over').onclick=()=>{if(dead)reset()};
 const PORTINFO={'SHANGHAI':['세계 1위 컨테이너항 · 중국',170],'SINGAPORE':['세계 최대 환적 허브 · 싱가포르',150],'BUSAN':['한국 최대 항만 · 동북아 허브',85],'LOS ANGELES':['미국 서안 최대 컨테이너항',45],'NEW YORK':['미 동안 최대 항만',42],'ROTTERDAM':['유럽 최대 항만 · 네덜란드',95],'SUEZ':['수에즈 운하 · 아시아–유럽 최단 항로',50],'SYDNEY':['호주 동안 관문항',22],'MELBOURNE':['호주 최대 컨테이너항',28],'PANAMA':['파나마 운하 · 태평양–대서양 연결',36]};
 function showCard(html,ax,ay){const c=$('card');c.innerHTML=html;c.style.display='block';
@@ -233,7 +253,7 @@ function inspect(sx,sy){
  if(!best){$('card').style.display='none';cardTarget=null;return}const fl=flagOf(best.cs);cardTarget={ship:best};
  const kw=encodeURIComponent(best.tk||best.n);
  const dest=best.ends?((best.dir||1)>0?best.ends[1]:best.ends[0]):best.dest,bsp=px(best.dx,best.dy);
- showCard(`<b>${best.n}</b><span class="cs">${best.cs}</span><br>${best.t} · ${best.kn}kn · 행선지 ${dest}<br>호출부호 ${best.cs} — 앞 '${best.cs.slice(0,2)}' = <b>${fl||'?'}</b> 선적<br><span class="sub">실제 운항 중인 선박입니다</span><br><a class="track" href="https://www.marinetraffic.com/en/ais/index/search/all?keyword=${kw}" target="_blank" rel="noopener">🔗 실시간 위치 보기 — MarineTraffic</a>`,bsp.x,bsp.y+12)}
+ showCard(`<b>${best.n}</b><span class="cs">${best.cs}</span><br>${best.t} · ${best.kn}kn · 행선지 ${dest}<br>호출부호 ${best.cs} — 앞 '${best.cs.slice(0,2)}' = <b>${fl||'?'}</b> 선적<br><span class="sub">실제 운항 중인 선박입니다</span><br><span class="track" onclick="openLive()">🌊 실제 바다에서 보기 (라이브)</span>`,bsp.x,bsp.y+12)}
 
 function frame(now){requestAnimationFrame(frame);let dt=Math.min(0.05,(now-last)/1000);last=now;
  if(ts<1)ts=Math.min(1,ts+dt*1.6);const gdt=dt*ts*tscale;
