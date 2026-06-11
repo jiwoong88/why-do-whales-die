@@ -30,7 +30,7 @@ canvas{position:fixed;inset:0;display:block}
 #tctl .tb svg{width:26px;height:26px;fill:currentColor;stroke:none}
 #tctl .tb.on{color:#2f74b8}
 #tctl .tb:active{transform:scale(.9)}
-#lctl{bottom:206px;left:50%;transform:translateX(-50%);display:flex;flex-direction:row;gap:18px}
+#lctl{bottom:160px;left:50%;transform:translateX(-50%);display:flex;flex-direction:row;gap:18px}
 #lctl .btn{width:48px;height:48px}
 #lctl .badge span{position:absolute;right:-3px;bottom:-3px;background:#3f5560;color:#fff;font-size:11px;font-weight:700;
  width:21px;height:21px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 5px rgba(0,0,0,.2)}
@@ -96,8 +96,8 @@ canvas{position:fixed;inset:0;display:block}
  <a id="realopen" href="https://www.marinetraffic.com/en/ais/home/centerx:-119.7/centery:34/zoom:8" target="_blank" rel="noopener">잘 안 보이면 실제 지도 열기 ↗</a>
 </div>
 <div class="ui" id="gauges">
- <div class="g"><svg class="gi" viewBox="0 0 24 24"><circle cx="12" cy="12.5" r="7.5" fill="#3a93d6"/><circle cx="9.3" cy="9.4" r="2.6" fill="#fff" opacity=".85"/></svg><div class="bar" id="o2"><i></i></div></div>
- <div class="g"><svg class="gi" viewBox="0 0 24 24"><path d="M2.5 12c3.5-5 12-5 16 0-4 5-12.5 5-16 0z" fill="#46b87a"/><path d="M18 12l4-3.2v6.4z" fill="#46b87a"/><circle cx="8" cy="10.6" r="1.1" fill="#fff"/></svg><div class="bar" id="hg"><i></i></div></div>
+ <div class="g"><svg class="gi" id="gi_o2" style="cursor:pointer;pointer-events:auto" viewBox="0 0 24 24"><circle cx="12" cy="12.5" r="7.5" fill="#3a93d6"/><circle cx="9.3" cy="9.4" r="2.6" fill="#fff" opacity=".85"/></svg><div class="bar" id="o2"><i></i></div></div>
+ <div class="g"><svg class="gi" id="gi_hg" style="cursor:pointer;pointer-events:auto" viewBox="0 0 24 24"><path d="M2.5 12c3.5-5 12-5 16 0-4 5-12.5 5-16 0z" fill="#46b87a"/><path d="M18 12l4-3.2v6.4z" fill="#46b87a"/><circle cx="8" cy="10.6" r="1.1" fill="#fff"/></svg><div class="bar" id="hg"><i></i></div></div>
 </div>
 <button class="ui" id="breathe"><span>숨쉬기</span><small>길게</small></button>
 <div id="pad"><div id="padknob"></div></div>
@@ -230,6 +230,8 @@ cv.addEventListener('pointerdown',e=>{ptr={x:e.clientX,y:e.clientY};pd={x:e.clie
 cv.addEventListener('pointermove',e=>{if(ptr)ptr={x:e.clientX,y:e.clientY}});
 cv.addEventListener('pointerup',e=>{if(pd&&performance.now()-pd.t<260&&Math.hypot(e.clientX-pd.x,e.clientY-pd.y)<8)inspect(e.clientX,e.clientY);ptr=null;pd=null});
 $('l_restart').onclick=()=>reset();
+$('gi_o2').onclick=()=>{const r=$('gi_o2').getBoundingClientRect();showCard('<b>산소 (숨)</b><br>잠수하면 닳아요. 떨어지면 느려지다 질식 — 화물선이 다니는 <b>수면</b>으로 올라가 숨을 쉬세요.',r.left+r.width/2,r.bottom)};
+$('gi_hg').onclick=()=>{const r=$('gi_hg').getBoundingClientRect();showCard('<b>허기</b><br>시간이 지나면 배고파져요. 바다에 흩어진 <b style="color:#46b87a">크릴</b>을 먹어 채우세요.',r.left+r.width/2,r.bottom)};
 $('back').onclick=()=>$('info').style.display='flex';
 /* 실제 바다(라이브 AIS) — 디졸브로 전환해 심각성을 체감 */
 let paused=false;
@@ -264,18 +266,14 @@ function frame(now){requestAnimationFrame(frame);let dt=Math.min(0.05,(now-last)
   let tx=0,ty=0;if(keys.ArrowLeft||keys.KeyA)tx-=1;if(keys.ArrowRight||keys.KeyD)tx+=1;if(keys.ArrowUp||keys.KeyW)ty-=1;if(keys.ArrowDown||keys.KeyS)ty+=1;
   if(!tx&&!ty&&stick.active){const sm=Math.hypot(stick.x,stick.y);if(sm>0.18){tx=stick.x;ty=stick.y}}
   if(tx||ty){const m=Math.hypot(tx,ty);tx=tx/m*SPD;ty=ty/m*SPD}else if(ptr&&!stick.active){const d=toD(ptr.x,ptr.y),dx=d.x-wh.x,dy=d.y-wh.y,dd=Math.hypot(dx,dy);if(dd>14){tx=dx/dd*SPD;ty=dy/dd*SPD}}
-  const wasMoving=Math.hypot(wh.vx,wh.vy)>SPD*0.28;
   if(tx||ty){wh.vx=tx;wh.vy=ty}else{const f=Math.min(1,dt*7);wh.vx-=wh.vx*f;wh.vy-=wh.vy*f}  /* 브롤스타즈식: 스틱 방향 즉시 이동(관성 최소), 떼면 미끄러져 정지 */
   let nx=wh.x+wh.vx*gdt,ny=wh.y+wh.vy*gdt;
   const ob=MM.oceanbox;nx=Math.max(ob[0]+12,Math.min(ob[2]-12,nx));ny=Math.max(ob[1]+12,Math.min(ob[3]-12,ny));
   if(inSea(nx,ny)){wh.x=nx;wh.y=ny}else if(inSea(nx,wh.y))wh.x=nx;else if(inSea(wh.x,ny))wh.y=ny;
   const sp=Math.hypot(wh.vx,wh.vy);
-  /* 몸 각도는 속도와 무관하게 조타 방향으로 부드럽게 회전(저속에서도 잘 돌도록) */
-  let hx=tx,hy=ty;if(!hx&&!hy){hx=wh.vx;hy=wh.vy}
-  if(Math.hypot(hx,hy)>0.01){const ta=Math.atan2(hy,hx);
-   if((tx||ty)&&(stick.fresh||!wasMoving)){wh.ang=ta;stick.fresh=false}  /* 첫 터치/정지 후: 즉시 그 방향을 봄(샥) */
-   else{let da=ta-wh.ang;while(da>Math.PI)da-=6.2832;while(da<-Math.PI)da+=6.2832;wh.ang+=da*Math.min(1,dt*12)}}
-  else stick.fresh=false;
+  /* 머리는 항상 입력 방향을 즉시 향함(머리 지연 없음) */
+  if(tx||ty)wh.ang=Math.atan2(ty,tx);
+  else if(sp>0.5)wh.ang=Math.atan2(wh.vy,wh.vx);
   wphase+=dt*(3+sp*0.02);wh.wag=(wh.wag||0)+((Math.min(1,sp/(N*0.22)))-(wh.wag||0))*Math.min(1,dt*5);
   for(const k of krill){if(k.amt<=0){if(k.cd>0){k.cd-=dt;if(k.cd<=0)Object.assign(k,mkKrill())}continue}
    k.grow=Math.min(1,(k.grow||0)+dt*1.5);
