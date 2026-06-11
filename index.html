@@ -146,7 +146,7 @@ function drawAnchor(cx,cy,s){ctx.save();ctx.strokeStyle='#fff';ctx.lineWidth=Mat
 /* ── whale (top-down, parametric) ── */
 const PROF=[[0,.12],[.12,.34],[.25,.6],[.4,.86],[.55,1],[.68,.95],[.8,.72],[.9,.46],[.97,.22],[1,.03]];
 function wprof(t){for(let i=0;i<PROF.length-1;i++){const a=PROF[i],b=PROF[i+1];if(t<=b[0]){const f=(t-a[0])/(b[0]-a[0]+1e-9);return a[1]+(b[1]-a[1])*f}}return 0}
-const CD=[.62,.67,.72],CS=[.25,.30,.36],ED=[.52,.57,.62],ES=[.16,.20,.25];
+const CD=[.34,.50,.66],CS=[.15,.28,.47],ED=[.22,.36,.52],ES=[.08,.17,.31];  /* 잠수=또렷한 파랑, 숨쉴때=더 진한 파랑 */
 const lerpC=(a,b,f)=>'rgb('+a.map((v,i)=>Math.round((v+(b[i]-v)*f)*255)).join(',')+')';
 const chaik=(p,it)=>{for(let k=0;k<it;k++){let n=[];for(let i=0;i<p.length;i++){const a=p[i],b=p[(i+1)%p.length];n.push([a[0]*.75+b[0]*.25,a[1]*.75+b[1]*.25]);n.push([a[0]*.25+b[0]*.75,a[1]*.25+b[1]*.75])}p=n}return p};
 function drawWhale(sx,sy,ang,breath,phase,L,wag){
@@ -168,7 +168,7 @@ function drawWhale(sx,sy,ang,breath,phase,L,wag){
  for(const s of [1,-1]){const bx2=sp[0]+nx*sp[2]*s*.7,by2=sp[1]+ny*sp[2]*s*.7;
   let dx=nx*s*.7-tx/tl*.7,dy=ny*s*.7-ty/tl*.7;const dl=Math.hypot(dx,dy)+1e-9;dx/=dl;dy/=dl;const pp=[-dy,dx];
   pcs.push(chaik([[bx2+pp[0]*FWp,by2+pp[1]*FWp],[bx2+dx*FL,by2+dy*FL],[bx2-pp[0]*FWp,by2-pp[1]*FWp]],1))}
- const C=lerpC(CD,CS,breath),E=lerpC(ED,ES,breath),al=.72+.28*breath;
+ const C=lerpC(CD,CS,breath),E=lerpC(ED,ES,breath),al=.88+.12*breath;
  const fillP=(pts)=>{ctx.beginPath();pts.forEach((p,i)=>{const t=T(p);i?ctx.lineTo(t[0],t[1]):ctx.moveTo(t[0],t[1])});ctx.closePath()};
  if(breath>.5){const t=T([0,0]);ctx.beginPath();ctx.arc(t[0],t[1],L*.62,0,6.283);ctx.strokeStyle='rgba(95,196,232,.55)';ctx.lineWidth=2.2;ctx.stroke()}
  ctx.globalAlpha=al;
