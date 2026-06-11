@@ -55,7 +55,7 @@ canvas{position:fixed;inset:0;display:block}
 #hint{bottom:14px;left:50%;transform:translateX(-50%);font-size:11px;color:#a7b4ba;text-align:center;white-space:nowrap}
 #mode{top:18px;left:50%;transform:translateX(-50%);background:rgba(255,255,255,.8);border-radius:20px;
  padding:6px 16px;font-size:12.5px;font-weight:600;box-shadow:0 3px 10px rgba(60,80,90,.1)}
-#card{left:16px;bottom:230px;max-width:188px;background:#fff;border-radius:11px;padding:7px 10px;
+#card{left:16px;bottom:230px;max-width:188px;background:rgba(255,255,255,.82);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);border-radius:11px;padding:7px 10px;
  font-size:9.5px;line-height:1.45;box-shadow:0 5px 16px rgba(60,80,90,.18);display:none}
 #card b{font-size:11px;color:#3f5560}#card .cs{color:#e0544a;font-weight:700;margin-left:4px;font-size:9px}#card .sub{color:#a7b4ba;font-size:8.5px}
 #card .track{display:inline-block;margin-top:6px;background:#2f74b8;color:#fff;padding:5px 9px;border-radius:8px;font-size:9px;font-weight:700;text-decoration:none}
@@ -181,7 +181,7 @@ function drawWhale(sx,sy,ang,breath,phase,L,wag){
 }
 
 /* ── state ── */
-let ships=[],krill=[],parts=[],wh,o2,hg,cnB,cnK,gtime,dead;
+let ships=[],krill=[],parts=[],wh,o2,hg,cnB,cnK,gtime,dead,cardTarget=null;
 let hold=false,breath=0,canB=true,ts=1,tscale=1,ptr=null,pd=null,last=0,wphase=0;
 const keys={};const DAYRATE=0.2,SHIP_K=1.35;
 function seglen(a,b){return Math.hypot(b[0]-a[0],b[1]-a[1])}
@@ -230,8 +230,8 @@ cv.addEventListener('pointerdown',e=>{ptr={x:e.clientX,y:e.clientY};pd={x:e.clie
 cv.addEventListener('pointermove',e=>{if(ptr)ptr={x:e.clientX,y:e.clientY}});
 cv.addEventListener('pointerup',e=>{if(pd&&performance.now()-pd.t<260&&Math.hypot(e.clientX-pd.x,e.clientY-pd.y)<8)inspect(e.clientX,e.clientY);ptr=null;pd=null});
 $('l_restart').onclick=()=>reset();
-$('gi_o2').onclick=()=>{const r=$('gi_o2').getBoundingClientRect();showCard('<b>산소 (숨)</b><br>잠수하면 닳아요. 떨어지면 느려지다 질식 — 화물선이 다니는 <b>수면</b>으로 올라가 숨을 쉬세요.',r.left+r.width/2,r.bottom)};
-$('gi_hg').onclick=()=>{const r=$('gi_hg').getBoundingClientRect();showCard('<b>허기</b><br>시간이 지나면 배고파져요. 바다에 흩어진 <b style="color:#46b87a">크릴</b>을 먹어 채우세요.',r.left+r.width/2,r.bottom)};
+$('gi_o2').onclick=()=>{cardTarget=null;const r=$('gi_o2').getBoundingClientRect();showCard('<b>산소 (숨)</b><br>잠수하면 닳아요. 떨어지면 느려지다 질식 — 화물선이 다니는 <b>수면</b>으로 올라가 숨을 쉬세요.',r.left+r.width/2,r.bottom)};
+$('gi_hg').onclick=()=>{cardTarget=null;const r=$('gi_hg').getBoundingClientRect();showCard('<b>허기</b><br>시간이 지나면 배고파져요. 바다에 흩어진 <b style="color:#46b87a">크릴</b>을 먹어 채우세요.',r.left+r.width/2,r.bottom)};
 $('back').onclick=()=>$('info').style.display='flex';
 /* 실제 바다(라이브 AIS) — 디졸브로 전환해 심각성을 체감 */
 let paused=false;
@@ -246,10 +246,10 @@ function showCard(html,ax,ay){const c=$('card');c.innerHTML=html;c.style.display
  c.style.left=x+'px';c.style.top=y+'px';c.style.bottom='auto'}
 function inspect(sx,sy){
  let bp=null,pd2=34*34;for(const p of MM.ports){const q=px(p.x,p.y),d=(sx-q.x)**2+(sy-q.y)**2;if(d<pd2){pd2=d;bp=p}}
- if(bp){const inf=PORTINFO[bp.name]||['주요 항만',30],q=px(bp.x,bp.y);
+ if(bp){const inf=PORTINFO[bp.name]||['주요 항만',30],q=px(bp.x,bp.y);cardTarget={port:bp};
   showCard(`<b>⚓ ${bp.name}</b><br>${inf[0]}<br>하루 약 <b>${inf[1]}척</b> 입·출항 <span class="sub">(대략)</span>`,q.x,q.y+15);return}
  let best=null,bd=30;for(const s of ships){const p=px(s.dx,s.dy);const d=Math.hypot(sx-p.x,sy-p.y);if(d<bd){bd=d;best=s}}
- if(!best){$('card').style.display='none';return}const fl=flagOf(best.cs);
+ if(!best){$('card').style.display='none';cardTarget=null;return}const fl=flagOf(best.cs);cardTarget={ship:best};
  const kw=encodeURIComponent(best.tk||best.n);
  const dest=best.ends?((best.dir||1)>0?best.ends[1]:best.ends[0]):best.dest,bsp=px(best.dx,best.dy);
  showCard(`<b>${best.n}</b><span class="cs">${best.cs}</span><br>${best.t} · ${best.kn}kn · 행선지 ${dest}<br>호출부호 ${best.cs} — 앞 '${best.cs.slice(0,2)}' = <b>${fl||'?'}</b> 선적<br><span class="sub">실제 운항 중인 선박입니다</span><br><a class="track" href="https://www.marinetraffic.com/en/ais/index/search/all?keyword=${kw}" target="_blank" rel="noopener">🔗 실시간 위치 보기 — MarineTraffic</a>`,bsp.x,bsp.y+12)}
@@ -329,8 +329,15 @@ function draw(dt){
    ctx.lineWidth=3*SC;ctx.strokeStyle='rgba(238,241,240,.85)';ctx.strokeText(s.n,p.x,p.y-h/2-5*SC);
    ctx.fillStyle='rgba(120,80,72,.92)';ctx.fillText(s.n,p.x,p.y-h/2-5*SC)}
   ctx.globalAlpha=1}
- // whale
- if(!dead&&wh){const w=px(wh.x,wh.y);drawWhale(w.x,w.y,wh.ang,breath,wphase,19*SC,wh.wag||0)}
+ // 카드 → 대상(배/항구) 점선 리더선 (배가 움직이면 따라감)
+ if(cardTarget&&$('card').style.display==='block'){
+  let t=null;if(cardTarget.ship)t=px(cardTarget.ship.dx,cardTarget.ship.dy);else if(cardTarget.port)t=px(cardTarget.port.x,cardTarget.port.y);
+  if(t){const r=$('card').getBoundingClientRect();
+   const ex=Math.max(r.left+10,Math.min(r.right-10,t.x)),ey=(t.y<r.top)?r.top:(t.y>r.bottom?r.bottom:r.top);
+   ctx.save();ctx.setLineDash([4,3]);ctx.strokeStyle='rgba(70,84,92,.5)';ctx.lineWidth=1.4;
+   ctx.beginPath();ctx.moveTo(ex,ey);ctx.lineTo(t.x,t.y);ctx.stroke();ctx.setLineDash([]);
+   ctx.fillStyle='rgba(70,84,92,.65)';ctx.beginPath();ctx.arc(t.x,t.y,3.2,0,6.283);ctx.fill();
+   ctx.strokeStyle='rgba(255,255,255,.9)';ctx.lineWidth=1.4;ctx.beginPath();ctx.arc(t.x,t.y,3.2,0,6.283);ctx.stroke();ctx.restore()}}
  // blow particles
  for(let i=parts.length-1;i>=0;i--){const pa=parts[i];pa.l-=dt;if(pa.l<=0){parts.splice(i,1);continue}
   pa.x+=pa.vx*dt;pa.y+=pa.vy*dt;pa.vx*=0.95;pa.vy*=0.95;const p=px(pa.x,pa.y);ctx.fillStyle=`rgba(120,200,255,${pa.l})`;ctx.beginPath();ctx.arc(p.x,p.y,2.6*SC,0,6.283);ctx.fill()}
