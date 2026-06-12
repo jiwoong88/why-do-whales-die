@@ -72,12 +72,25 @@ canvas{position:fixed;inset:0;display:block}
 #card b{font-size:11px;color:#3f5560}#card .cs{color:#e0544a;font-weight:700;margin-left:4px;font-size:9px}#card .sub{color:#a7b4ba;font-size:8.5px}
 #card .track{display:inline-block;margin-top:6px;background:#2f74b8;color:#fff;padding:5px 9px;border-radius:8px;font-size:9px;font-weight:700;text-decoration:none;cursor:pointer}
 #card .track:active{transform:scale(.96)}
-#info,#over{inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:28px}
+#info,#over{inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:28px;overflow-y:auto}
 #info{background:rgba(238,241,240,.96);z-index:20}#over{background:rgba(238,241,240,.94);z-index:25}
 #info h2{font-size:22px;color:#3f5560;margin-bottom:16px}#info p{font-size:14px;line-height:2;max-width:340px}
 #info .close,#over .go{margin-top:22px;color:#fff;background:#2f74b8;padding:11px 28px;border-radius:24px;font-weight:700;cursor:pointer;box-shadow:0 6px 18px rgba(47,116,184,.3)}
 #over h1{font-size:26px;font-weight:800;color:#3f5560;margin-bottom:10px}#over p{font-size:15px;line-height:1.9}
 #over #rank{margin-top:18px;font-size:13px;line-height:1.85;color:#7c8c93;background:#fff;border-radius:16px;padding:14px 26px;box-shadow:0 6px 18px rgba(60,80,90,.12)}#over #rank b{color:#2f74b8}
+#lbBox{display:none;margin-top:18px;width:100%;max-width:320px}
+#lbForm{display:flex;gap:7px;margin-bottom:12px}
+#lbName{flex:1;min-width:0;border:1.5px solid #cdd6da;border-radius:12px;padding:9px 12px;font-size:14px;color:#3f5560;outline:none}
+#lbName:focus{border-color:#46b87a}
+#lbSubmit{background:#46b87a;color:#fff;border:none;border-radius:12px;padding:9px 16px;font-weight:700;font-size:13px;cursor:pointer;white-space:nowrap}
+#lbSubmit:disabled{opacity:.55}
+.lbttl{font-size:12px;font-weight:700;color:#5a6e76;margin-bottom:7px;text-align:left}
+#lbList{background:#fff;border-radius:16px;padding:8px 14px;box-shadow:0 6px 18px rgba(60,80,90,.12);text-align:left}
+.lbrow{display:flex;align-items:center;gap:9px;font-size:13px;line-height:1.95;color:#7c8c93}
+.lbrow span{width:18px;text-align:center;color:#aeb9bf;font-weight:700}
+.lbrow b{flex:1;min-width:0;color:#3f5560;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lbrow em{color:#2f74b8;font-style:normal;font-weight:700}
+.lbempty{font-size:12px;color:#9aa8ae;padding:6px 2px}
 #flash{position:fixed;inset:0;background:radial-gradient(circle at center,rgba(120,210,255,.45),transparent 65%);opacity:0;z-index:4;pointer-events:none;transition:opacity .3s}
 #l_live{position:relative;color:#e0544a}
 #l_live .dot{position:absolute;top:7px;right:7px;width:8px;height:8px;background:#e0544a;border-radius:50%;animation:lp 1.6s infinite}
@@ -139,7 +152,7 @@ canvas{position:fixed;inset:0;display:block}
  <div class="close" id="info_close">시작</div>
  <span class="orglink" onclick="openOrgs()">🐋 고래를 지키는 사람들</span>
 </div>
-<div id="over" class="ui"><h1 id="oh"></h1><p id="op"></p><div id="rank"></div><div class="go" id="goagain">다시 잠수 — Enter</div><button id="share">📤 내 기록 공유하기</button><br><span class="orglink" onclick="openOrgs()">🐋 고래를 지키는 사람들</span></div>
+<div id="over" class="ui"><h1 id="oh"></h1><p id="op"></p><div id="rank"></div><div id="lbBox"><div id="lbForm"><input id="lbName" maxlength="16" placeholder="이름 (랭킹에 표시)"><button id="lbSubmit">랭킹 등록</button></div><div class="lbttl">🌊 전 세계 랭킹</div><div id="lbList"></div></div><div class="go" id="goagain">다시 잠수 — Enter</div><button id="share">📤 내 기록 공유하기</button><br><span class="orglink" onclick="openOrgs()">🐋 고래를 지키는 사람들</span></div>
 <div id="orgs">
  <h3>고래를 지키는 사람들</h3>
  <p class="lead">이 게임은 실화입니다. 해마다 전 세계에서 약 2만 마리의 고래가 화물선과 충돌해 죽습니다.<br>이 문제를 직접 다루는 사람들을 모았습니다.</p>
@@ -287,6 +300,15 @@ $('realclose').onclick=()=>{$('real').style.opacity=0;$('real').style.pointerEve
 function openOrgs(){$('orgs').style.display='flex';$('orgs').scrollTop=0;paused=true}
 $('orgsclose').onclick=()=>{$('orgs').style.display='none';paused=false};
 let lastDays=0;
+/* ===== 전 세계 랭킹(Supabase) — 아래 두 값만 채우면 자동 활성화 ===== */
+const SUPA_URL='';/* 예: https://abcd1234.supabase.co */
+const SUPA_KEY='';/* anon public key (공개돼도 안전) */
+const LB_ON=()=>!!(SUPA_URL&&SUPA_KEY);
+function esc(s){return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+async function lbTop(){if(!LB_ON())return[];try{const r=await fetch(`${SUPA_URL}/rest/v1/scores?select=name,days&order=days.desc&limit=8`,{headers:{apikey:SUPA_KEY,Authorization:'Bearer '+SUPA_KEY}});return r.ok?await r.json():[]}catch(e){return[]}}
+async function lbSubmit(name,days,b,k){if(!LB_ON())return false;try{const r=await fetch(`${SUPA_URL}/rest/v1/scores`,{method:'POST',headers:{apikey:SUPA_KEY,Authorization:'Bearer '+SUPA_KEY,'Content-Type':'application/json',Prefer:'return=minimal'},body:JSON.stringify({name:(name||'').slice(0,16),days,breaths:b,krill:k})});return r.ok}catch(e){return false}}
+async function lbRender(){const el=$('lbList');if(!el)return;el.innerHTML='<div class="lbempty">불러오는 중…</div>';const rows=await lbTop();el.innerHTML=rows.length?rows.map((x,i)=>`<div class="lbrow"><span>${i+1}</span><b>${esc(x.name)}</b><em>${Math.floor(x.days)}일</em></div>`).join(''):'<div class="lbempty">아직 기록이 없어요 — 첫 주자가 되어보세요!</div>'}
+$('lbSubmit').onclick=async()=>{const nm=($('lbName').value||'').trim()||'익명 고래';try{localStorage.setItem('mm2_name',nm)}catch(e){}const btn=$('lbSubmit');btn.disabled=true;btn.textContent='등록 중…';const ok=await lbSubmit(nm,lastDays,cnB,cnK);btn.textContent=ok?'✅ 등록됨':'실패, 재시도';if(ok){$('lbForm').style.opacity=.55;lbRender()}else btn.disabled=false};
 function shareScore(){const url='https://gorae-hwamulseon.vercel.app';
  const txt=`고래와 화물선에서 ${lastDays}일 살아남았어요 🐋 화물선을 피해 더 버틸 수 있나요?`;
  if(navigator.share){navigator.share({title:'고래와 화물선',text:txt,url}).catch(()=>{});return}
@@ -406,6 +428,8 @@ function die(r){dead=true;const d=gameDays();lastDays=Math.floor(d);let R=recs()
  $('oh').textContent={'충돌':'화물선과 충돌했다','질식':'숨이 다했다','굶주림':'크릴에 닿지 못했다'}[r];
  $('op').innerHTML=`버틴 항해 <b>${Math.floor(d)}일</b>${rank===1?' — 🏆 신기록!':rank<=5?` — ${rank}위`:''}<br>살아 쉰 숨 <b>${cnB}번</b> · 먹은 크릴 <b>${cnK}덩이</b>`;
  $('rank').innerHTML='🏆 최고 기록<br>'+R.map((x,i)=>`${i+1}. <b>${Math.floor(x.d)}일</b> — 숨 ${x.b} · 크릴 ${x.k}`).join('<br>');
+ if(LB_ON()){$('rank').style.display='none';$('lbBox').style.display='block';const btn=$('lbSubmit');btn.disabled=false;btn.textContent='랭킹 등록';$('lbForm').style.opacity=1;try{$('lbName').value=localStorage.getItem('mm2_name')||''}catch(e){}lbRender()}
+ else{$('rank').style.display='';$('lbBox').style.display='none'}
  $('over').style.display='flex'}
 resize();reset();last=performance.now();requestAnimationFrame(frame);
 </script></body></html>
