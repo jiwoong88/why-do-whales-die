@@ -28,6 +28,7 @@ canvas{position:fixed;inset:0;display:block}
 .btn svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
 #back{top:18px;left:18px;width:42px;height:42px}
 #lang{top:24px;left:70px;background:rgba(255,255,255,.82);border:none;border-radius:16px;padding:7px 12px;font-size:12px;font-weight:800;color:#3f5560;cursor:pointer;box-shadow:0 3px 10px rgba(60,80,90,.15)}
+#snd{top:24px;left:120px;background:rgba(255,255,255,.82);border:none;border-radius:16px;padding:6px 10px;font-size:14px;line-height:1;cursor:pointer;box-shadow:0 3px 10px rgba(60,80,90,.15)}
 #topr{top:16px;right:18px;display:flex;align-items:center;gap:12px}
 #flag{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;width:48px;height:58px}
 #flag svg{position:absolute;inset:0;width:48px;height:58px;fill:#2f74b8;stroke:none;filter:drop-shadow(0 3px 6px rgba(47,116,184,.3))}
@@ -124,6 +125,7 @@ canvas{position:fixed;inset:0;display:block}
 <canvas id="cv"></canvas><div id="flash"></div>
 <button class="ui btn" id="back"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
 <button class="ui" id="lang">EN</button>
+<button class="ui" id="snd" title="배경음">🔊</button>
 <div class="ui" id="mode">잠수 중</div>
 <div class="ui" id="topr">
  <div id="flag"><svg viewBox="0 0 48 58"><path d="M4 4h40v50l-20-12-20 12z"/></svg><b id="day">0</b><s>DAY</s></div>
@@ -254,6 +256,17 @@ function applyI18N(){
 }
 function setLang(l){LANG=l;try{localStorage.setItem('mm2_lang',l)}catch(e){}applyI18N()}
 $('lang').onclick=()=>setLang(LANG==='ko'?'en':'ko');
+/* ===== 배경음: 3곡 랜덤 루프(한 곡 끝나면 다른 랜덤 곡) + 음소거 토글 ===== */
+const BGM=['bgm1.mp3','bgm2.mp3','bgm3.mp3'];let bgmA=null,muted=false,bgmStarted=false;
+try{muted=localStorage.getItem('mm2_muted')==='1'}catch(e){}
+function bgmNext(){if(muted)return;let i=Math.floor(Math.random()*BGM.length);if(!bgmA){bgmA=new Audio();bgmA.volume=0.45;bgmA.addEventListener('ended',bgmNext)}bgmA.src=BGM[i];bgmA.play().catch(()=>{})}
+function startBgm(){if(bgmStarted||muted)return;bgmStarted=true;bgmNext()}
+function updSnd(){$('snd').textContent=muted?'🔇':'🔊'}
+$('snd').onclick=()=>{muted=!muted;try{localStorage.setItem('mm2_muted',muted?'1':'0')}catch(e){}
+ if(muted){if(bgmA)bgmA.pause()}else{bgmStarted=true;if(bgmA){bgmA.play().catch(()=>{})}else bgmNext()}updSnd()};
+updSnd();
+window.addEventListener('pointerdown',startBgm,{once:true});
+window.addEventListener('keydown',startBgm,{once:true});
 let W,H,dpr=Math.min(window.devicePixelRatio||1,2),SC=1,OX=0,OY=0;
 const N=MM.N, HR=MM.hex.R, HOX=MM.hex.ox, HOY=MM.hex.oy, SQ3=Math.sqrt(3);
 const PRE={'H3':'파나마','3E':'파나마','3F':'파나마','5L':'라이베리아','9H':'몰타','9V':'싱가포르','OW':'덴마크','FL':'프랑스','BO':'중국','BV':'대만','D7':'대한민국','LA':'노르웨이','7J':'일본'};
