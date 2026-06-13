@@ -260,13 +260,26 @@ $('lang').onclick=()=>setLang(LANG==='ko'?'en':'ko');
 const BGM=['bgm1.mp3','bgm2.mp3','bgm3.mp3'];let bgmA=null,muted=false,bgmStarted=false;
 try{muted=localStorage.getItem('mm2_muted')==='1'}catch(e){}
 function bgmNext(){if(muted)return;let i=Math.floor(Math.random()*BGM.length);if(!bgmA){bgmA=new Audio();bgmA.volume=0.45;bgmA.addEventListener('ended',bgmNext)}bgmA.src=BGM[i];bgmA.play().catch(()=>{})}
-function startBgm(){if(bgmStarted||muted)return;bgmStarted=true;bgmNext()}
+function startBgm(){audioInit();audioResume();if(bgmStarted||muted)return;bgmStarted=true;bgmNext()}
 function updSnd(){$('snd').textContent=muted?'🔇':'🔊'}
 $('snd').onclick=()=>{muted=!muted;try{localStorage.setItem('mm2_muted',muted?'1':'0')}catch(e){}
- if(muted){if(bgmA)bgmA.pause()}else{bgmStarted=true;if(bgmA){bgmA.play().catch(()=>{})}else bgmNext()}updSnd()};
+ if(muted){if(bgmA)bgmA.pause()}else{audioInit();audioResume();bgmStarted=true;if(bgmA){bgmA.play().catch(()=>{})}else bgmNext()}updSnd()};
 updSnd();
 window.addEventListener('pointerdown',startBgm,{once:true});
 window.addEventListener('keydown',startBgm,{once:true});
+/* ===== 효과음(Web Audio 합성, 파일 0개) ===== */
+let AC=null,sfxM=null,nB=null,waveG=null,swimG=null,eatT=0,prevHold=false;
+function mkNoise(sec){const b=AC.createBuffer(1,Math.floor(AC.sampleRate*sec),AC.sampleRate),d=b.getChannelData(0);let l=0;for(let i=0;i<d.length;i++){const w=Math.random()*2-1;l=(l+0.02*w)/1.02;d[i]=l*3.2}return b}
+function loopNoise(type,freq,q){const s=AC.createBufferSource();s.buffer=nB;s.loop=true;const f=AC.createBiquadFilter();f.type=type;f.frequency.value=freq;if(q)f.Q.value=q;const g=AC.createGain();g.gain.value=0;s.connect(f);f.connect(g);g.connect(sfxM);s.start();return g}
+function audioInit(){if(AC)return;try{AC=new (window.AudioContext||window.webkitAudioContext)()}catch(e){return}
+ sfxM=AC.createGain();sfxM.gain.value=0.9;sfxM.connect(AC.destination);nB=mkNoise(2);
+ waveG=loopNoise('lowpass',440,0.7);swimG=loopNoise('bandpass',650,0.7)}
+function audioResume(){if(AC&&AC.state==='suspended')AC.resume()}
+function sfxAmbient(spT,wvT){if(!AC)return;const m=muted?0:1;if(waveG)waveG.gain.value=(0.018+0.05*wvT)*m;if(swimG)swimG.gain.value=0.06*spT*m}
+function sfxEat(){if(!AC||muted)return;const T=AC.currentTime,o=AC.createOscillator(),g=AC.createGain();o.type='sine';o.frequency.setValueAtTime(560,T);o.frequency.exponentialRampToValueAtTime(230,T+0.11);g.gain.setValueAtTime(0.0001,T);g.gain.exponentialRampToValueAtTime(0.09,T+0.012);g.gain.exponentialRampToValueAtTime(0.0001,T+0.15);o.connect(g);g.connect(sfxM);o.start(T);o.stop(T+0.17)}
+function sfxBreath(){if(!AC||muted)return;const T=AC.currentTime,s=AC.createBufferSource();s.buffer=nB;const f=AC.createBiquadFilter();f.type='lowpass';f.frequency.setValueAtTime(300,T);f.frequency.linearRampToValueAtTime(1100,T+0.5);const g=AC.createGain();g.gain.setValueAtTime(0.0001,T);g.gain.exponentialRampToValueAtTime(0.07,T+0.2);g.gain.exponentialRampToValueAtTime(0.0001,T+0.72);s.connect(f);f.connect(g);g.connect(sfxM);s.start(T);s.stop(T+0.75)}
+function sfxBlow(){if(!AC||muted)return;const T=AC.currentTime,s=AC.createBufferSource();s.buffer=nB;const f=AC.createBiquadFilter();f.type='bandpass';f.frequency.setValueAtTime(1600,T);f.frequency.exponentialRampToValueAtTime(550,T+0.4);f.Q.value=0.8;const g=AC.createGain();g.gain.setValueAtTime(0.0001,T);g.gain.exponentialRampToValueAtTime(0.16,T+0.03);g.gain.exponentialRampToValueAtTime(0.0001,T+0.46);s.connect(f);f.connect(g);g.connect(sfxM);s.start(T);s.stop(T+0.5)}
+function sfxHorn(){if(!AC||muted)return;const T=AC.currentTime,g=AC.createGain();g.connect(sfxM);g.gain.setValueAtTime(0.0001,T);g.gain.exponentialRampToValueAtTime(0.26,T+0.18);g.gain.setValueAtTime(0.26,T+1.2);g.gain.exponentialRampToValueAtTime(0.0001,T+1.95);const f=AC.createBiquadFilter();f.type='lowpass';f.frequency.value=430;f.connect(g);[[120,'sawtooth'],[121.7,'sawtooth'],[60,'sine']].forEach(([fr,ty])=>{const o=AC.createOscillator();o.type=ty;o.frequency.value=fr;o.connect(f);o.start(T);o.stop(T+2)})}
 let W,H,dpr=Math.min(window.devicePixelRatio||1,2),SC=1,OX=0,OY=0;
 const N=MM.N, HR=MM.hex.R, HOX=MM.hex.ox, HOY=MM.hex.oy, SQ3=Math.sqrt(3);
 const PRE={'H3':'파나마','3E':'파나마','3F':'파나마','5L':'라이베리아','9H':'몰타','9V':'싱가포르','OW':'덴마크','FL':'프랑스','BO':'중국','BV':'대만','D7':'대한민국','LA':'노르웨이','7J':'일본'};
@@ -348,7 +361,7 @@ const mkKrill=()=>{let b=null;for(let i=0;i<60;i++){const s=KS[(Math.random()*KS
 const gameDays=()=>gtime*DAYRATE;
 function recs(){try{return JSON.parse(localStorage.getItem('mm2_rec')||'[]')}catch(e){return[]}}
 function reset(){let s=MM.start.slice();if(!inSea(s[0],s[1])){const p=seaSpot(0);s=[p.x,p.y]}
- wh={x:s[0],y:s[1],vx:0,vy:0,ang:0};o2=1;hg=1;cnB=0;cnK=0;gtime=0;dead=false;breath=0;canB=true;ts=1;parts=[];wphase=0;
+ wh={x:s[0],y:s[1],vx:0,vy:0,ang:0};o2=1;hg=1;cnB=0;cnK=0;gtime=0;dead=false;breath=0;canB=true;ts=1;parts=[];wphase=0;eatT=0;prevHold=false;
  krill=[mkKrill(),mkKrill()];mkShips();ships.forEach(shipPos);
  $('over').style.display='none';$('card').style.display='none';tctx.clearRect(0,0,W,H);prewarm()}
 function prewarm(){/* 항로 미리 표시 안 함(난이도) */}
@@ -436,8 +449,9 @@ function frame(now){requestAnimationFrame(frame);let dt=Math.min(0.05,(now-last)
  if(ts<1)ts=Math.min(1,ts+dt*1.6);const gdt=dt*ts*tscale;
  if(!dead&&tscale>0&&!paused){gtime+=gdt;
   breath=Math.max(0,Math.min(1,breath+(hold?dt*2.4:-dt*2.4)));const surf=breath>0.7;
+  if(hold&&!prevHold)sfxBreath();prevHold=hold;
   if(surf){const was=o2;o2=Math.min(1,o2+dt/2.2);if(o2<0.6)canB=true;
-   if(was<1&&o2>=1&&canB){canB=false;cnB++;ts=0.25;$('flash').style.opacity=1;setTimeout(()=>$('flash').style.opacity=0,320);
+   if(was<1&&o2>=1&&canB){canB=false;cnB++;sfxBlow();ts=0.25;$('flash').style.opacity=1;setTimeout(()=>$('flash').style.opacity=0,320);
     for(let i=0;i<42;i++){const a=Math.random()*6.283,v=40+Math.random()*150;parts.push({x:wh.x,y:wh.y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,l:0.6+Math.random()*0.5})}}}
   else o2-=dt/24;
   hg-=dt/40;const slow=o2>=0.8?1:o2>=0.5?0.65:o2>=0.3?0.4:Math.max(0.12,o2/0.3*0.4),SPD=N*0.13*(surf?0.05:1)*slow;
@@ -455,18 +469,19 @@ function frame(now){requestAnimationFrame(frame);let dt=Math.min(0.05,(now-last)
   wphase+=dt*(3+sp*0.02);wh.wag=(wh.wag||0)+((Math.min(1,sp/(N*0.22)))-(wh.wag||0))*Math.min(1,dt*5);
   for(const k of krill){if(k.amt<=0){if(k.cd>0){k.cd-=dt;if(k.cd<=0)Object.assign(k,mkKrill())}continue}
    k.grow=Math.min(1,(k.grow||0)+dt*1.5);
-   if(Math.hypot(wh.x-k.x,wh.y-k.y)<26){k.amt-=dt*1.6;hg=Math.min(1,hg+dt*0.34);if(k.amt<=0){cnK++;k.cd=7+Math.random()*4}}}
+   if(Math.hypot(wh.x-k.x,wh.y-k.y)<26){k.amt-=dt*1.6;hg=Math.min(1,hg+dt*0.34);eatT-=dt;if(eatT<=0){sfxEat();eatT=0.16}if(k.amt<=0){cnK++;k.cd=7+Math.random()*4}}}
   for(const s of ships){const p0=px(s.dx,s.dy);s.pp={x:p0.x,y:p0.y};
    s.d+=(s.dir||1)*s.kn*SHIP_K*gdt;
    if(s.d>=s.tot){s.d=s.tot;s.dir=-1;s.pp=null}else if(s.d<=0){s.d=0;s.dir=1;s.pp=null}
    s.fade=Math.min(1,Math.min(s.d,s.tot-s.d)/Math.min(40,s.tot*0.18));shipPos(s)}
   const wr=surf?15:9;for(const s of ships){if(s.fade>0.3&&Math.hypot(wh.x-s.dx,wh.y-s.dy)<wr+8){die('충돌');break}}
+  let _nd=1e9;for(const s of ships){if(s.fade>0.2){const dd=Math.hypot(wh.x-s.dx,wh.y-s.dy);if(dd<_nd)_nd=dd}}sfxAmbient(Math.min(1,sp/(N*0.13)),Math.max(0,1-_nd/(N*0.22)));
   if(!dead){if(o2<=0)die('질식');else if(hg<=0)die('굶주림')}
   $('mode').textContent=surf?t('m_surf'):(o2<0.5?t('m_low'):t('m_dive'));
   $('day').textContent=Math.floor(gameDays());$('wd').textContent=WD[LANG][Math.floor(gameDays())%7];
   const cang=gameDays()*6.283;$('ch').style.transform=`translate(-50%,-100%) rotate(${cang}rad)`;$('cm').style.transform=`translate(-50%,-100%) rotate(${cang/12}rad)`;
   $('krc').textContent=cnK;document.querySelector('#o2 i').style.width=(o2*100)+'%';document.querySelector('#hg i').style.width=(hg*100)+'%';
- }
+ }else if(AC)sfxAmbient(0,0);
  draw(dt)}
 
 function draw(dt){
@@ -522,7 +537,7 @@ function draw(dt){
  for(let i=parts.length-1;i>=0;i--){const pa=parts[i];pa.l-=dt;if(pa.l<=0){parts.splice(i,1);continue}
   pa.x+=pa.vx*dt;pa.y+=pa.vy*dt;pa.vx*=0.95;pa.vy*=0.95;const p=px(pa.x,pa.y);ctx.fillStyle=`rgba(120,200,255,${pa.l})`;ctx.beginPath();ctx.arc(p.x,p.y,2.6*SC,0,6.283);ctx.fill()}
 }
-function die(r){dead=true;const d=gameDays();lastDays=Math.floor(d);let R=recs();R.push({d,b:cnB,k:cnK});R.sort((a,b)=>b.d-a.d);R=R.slice(0,5);
+function die(r){dead=true;sfxHorn();const d=gameDays();lastDays=Math.floor(d);let R=recs();R.push({d,b:cnB,k:cnK});R.sort((a,b)=>b.d-a.d);R=R.slice(0,5);
  try{localStorage.setItem('mm2_rec',JSON.stringify(R))}catch(e){}
  const rank=R.findIndex(x=>Math.abs(x.d-d)<1e-9)+1;
  $('oh').textContent={'충돌':t('d_hit'),'질식':t('d_air'),'굶주림':t('d_hunger')}[r];
