@@ -27,6 +27,7 @@ canvas{position:fixed;inset:0;display:block}
 .btn:active{transform:scale(.92)}
 .btn svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
 #back{top:18px;left:18px;width:42px;height:42px}
+#lang{top:24px;left:70px;background:rgba(255,255,255,.82);border:none;border-radius:16px;padding:7px 12px;font-size:12px;font-weight:800;color:#3f5560;cursor:pointer;box-shadow:0 3px 10px rgba(60,80,90,.15)}
 #topr{top:16px;right:18px;display:flex;align-items:center;gap:12px}
 #flag{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;width:48px;height:58px}
 #flag svg{position:absolute;inset:0;width:48px;height:58px;fill:#2f74b8;stroke:none;filter:drop-shadow(0 3px 6px rgba(47,116,184,.3))}
@@ -122,6 +123,7 @@ canvas{position:fixed;inset:0;display:block}
 </style></head><body>
 <canvas id="cv"></canvas><div id="flash"></div>
 <button class="ui btn" id="back"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
+<button class="ui" id="lang">EN</button>
 <div class="ui" id="mode">잠수 중</div>
 <div class="ui" id="topr">
  <div id="flag"><svg viewBox="0 0 48 58"><path d="M4 4h40v50l-20-12-20 12z"/></svg><b id="day">0</b><s>DAY</s></div>
@@ -173,6 +175,85 @@ const MM=/*MM_DATA*/{"N":1000.0,"hexR":46.0,"landloops":[[[-91.0,0.0],[-68.0,40.
 const cv=document.getElementById('cv'),ctx=cv.getContext('2d');
 const tc=document.createElement('canvas'),tctx=tc.getContext('2d');
 const $=id=>document.getElementById(id);
+/* ===================== i18n (KR/EN 자동 전환) ===================== */
+const L10N={ko:{
+ title:'왜 죽는 고래?', start:'시작', back:'← 게임으로', goagain:'다시 잠수 — Enter',
+ breathe:'숨쉬기', breathe_sub:'길게',
+ hint:'왼쪽 방향패드로 헤엄 · 오른쪽 숨쉬기(길게) · 화물선을 피해',
+ realbar:'지금 이 순간의 <b>실제 바다</b>입니다.<br>저 점 하나하나가 진짜 화물선 — 고래는 이 사이를 헤엄칩니다.',
+ realopen:'잘 안 보이면 실제 지도 열기 ↗', live_title:'실제 바다 보기',
+ info_p:'당신은 대왕고래입니다.<br>잠수하면 안전하지만 산소가 닳고,<br>숨을 쉬려면 화물선이 다니는 수면으로 올라와야 합니다.<br>흩어진 <b style="color:#46b87a">크릴</b>을 먹어 허기를 채우고,<br>실제 항로를 달리는 <b style="color:#e0544a">화물선</b>을 피해 오래 살아남으세요.<br><br><span style="color:#a7b4ba;font-size:12px">선박과의 충돌은 대왕고래의 가장 큰 사망 원인 중 하나 —<br>해마다 전 세계에서 약 2만 마리의 고래가 배에 치여 죽습니다.</span>',
+ orglink:'🐋 고래를 지키는 사람들',
+ lb_name_ph:'이름 (랭킹에 표시)', lb_submit:'랭킹 등록', lb_title:'🌊 전 세계 랭킹',
+ lb_loading:'불러오는 중…', lb_empty:'아직 기록이 없어요 — 첫 주자가 되어보세요!',
+ lb_submitting:'등록 중…', lb_done:'✅ 등록됨', lb_fail:'실패, 재시도', anon:'익명 고래',
+ share_btn:'📤 내 기록 공유하기', share_copied:'✅ 링크 복사됨!', share_prompt:'복사해서 공유하세요:',
+ orgs_h3:'고래를 지키는 사람들',
+ orgs_lead:'이 게임은 실화입니다. 해마다 전 세계에서 약 2만 마리의 고래가 화물선과 충돌해 죽습니다.<br>이 문제를 직접 다루는 사람들을 모았습니다.',
+ orgs_disc:'이 게임은 위 단체들과 후원·광고 관계가 전혀 없습니다.<br>그저 더 알고 싶은 분들을 위해 길을 모아둔 것뿐입니다.',
+ credit:'made by 지웅 · 다른 작업 보기 ›',
+ m_surf:'수면 — 숨 쉬는 중', m_low:'잠수 중 — 숨이 줄어 느려진다', m_dive:'잠수 중',
+ d_hit:'화물선과 충돌했다', d_air:'숨이 다했다', d_hunger:'크릴에 닿지 못했다',
+ best:'🏆 최고 기록', rec_new:' — 🏆 신기록!',
+ dest:'행선지', callsign:'호출부호', flagged:'선적', realship:'실제 운항 중인 선박입니다',
+ seelive:'🌊 실제 바다에서 보기 (라이브)', portmajor:'주요 항만',
+ o2tip:'<b>산소 (숨)</b><br>잠수하면 닳아요. 떨어지면 느려지다 질식 — 화물선이 다니는 <b>수면</b>으로 올라가 숨을 쉬세요.',
+ hgtip:'<b>허기</b><br>시간이 지나면 배고파져요. 바다에 흩어진 <b style="color:#46b87a">크릴</b>을 먹어 채우세요.'
+},en:{
+ title:'Why Whales Die', start:'Start', back:'← Back to game', goagain:'Dive again — Enter',
+ breathe:'Breathe', breathe_sub:'hold',
+ hint:'Left pad to swim · Right to breathe (hold) · Dodge the ships',
+ realbar:'This is the <b>real ocean</b>, right now.<br>Every dot is a real cargo ship — whales swim among them.',
+ realopen:'Not loading? Open the live map ↗', live_title:'See the real ocean',
+ info_p:'You are a blue whale.<br>Diving keeps you safe, but your oxygen drains;<br>to breathe you must surface — where the cargo ships run.<br>Eat scattered <b style="color:#46b87a">krill</b> to ease your hunger,<br>and dodge the <b style="color:#e0544a">cargo ships</b> on real shipping lanes to survive.<br><br><span style="color:#a7b4ba;font-size:12px">Ship strikes are one of the leading causes of blue whale death —<br>about 20,000 whales are killed by ships worldwide every year.</span>',
+ orglink:'🐋 People protecting whales',
+ lb_name_ph:'Name (shown on leaderboard)', lb_submit:'Submit score', lb_title:'🌊 Global ranking',
+ lb_loading:'Loading…', lb_empty:'No scores yet — be the first!',
+ lb_submitting:'Submitting…', lb_done:'✅ Submitted', lb_fail:'Failed, retry', anon:'Anonymous whale',
+ share_btn:'📤 Share my run', share_copied:'✅ Link copied!', share_prompt:'Copy and share:',
+ orgs_h3:'People protecting whales',
+ orgs_lead:'This game is based on truth. Every year ~20,000 whales worldwide die in collisions with cargo ships.<br>Here are the people working directly on it.',
+ orgs_disc:'This game has no sponsorship or advertising ties to any of these groups.<br>It is just a set of doors for those who want to know more.',
+ credit:'made by Jiwoong · see more work ›',
+ m_surf:'Surface — breathing', m_low:'Diving — low oxygen, slowing', m_dive:'Diving',
+ d_hit:'Struck by a cargo ship', d_air:'Out of breath', d_hunger:'Couldn\'t reach the krill',
+ best:'🏆 Best runs', rec_new:' — 🏆 New record!',
+ dest:'to', callsign:'Call sign', flagged:'flag', realship:'A real ship at sea right now',
+ seelive:'🌊 See it on the real ocean (live)', portmajor:'Major port',
+ o2tip:'<b>Oxygen (breath)</b><br>Drains while diving. Run out and you slow, then suffocate — surface (where the ships are) to breathe.',
+ hgtip:'<b>Hunger</b><br>You get hungry over time. Eat <b style="color:#46b87a">krill</b> scattered across the sea to refill.'
+}};
+const WD={ko:['일','월','화','수','목','금','토'],en:['Sun','Mon','Tue','Wed','Thu','Fri','Sat']};
+const CONT={ko:['아메리카','아시아','유럽·아프리카','오세아니아'],en:['Americas','Asia','Europe & Africa','Oceania']};
+const SHIPTYPE_EN={'원유운반선':'Crude oil tanker','컨테이너선':'Container ship','컨테이너선 (LNG)':'Container ship (LNG)','컨테이너선 (세계 최대급)':'Container ship (among the largest)','컨테이너선 (수에즈 좌초의 그 배)':'Container ship (the Suez-grounding one)'};
+const CTRY_EN={'파나마':'Panama','라이베리아':'Liberia','몰타':'Malta','싱가포르':'Singapore','덴마크':'Denmark','프랑스':'France','중국':'China','대만':'Taiwan','대한민국':'South Korea','노르웨이':'Norway','일본':'Japan'};
+const PORT_EN={'SHANGHAI':"World's #1 container port · China",'SINGAPORE':"World's largest transshipment hub · Singapore",'BUSAN':"Korea's largest port · NE Asia hub",'LOS ANGELES':'Largest container port on the US West Coast','NEW YORK':'Largest port on the US East Coast','ROTTERDAM':"Europe's largest port · Netherlands",'SUEZ':'Suez Canal · shortest Asia–Europe route','SYDNEY':"Australia's east-coast gateway port",'MELBOURNE':"Australia's largest container port",'PANAMA':'Panama Canal · links Pacific & Atlantic'};
+const ORG={ko:{name:['Whale Safe','핫핑크돌핀스','세계자연기금 <small>WWF Korea</small>','Whale and Dolphin Conservation <small>WDC</small>','Sea Shepherd'],tag:['선박 충돌 · 실시간 지도','국내 · 해양 보호','국내 · 해양 보전','국제 · 고래 보호','국제 · 직접 행동'],desc:['고래와 화물선의 위치를 실시간으로 추적하고, 선사별 감속 준수 성적표를 매깁니다. 이 게임의 실제 버전.','제주 남방큰돌고래 야생방류를 이끌어 온 한국의 해양환경단체.','참고래·상괭이 등 해양 생물과 서식지를 지키는 국제 환경단체의 한국본부.','전 세계 고래·돌고래 보호에 전념하는 대표 환경 자선단체.','바다 현장에서 직접 행동으로 해양 야생동물을 지켜온 단체.']},en:{name:['Whale Safe','Hot Pink Dolphins','WWF <small>Korea</small>','Whale and Dolphin Conservation <small>WDC</small>','Sea Shepherd'],tag:['Ship strikes · live map','Korea · marine protection','Korea · ocean conservation','Global · whale protection','Global · direct action'],desc:['Tracks whales and cargo ships in real time and grades shipping lines on slow-down compliance — the real version of this game.',"The Korean marine group behind the wild release of Jeju's bottlenose dolphins.",'The Korea office of the global conservation group protecting marine life like fin whales and finless porpoises.','A leading charity devoted to protecting whales and dolphins worldwide.','Defends marine wildlife through direct action on the water.']}};
+let LANG;try{LANG=localStorage.getItem('mm2_lang')}catch(e){}
+if(LANG!=='ko'&&LANG!=='en')LANG=(navigator.language||'').toLowerCase().indexOf('ko')===0?'ko':'en';
+const t=k=>{const v=(L10N[LANG]||L10N.ko)[k];return v==null?(L10N.ko[k]==null?k:L10N.ko[k]):v};
+const TR=(map,s)=>LANG==='en'?(map[s]||s):s;
+function applyI18N(){
+ document.title=t('title');
+ $('info_close').textContent=t('start');$('goagain').textContent=t('goagain');
+ $('orgsclose').textContent=t('back');$('realclose').textContent=t('back');
+ $('realopen').textContent=t('realopen');$('lbSubmit').textContent=t('lb_submit');
+ $('breathe').querySelector('span').textContent=t('breathe');$('breathe').querySelector('small').textContent=t('breathe_sub');
+ $('hint').textContent=t('hint');$('lbName').placeholder=t('lb_name_ph');$('l_live').title=t('live_title');
+ $('realbar').innerHTML=t('realbar');$('share').textContent=t('share_btn');
+ document.querySelector('#info h2').textContent=t('title');
+ document.querySelector('#info p').innerHTML=t('info_p');
+ document.querySelector('#orgs h3').textContent=t('orgs_h3');
+ document.querySelector('#orgs .lead').innerHTML=t('orgs_lead');
+ document.querySelector('#orgs .disc').innerHTML=t('orgs_disc');
+ document.querySelector('.lbttl').textContent=t('lb_title');
+ document.querySelector('.credit').textContent=t('credit');
+ document.querySelectorAll('.orglink').forEach(e=>e.textContent=t('orglink'));
+ const O=ORG[LANG];document.querySelectorAll('#orgs .org').forEach((c,i)=>{c.querySelector('.tag').textContent=O.tag[i];c.querySelector('b').innerHTML=O.name[i];c.querySelector('p').textContent=O.desc[i]});
+ $('lang').textContent=LANG==='ko'?'EN':'한';
+}
+function setLang(l){LANG=l;try{localStorage.setItem('mm2_lang',l)}catch(e){}applyI18N()}
+$('lang').onclick=()=>setLang(LANG==='ko'?'en':'ko');
 let W,H,dpr=Math.min(window.devicePixelRatio||1,2),SC=1,OX=0,OY=0;
 const N=MM.N, HR=MM.hex.R, HOX=MM.hex.ox, HOY=MM.hex.oy, SQ3=Math.sqrt(3);
 const PRE={'H3':'파나마','3E':'파나마','3F':'파나마','5L':'라이베리아','9H':'몰타','9V':'싱가포르','OW':'덴마크','FL':'프랑스','BO':'중국','BV':'대만','D7':'대한민국','LA':'노르웨이','7J':'일본'};
@@ -288,8 +369,8 @@ cv.addEventListener('pointerdown',e=>{ptr={x:e.clientX,y:e.clientY};pd={x:e.clie
 cv.addEventListener('pointermove',e=>{if(ptr)ptr={x:e.clientX,y:e.clientY}});
 cv.addEventListener('pointerup',e=>{if(pd&&performance.now()-pd.t<260&&Math.hypot(e.clientX-pd.x,e.clientY-pd.y)<8)inspect(e.clientX,e.clientY);ptr=null;pd=null});
 $('l_restart').onclick=()=>reset();
-$('gi_o2').onclick=()=>{cardTarget=null;const r=$('gi_o2').getBoundingClientRect();showCard('<b>산소 (숨)</b><br>잠수하면 닳아요. 떨어지면 느려지다 질식 — 화물선이 다니는 <b>수면</b>으로 올라가 숨을 쉬세요.',r.left+r.width/2,r.bottom)};
-$('gi_hg').onclick=()=>{cardTarget=null;const r=$('gi_hg').getBoundingClientRect();showCard('<b>허기</b><br>시간이 지나면 배고파져요. 바다에 흩어진 <b style="color:#46b87a">크릴</b>을 먹어 채우세요.',r.left+r.width/2,r.bottom)};
+$('gi_o2').onclick=()=>{cardTarget=null;const r=$('gi_o2').getBoundingClientRect();showCard(t('o2tip'),r.left+r.width/2,r.bottom)};
+$('gi_hg').onclick=()=>{cardTarget=null;const r=$('gi_hg').getBoundingClientRect();showCard(t('hgtip'),r.left+r.width/2,r.bottom)};
 $('back').onclick=()=>$('info').style.display='flex';
 /* 실제 바다(라이브 AIS) — 디졸브로 전환해 심각성을 체감 */
 let paused=false;
@@ -307,14 +388,14 @@ const LB_ON=()=>!!(SUPA_URL&&SUPA_KEY);
 function esc(s){return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
 async function lbTop(){if(!LB_ON())return[];try{const r=await fetch(`${SUPA_URL}/rest/v1/whale_scores?select=name,days&order=days.desc&limit=8`,{headers:{apikey:SUPA_KEY}});return r.ok?await r.json():[]}catch(e){return[]}}
 async function lbSubmit(name,days,b,k){if(!LB_ON())return false;try{const r=await fetch(`${SUPA_URL}/rest/v1/whale_scores`,{method:'POST',headers:{apikey:SUPA_KEY,'Content-Type':'application/json',Prefer:'return=minimal'},body:JSON.stringify({name:(name||'').slice(0,16),days,breaths:b,krill:k})});return r.ok}catch(e){return false}}
-async function lbRender(){const el=$('lbList');if(!el)return;el.innerHTML='<div class="lbempty">불러오는 중…</div>';const rows=await lbTop();el.innerHTML=rows.length?rows.map((x,i)=>`<div class="lbrow"><span>${i+1}</span><b>${esc(x.name)}</b><em>${Math.floor(x.days)}일</em></div>`).join(''):'<div class="lbempty">아직 기록이 없어요 — 첫 주자가 되어보세요!</div>'}
-$('lbSubmit').onclick=async()=>{const nm=($('lbName').value||'').trim()||'익명 고래';try{localStorage.setItem('mm2_name',nm)}catch(e){}const btn=$('lbSubmit');btn.disabled=true;btn.textContent='등록 중…';const ok=await lbSubmit(nm,lastDays,cnB,cnK);btn.textContent=ok?'✅ 등록됨':'실패, 재시도';if(ok){$('lbForm').style.opacity=.55;lbRender().catch(()=>{})}else btn.disabled=false};
+async function lbRender(){const el=$('lbList');if(!el)return;el.innerHTML=`<div class="lbempty">${t('lb_loading')}</div>`;const rows=await lbTop();const u=LANG==='en'?'d':'일';el.innerHTML=rows.length?rows.map((x,i)=>`<div class="lbrow"><span>${i+1}</span><b>${esc(x.name)}</b><em>${Math.floor(x.days)}${u}</em></div>`).join(''):`<div class="lbempty">${t('lb_empty')}</div>`}
+$('lbSubmit').onclick=async()=>{const nm=($('lbName').value||'').trim()||t('anon');try{localStorage.setItem('mm2_name',nm)}catch(e){}const btn=$('lbSubmit');btn.disabled=true;btn.textContent=t('lb_submitting');const ok=await lbSubmit(nm,lastDays,cnB,cnK);btn.textContent=ok?t('lb_done'):t('lb_fail');if(ok){$('lbForm').style.opacity=.55;lbRender().catch(()=>{})}else btn.disabled=false};
 function shareScore(){const url='https://gorae-hwamulseon.vercel.app';
- const txt=`「왜 죽는 고래?」에서 ${lastDays}일 살아남았어요 🐋 화물선을 피해 더 버틸 수 있나요?`;
- if(navigator.share){navigator.share({title:'왜 죽는 고래?',text:txt,url}).catch(()=>{});return}
+ const txt=LANG==='en'?`I survived ${lastDays} days in "Why Whales Die" 🐋 Can you dodge the cargo ships longer?`:`「왜 죽는 고래?」에서 ${lastDays}일 살아남았어요 🐋 화물선을 피해 더 버틸 수 있나요?`;
+ if(navigator.share){navigator.share({title:t('title'),text:txt,url}).catch(()=>{});return}
  const full=txt+'\n'+url;
- if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(full).then(()=>{const b=$('share'),o=b.textContent;b.textContent='✅ 링크 복사됨!';setTimeout(()=>b.textContent=o,1800)}).catch(()=>prompt('복사해서 공유하세요:',full))}
- else prompt('복사해서 공유하세요:',full)}
+ if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(full).then(()=>{const b=$('share'),o=b.textContent;b.textContent=t('share_copied');setTimeout(()=>b.textContent=o,1800)}).catch(()=>prompt(t('share_prompt'),full))}
+ else prompt(t('share_prompt'),full)}
 $('share').onclick=shareScore;
 $('info_close').onclick=()=>$('info').style.display='none';$('goagain').onclick=()=>{if(dead)reset()};$('over').onclick=(e)=>{if(dead&&e.target===$('over'))reset()};
 const PORTINFO={'SHANGHAI':['세계 1위 컨테이너항 · 중국',170],'SINGAPORE':['세계 최대 환적 허브 · 싱가포르',150],'BUSAN':['한국 최대 항만 · 동북아 허브',85],'LOS ANGELES':['미국 서안 최대 컨테이너항',45],'NEW YORK':['미 동안 최대 항만',42],'ROTTERDAM':['유럽 최대 항만 · 네덜란드',95],'SUEZ':['수에즈 운하 · 아시아–유럽 최단 항로',50],'SYDNEY':['호주 동안 관문항',22],'MELBOURNE':['호주 최대 컨테이너항',28],'PANAMA':['파나마 운하 · 태평양–대서양 연결',36]};
@@ -325,12 +406,18 @@ function showCard(html,ax,ay){const c=$('card');c.innerHTML=html;c.style.display
 function inspect(sx,sy){
  let bp=null,pd2=34*34;for(const p of MM.ports){const q=px(p.x,p.y),d=(sx-q.x)**2+(sy-q.y)**2;if(d<pd2){pd2=d;bp=p}}
  if(bp){const inf=PORTINFO[bp.name]||['주요 항만',30],q=px(bp.x,bp.y);cardTarget={port:bp};
-  showCard(`<b>⚓ ${bp.name}</b><br>${inf[0]}<br>하루 약 <b>${inf[1]}척</b> 입·출항 <span class="sub">(대략)</span>`,q.x,q.y+15);return}
+  const pdesc=LANG==='en'?(PORT_EN[bp.name]||t('portmajor')):inf[0];
+  const pline=LANG==='en'?`~<b>${inf[1]} ships</b>/day in & out <span class="sub">(approx.)</span>`:`하루 약 <b>${inf[1]}척</b> 입·출항 <span class="sub">(대략)</span>`;
+  showCard(`<b>⚓ ${bp.name}</b><br>${pdesc}<br>${pline}`,q.x,q.y+15);return}
  let best=null,bd=30;for(const s of ships){const p=px(s.dx,s.dy);const d=Math.hypot(sx-p.x,sy-p.y);if(d<bd){bd=d;best=s}}
  if(!best){$('card').style.display='none';cardTarget=null;return}const fl=flagOf(best.cs);cardTarget={ship:best};
  const kw=encodeURIComponent(best.tk||best.n);
  const dest=best.ends?((best.dir||1)>0?best.ends[1]:best.ends[0]):best.dest,bsp=px(best.dx,best.dy);
- showCard(`<b>${best.n}</b><span class="cs">${best.cs}</span><br>${best.t} · ${best.kn}kn · 행선지 ${dest}<br>호출부호 ${best.cs} — 앞 '${best.cs.slice(0,2)}' = <b>${fl||'?'}</b> 선적<br><span class="sub">실제 운항 중인 선박입니다</span><br><span class="track" onclick="openLive()">🌊 실제 바다에서 보기 (라이브)</span>`,bsp.x,bsp.y+12)}
+ const ty=TR(SHIPTYPE_EN,best.t),fc=fl?(LANG==='en'?(CTRY_EN[fl]||fl):fl):'?',pfx=best.cs.slice(0,2);
+ const cardHtml=LANG==='en'
+  ?`<b>${best.n}</b><span class="cs">${best.cs}</span><br>${ty} · ${best.kn}kn · to ${dest}<br>Call sign ${best.cs} — prefix '${pfx}' = flagged <b>${fc}</b><br><span class="sub">${t('realship')}</span><br><span class="track" onclick="openLive()">${t('seelive')}</span>`
+  :`<b>${best.n}</b><span class="cs">${best.cs}</span><br>${ty} · ${best.kn}kn · 행선지 ${dest}<br>호출부호 ${best.cs} — 앞 '${pfx}' = <b>${fc}</b> 선적<br><span class="sub">${t('realship')}</span><br><span class="track" onclick="openLive()">${t('seelive')}</span>`;
+ showCard(cardHtml,bsp.x,bsp.y+12)}
 
 function frame(now){requestAnimationFrame(frame);let dt=Math.min(0.05,(now-last)/1000);last=now;
  if(ts<1)ts=Math.min(1,ts+dt*1.6);const gdt=dt*ts*tscale;
@@ -362,8 +449,8 @@ function frame(now){requestAnimationFrame(frame);let dt=Math.min(0.05,(now-last)
    s.fade=Math.min(1,Math.min(s.d,s.tot-s.d)/Math.min(40,s.tot*0.18));shipPos(s)}
   const wr=surf?15:9;for(const s of ships){if(s.fade>0.3&&Math.hypot(wh.x-s.dx,wh.y-s.dy)<wr+8){die('충돌');break}}
   if(!dead){if(o2<=0)die('질식');else if(hg<=0)die('굶주림')}
-  $('mode').textContent=surf?'수면 — 숨 쉬는 중':(o2<0.5?'잠수 중 — 숨이 줄어 느려진다':'잠수 중');
-  $('day').textContent=Math.floor(gameDays());$('wd').textContent='일월화수목금토'[Math.floor(gameDays())%7];
+  $('mode').textContent=surf?t('m_surf'):(o2<0.5?t('m_low'):t('m_dive'));
+  $('day').textContent=Math.floor(gameDays());$('wd').textContent=WD[LANG][Math.floor(gameDays())%7];
   const cang=gameDays()*6.283;$('ch').style.transform=`translate(-50%,-100%) rotate(${cang}rad)`;$('cm').style.transform=`translate(-50%,-100%) rotate(${cang/12}rad)`;
   $('krc').textContent=cnK;document.querySelector('#o2 i').style.width=(o2*100)+'%';document.querySelector('#hg i').style.width=(hg*100)+'%';
  }
@@ -381,7 +468,7 @@ function draw(dt){
  for(const loop of MM.landloops){const pts=loop.map(p=>{const s=px(p[0],p[1]);return[s.x,s.y]});roundPath(ctx,pts,RR);ctx.fillStyle='#f1ece2';ctx.fill();ctx.strokeStyle='#e0d8c8';ctx.lineWidth=2.2*SC;ctx.lineJoin='round';ctx.stroke()}
  // region labels
  ctx.fillStyle='rgba(140,150,140,.6)';ctx.font=`700 ${Math.max(10,13*SC)}px sans-serif`;ctx.textAlign='center';
- for(const L of [['아메리카',238,520],['아시아',778,560],['유럽·아프리카',505,300],['오세아니아',505,908]]){const p=px(L[1],L[2]);ctx.fillText(L[0],p.x,p.y)}
+ [[238,520],[778,560],[505,300],[505,908]].forEach((L,i)=>{const p=px(L[0],L[1]);ctx.fillText(CONT[LANG][i],p.x,p.y)})
  // trails
  tctx.globalCompositeOperation='destination-out';tctx.fillStyle='rgba(0,0,0,.03)';tctx.fillRect(0,0,W,H);
  tctx.globalCompositeOperation='source-over';tctx.lineCap='round';
@@ -425,11 +512,12 @@ function draw(dt){
 function die(r){dead=true;const d=gameDays();lastDays=Math.floor(d);let R=recs();R.push({d,b:cnB,k:cnK});R.sort((a,b)=>b.d-a.d);R=R.slice(0,5);
  try{localStorage.setItem('mm2_rec',JSON.stringify(R))}catch(e){}
  const rank=R.findIndex(x=>Math.abs(x.d-d)<1e-9)+1;
- $('oh').textContent={'충돌':'화물선과 충돌했다','질식':'숨이 다했다','굶주림':'크릴에 닿지 못했다'}[r];
- $('op').innerHTML=`버틴 항해 <b>${Math.floor(d)}일</b>${rank===1?' — 🏆 신기록!':rank<=5?` — ${rank}위`:''}<br>살아 쉰 숨 <b>${cnB}번</b> · 먹은 크릴 <b>${cnK}덩이</b>`;
- $('rank').innerHTML='🏆 최고 기록<br>'+R.map((x,i)=>`${i+1}. <b>${Math.floor(x.d)}일</b> — 숨 ${x.b} · 크릴 ${x.k}`).join('<br>');
- if(LB_ON()){$('rank').style.display='none';$('lbBox').style.display='block';const btn=$('lbSubmit');btn.disabled=false;btn.textContent='랭킹 등록';$('lbForm').style.opacity=1;try{$('lbName').value=localStorage.getItem('mm2_name')||''}catch(e){}lbRender().catch(()=>{})}
+ $('oh').textContent={'충돌':t('d_hit'),'질식':t('d_air'),'굶주림':t('d_hunger')}[r];
+ const sfx=rank===1?t('rec_new'):rank<=5?(LANG==='en'?` — #${rank}`:` — ${rank}위`):'';
+ $('op').innerHTML=LANG==='en'?`Survived <b>${Math.floor(d)} days</b>${sfx}<br>Breaths <b>${cnB}</b> · Krill <b>${cnK}</b>`:`버틴 항해 <b>${Math.floor(d)}일</b>${sfx}<br>살아 쉰 숨 <b>${cnB}번</b> · 먹은 크릴 <b>${cnK}덩이</b>`;
+ $('rank').innerHTML=t('best')+'<br>'+R.map((x,i)=>LANG==='en'?`${i+1}. <b>${Math.floor(x.d)}d</b> — breaths ${x.b} · krill ${x.k}`:`${i+1}. <b>${Math.floor(x.d)}일</b> — 숨 ${x.b} · 크릴 ${x.k}`).join('<br>');
+ if(LB_ON()){$('rank').style.display='none';$('lbBox').style.display='block';const btn=$('lbSubmit');btn.disabled=false;btn.textContent=t('lb_submit');$('lbForm').style.opacity=1;try{$('lbName').value=localStorage.getItem('mm2_name')||''}catch(e){}lbRender().catch(()=>{})}
  else{$('rank').style.display='';$('lbBox').style.display='none'}
  $('over').style.display='flex'}
-resize();reset();last=performance.now();requestAnimationFrame(frame);
+applyI18N();resize();reset();last=performance.now();requestAnimationFrame(frame);
 </script></body></html>
