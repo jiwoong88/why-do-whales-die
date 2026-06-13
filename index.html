@@ -301,14 +301,14 @@ function openOrgs(){$('orgs').style.display='flex';$('orgs').scrollTop=0;paused=
 $('orgsclose').onclick=()=>{$('orgs').style.display='none';paused=false};
 let lastDays=0;
 /* ===== 전 세계 랭킹(Supabase) — 아래 두 값만 채우면 자동 활성화 ===== */
-const SUPA_URL='';/* 예: https://abcd1234.supabase.co */
-const SUPA_KEY='';/* anon public key (공개돼도 안전) */
+const SUPA_URL='https://nzhjzhenqguoisxulfvl.supabase.co';
+const SUPA_KEY='sb_publishable_7f97doyJYumsDKR_ci43kQ_ipW8gR-3';/* publishable key (공개돼도 안전) */
 const LB_ON=()=>!!(SUPA_URL&&SUPA_KEY);
 function esc(s){return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
-async function lbTop(){if(!LB_ON())return[];try{const r=await fetch(`${SUPA_URL}/rest/v1/whale_scores?select=name,days&order=days.desc&limit=8`,{headers:{apikey:SUPA_KEY,Authorization:'Bearer '+SUPA_KEY}});return r.ok?await r.json():[]}catch(e){return[]}}
-async function lbSubmit(name,days,b,k){if(!LB_ON())return false;try{const r=await fetch(`${SUPA_URL}/rest/v1/whale_scores`,{method:'POST',headers:{apikey:SUPA_KEY,Authorization:'Bearer '+SUPA_KEY,'Content-Type':'application/json',Prefer:'return=minimal'},body:JSON.stringify({name:(name||'').slice(0,16),days,breaths:b,krill:k})});return r.ok}catch(e){return false}}
+async function lbTop(){if(!LB_ON())return[];try{const r=await fetch(`${SUPA_URL}/rest/v1/whale_scores?select=name,days&order=days.desc&limit=8`,{headers:{apikey:SUPA_KEY}});return r.ok?await r.json():[]}catch(e){return[]}}
+async function lbSubmit(name,days,b,k){if(!LB_ON())return false;try{const r=await fetch(`${SUPA_URL}/rest/v1/whale_scores`,{method:'POST',headers:{apikey:SUPA_KEY,'Content-Type':'application/json',Prefer:'return=minimal'},body:JSON.stringify({name:(name||'').slice(0,16),days,breaths:b,krill:k})});return r.ok}catch(e){return false}}
 async function lbRender(){const el=$('lbList');if(!el)return;el.innerHTML='<div class="lbempty">불러오는 중…</div>';const rows=await lbTop();el.innerHTML=rows.length?rows.map((x,i)=>`<div class="lbrow"><span>${i+1}</span><b>${esc(x.name)}</b><em>${Math.floor(x.days)}일</em></div>`).join(''):'<div class="lbempty">아직 기록이 없어요 — 첫 주자가 되어보세요!</div>'}
-$('lbSubmit').onclick=async()=>{const nm=($('lbName').value||'').trim()||'익명 고래';try{localStorage.setItem('mm2_name',nm)}catch(e){}const btn=$('lbSubmit');btn.disabled=true;btn.textContent='등록 중…';const ok=await lbSubmit(nm,lastDays,cnB,cnK);btn.textContent=ok?'✅ 등록됨':'실패, 재시도';if(ok){$('lbForm').style.opacity=.55;lbRender()}else btn.disabled=false};
+$('lbSubmit').onclick=async()=>{const nm=($('lbName').value||'').trim()||'익명 고래';try{localStorage.setItem('mm2_name',nm)}catch(e){}const btn=$('lbSubmit');btn.disabled=true;btn.textContent='등록 중…';const ok=await lbSubmit(nm,lastDays,cnB,cnK);btn.textContent=ok?'✅ 등록됨':'실패, 재시도';if(ok){$('lbForm').style.opacity=.55;lbRender().catch(()=>{})}else btn.disabled=false};
 function shareScore(){const url='https://gorae-hwamulseon.vercel.app';
  const txt=`고래와 화물선에서 ${lastDays}일 살아남았어요 🐋 화물선을 피해 더 버틸 수 있나요?`;
  if(navigator.share){navigator.share({title:'고래와 화물선',text:txt,url}).catch(()=>{});return}
@@ -428,7 +428,7 @@ function die(r){dead=true;const d=gameDays();lastDays=Math.floor(d);let R=recs()
  $('oh').textContent={'충돌':'화물선과 충돌했다','질식':'숨이 다했다','굶주림':'크릴에 닿지 못했다'}[r];
  $('op').innerHTML=`버틴 항해 <b>${Math.floor(d)}일</b>${rank===1?' — 🏆 신기록!':rank<=5?` — ${rank}위`:''}<br>살아 쉰 숨 <b>${cnB}번</b> · 먹은 크릴 <b>${cnK}덩이</b>`;
  $('rank').innerHTML='🏆 최고 기록<br>'+R.map((x,i)=>`${i+1}. <b>${Math.floor(x.d)}일</b> — 숨 ${x.b} · 크릴 ${x.k}`).join('<br>');
- if(LB_ON()){$('rank').style.display='none';$('lbBox').style.display='block';const btn=$('lbSubmit');btn.disabled=false;btn.textContent='랭킹 등록';$('lbForm').style.opacity=1;try{$('lbName').value=localStorage.getItem('mm2_name')||''}catch(e){}lbRender()}
+ if(LB_ON()){$('rank').style.display='none';$('lbBox').style.display='block';const btn=$('lbSubmit');btn.disabled=false;btn.textContent='랭킹 등록';$('lbForm').style.opacity=1;try{$('lbName').value=localStorage.getItem('mm2_name')||''}catch(e){}lbRender().catch(()=>{})}
  else{$('rank').style.display='';$('lbBox').style.display='none'}
  $('over').style.display='flex'}
 resize();reset();last=performance.now();requestAnimationFrame(frame);
