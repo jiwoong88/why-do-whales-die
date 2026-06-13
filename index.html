@@ -2,17 +2,17 @@
 <html lang="ko"><head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>고래와 화물선</title>
+<title>왜 죽는 고래?</title>
 <meta name="description" content="매년 약 2만 마리의 고래가 화물선에 치여 죽습니다. 당신은 대왕고래 — 실제 항로의 배를 피해 살아남으세요.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://gorae-hwamulseon.vercel.app">
-<meta property="og:title" content="고래와 화물선">
+<meta property="og:title" content="왜 죽는 고래?">
 <meta property="og:description" content="매년 약 2만 마리의 고래가 화물선에 치여 죽습니다. 당신은 대왕고래 — 실제 항로의 배를 피해 살아남으세요.">
 <meta property="og:image" content="https://gorae-hwamulseon.vercel.app/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="고래와 화물선">
+<meta name="twitter:title" content="왜 죽는 고래?">
 <meta name="twitter:description" content="실제 항로의 화물선을 피해 살아남는 대왕고래 생존 게임.">
 <meta name="twitter:image" content="https://gorae-hwamulseon.vercel.app/og.png">
 <style>
@@ -147,7 +147,7 @@ canvas{position:fixed;inset:0;display:block}
 <div class="ui" id="hint">왼쪽 방향패드로 헤엄 · 오른쪽 숨쉬기(길게) · 화물선을 피해</div>
 <div id="card" class="ui"></div>
 <div id="info" class="ui">
- <h2>고래와 화물선</h2>
+ <h2>왜 죽는 고래?</h2>
  <p>당신은 대왕고래입니다.<br>잠수하면 안전하지만 산소가 닳고,<br>숨을 쉬려면 화물선이 다니는 수면으로 올라와야 합니다.<br>흩어진 <b style="color:#46b87a">크릴</b>을 먹어 허기를 채우고,<br>실제 항로를 달리는 <b style="color:#e0544a">화물선</b>을 피해 오래 살아남으세요.<br><br><span style="color:#a7b4ba;font-size:12px">선박과의 충돌은 대왕고래의 가장 큰 사망 원인 중 하나 —<br>해마다 전 세계에서 약 2만 마리의 고래가 배에 치여 죽습니다.</span></p>
  <div class="close" id="info_close">시작</div>
  <span class="orglink" onclick="openOrgs()">🐋 고래를 지키는 사람들</span>
@@ -310,8 +310,8 @@ async function lbSubmit(name,days,b,k){if(!LB_ON())return false;try{const r=awai
 async function lbRender(){const el=$('lbList');if(!el)return;el.innerHTML='<div class="lbempty">불러오는 중…</div>';const rows=await lbTop();el.innerHTML=rows.length?rows.map((x,i)=>`<div class="lbrow"><span>${i+1}</span><b>${esc(x.name)}</b><em>${Math.floor(x.days)}일</em></div>`).join(''):'<div class="lbempty">아직 기록이 없어요 — 첫 주자가 되어보세요!</div>'}
 $('lbSubmit').onclick=async()=>{const nm=($('lbName').value||'').trim()||'익명 고래';try{localStorage.setItem('mm2_name',nm)}catch(e){}const btn=$('lbSubmit');btn.disabled=true;btn.textContent='등록 중…';const ok=await lbSubmit(nm,lastDays,cnB,cnK);btn.textContent=ok?'✅ 등록됨':'실패, 재시도';if(ok){$('lbForm').style.opacity=.55;lbRender().catch(()=>{})}else btn.disabled=false};
 function shareScore(){const url='https://gorae-hwamulseon.vercel.app';
- const txt=`고래와 화물선에서 ${lastDays}일 살아남았어요 🐋 화물선을 피해 더 버틸 수 있나요?`;
- if(navigator.share){navigator.share({title:'고래와 화물선',text:txt,url}).catch(()=>{});return}
+ const txt=`「왜 죽는 고래?」에서 ${lastDays}일 살아남았어요 🐋 화물선을 피해 더 버틸 수 있나요?`;
+ if(navigator.share){navigator.share({title:'왜 죽는 고래?',text:txt,url}).catch(()=>{});return}
  const full=txt+'\n'+url;
  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(full).then(()=>{const b=$('share'),o=b.textContent;b.textContent='✅ 링크 복사됨!';setTimeout(()=>b.textContent=o,1800)}).catch(()=>prompt('복사해서 공유하세요:',full))}
  else prompt('복사해서 공유하세요:',full)}
