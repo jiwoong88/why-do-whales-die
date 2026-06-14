@@ -275,7 +275,7 @@ window.addEventListener('pointerdown',startBgm,{once:true});
 window.addEventListener('keydown',startBgm,{once:true});
 /* ===== 효과음(Web Audio 합성, 파일 0개) ===== */
 let AC=null,sfxM=null,eatT=0,prevHold=false,bgmGain=null,bgmSrc=null;
-const SFX={},LOOP={},SFX_FILES={swim:'swim.mp3',ambient:'ambient.mp3',engine:'engine.mp3',surface:'surface.mp3',spout:'spout.mp3',death:'death.mp3',horn:'horn.mp3'};
+const SFX={},LOOP={},SFX_FILES={swim:'swim.mp3',ambient:'ambient.mp3',engine:'engine.mp3',surface:'surface.mp3',spout:'spout.mp3',death:'death.mp3',horn:'horn.mp3',eat1:'eat1.mp3',eat2:'eat2.mp3',eat3:'eat3.mp3'};
 function loadSfx(name,file){fetch(file).then(r=>r.arrayBuffer()).then(a=>AC.decodeAudioData(a)).then(buf=>{SFX[name]=buf;if(name==='swim'||name==='ambient'||name==='engine')startLoop(name)}).catch(()=>{})}
 function startLoop(name){if(LOOP[name]||!SFX[name]||!AC)return;const s=AC.createBufferSource();s.buffer=SFX[name];s.loop=true;const g=AC.createGain();g.gain.value=0;s.connect(g);g.connect(sfxM);s.start();LOOP[name]={g}}
 function playBuf(name,vol){if(!AC||muted||!SFX[name])return;const s=AC.createBufferSource();s.buffer=SFX[name];const g=AC.createGain();g.gain.value=vol;s.connect(g);g.connect(sfxM);s.start()}
@@ -287,11 +287,11 @@ function audioResume(){if(AC&&AC.state==='suspended')AC.resume()}
 function sfxAmbient(spT,shipT){if(!AC)return;const m=muted?0:1;
  if(LOOP.ambient)LOOP.ambient.g.gain.value=0.4*m;
  if(LOOP.swim)LOOP.swim.g.gain.value=0.9*spT*m;
- if(LOOP.engine)LOOP.engine.g.gain.value=0.8*shipT*m}
-function sfxEat(){if(!AC||muted)return;const T=AC.currentTime,o=AC.createOscillator(),g=AC.createGain();o.type='sine';o.frequency.setValueAtTime(560,T);o.frequency.exponentialRampToValueAtTime(230,T+0.11);g.gain.setValueAtTime(0.0001,T);g.gain.exponentialRampToValueAtTime(0.36,T+0.012);g.gain.exponentialRampToValueAtTime(0.0001,T+0.16);o.connect(g);g.connect(sfxM);o.start(T);o.stop(T+0.18)}
+ if(LOOP.engine)LOOP.engine.g.gain.value=0.08*shipT*m}
+function sfxEat(){playBuf('eat'+(1+Math.floor(Math.random()*3)),1.0)}
 function sfxBreath(){playBuf('surface',0.9)}
 function sfxBlow(){playBuf('spout',1.0)}
-function sfxHorn(){playBuf('death',1.0);setTimeout(()=>playBuf('horn',1.0),140)}
+function sfxHorn(){playBuf('horn',1.0);playBuf('death',1.0)}
 let W,H,dpr=Math.min(window.devicePixelRatio||1,2),SC=1,OX=0,OY=0;
 const N=MM.N, HR=MM.hex.R, HOX=MM.hex.ox, HOY=MM.hex.oy, SQ3=Math.sqrt(3);
 const PRE={'H3':'파나마','3E':'파나마','3F':'파나마','5L':'라이베리아','9H':'몰타','9V':'싱가포르','OW':'덴마크','FL':'프랑스','BO':'중국','BV':'대만','D7':'대한민국','LA':'노르웨이','7J':'일본'};
