@@ -259,7 +259,7 @@ $('lang').onclick=()=>setLang(LANG==='ko'?'en':'ko');
 /* ===== 배경음: 3곡 랜덤 루프(한 곡 끝나면 다른 랜덤 곡) + 음소거 토글 ===== */
 const BGM=['bgm1.mp3','bgm2.mp3','bgm3.mp3'];let bgmA=null,muted=false,bgmStarted=false;
 try{muted=localStorage.getItem('mm2_muted')==='1'}catch(e){}
-const BGM_VOL=0.05;
+const BGM_VOL=0.2;
 function bgmFade(to,ms){if(bgmGain&&bgmSrc&&AC){const T=AC.currentTime;bgmGain.gain.cancelScheduledValues(T);bgmGain.gain.setValueAtTime(Math.max(0.0001,bgmGain.gain.value),T);bgmGain.gain.linearRampToValueAtTime(Math.max(0.0001,to),T+ms/1000)}else if(bgmA){const from=bgmA.volume,t0=performance.now();(function st(){const k=Math.min(1,(performance.now()-t0)/ms);bgmA.volume=Math.max(0,Math.min(1,from+(to-from)*k));if(k<1)requestAnimationFrame(st)})()}}
 function bgmNext(){if(muted)return;let i=Math.floor(Math.random()*BGM.length);
  if(!bgmA){bgmA=new Audio();bgmA.addEventListener('ended',bgmNext);
