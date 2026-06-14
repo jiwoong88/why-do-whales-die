@@ -274,19 +274,24 @@ updSnd();
 window.addEventListener('pointerdown',startBgm,{once:true});
 window.addEventListener('keydown',startBgm,{once:true});
 /* ===== 효과음(Web Audio 합성, 파일 0개) ===== */
-let AC=null,sfxM=null,nB=null,waveG=null,swimG=null,eatT=0,prevHold=false,bgmGain=null,bgmSrc=null;
-function mkNoise(sec){const b=AC.createBuffer(1,Math.floor(AC.sampleRate*sec),AC.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*0.7;return b}
-function loopNoise(type,freq,q){const s=AC.createBufferSource();s.buffer=nB;s.loop=true;const f=AC.createBiquadFilter();f.type=type;f.frequency.value=freq;if(q)f.Q.value=q;const g=AC.createGain();g.gain.value=0;s.connect(f);f.connect(g);g.connect(sfxM);s.start();return g}
+let AC=null,sfxM=null,eatT=0,prevHold=false,bgmGain=null,bgmSrc=null;
+const SFX={},LOOP={},SFX_FILES={swim:'swim.mp3',ambient:'ambient.mp3',engine:'engine.mp3',surface:'surface.mp3',spout:'spout.mp3',death:'death.mp3',horn:'horn.mp3'};
+function loadSfx(name,file){fetch(file).then(r=>r.arrayBuffer()).then(a=>AC.decodeAudioData(a)).then(buf=>{SFX[name]=buf;if(name==='swim'||name==='ambient'||name==='engine')startLoop(name)}).catch(()=>{})}
+function startLoop(name){if(LOOP[name]||!SFX[name]||!AC)return;const s=AC.createBufferSource();s.buffer=SFX[name];s.loop=true;const g=AC.createGain();g.gain.value=0;s.connect(g);g.connect(sfxM);s.start();LOOP[name]={g}}
+function playBuf(name,vol){if(!AC||muted||!SFX[name])return;const s=AC.createBufferSource();s.buffer=SFX[name];const g=AC.createGain();g.gain.value=vol;s.connect(g);g.connect(sfxM);s.start()}
 function audioInit(){if(AC)return;try{AC=new (window.AudioContext||window.webkitAudioContext)()}catch(e){return}
- sfxM=AC.createGain();sfxM.gain.value=1.0;sfxM.connect(AC.destination);nB=mkNoise(2);
- waveG=loopNoise('bandpass',520,0.5);swimG=loopNoise('bandpass',900,0.6);
- bgmGain=AC.createGain();bgmGain.gain.value=0;bgmGain.connect(AC.destination)}
+ sfxM=AC.createGain();sfxM.gain.value=1.0;sfxM.connect(AC.destination);
+ bgmGain=AC.createGain();bgmGain.gain.value=0;bgmGain.connect(AC.destination);
+ for(const k in SFX_FILES)loadSfx(k,SFX_FILES[k])}
 function audioResume(){if(AC&&AC.state==='suspended')AC.resume()}
-function sfxAmbient(spT,wvT){if(!AC)return;const m=muted?0:1;if(waveG)waveG.gain.value=(0.04+0.10*wvT)*m;if(swimG)swimG.gain.value=0.18*spT*m}
+function sfxAmbient(spT,shipT){if(!AC)return;const m=muted?0:1;
+ if(LOOP.ambient)LOOP.ambient.g.gain.value=0.4*m;
+ if(LOOP.swim)LOOP.swim.g.gain.value=0.9*spT*m;
+ if(LOOP.engine)LOOP.engine.g.gain.value=0.8*shipT*m}
 function sfxEat(){if(!AC||muted)return;const T=AC.currentTime,o=AC.createOscillator(),g=AC.createGain();o.type='sine';o.frequency.setValueAtTime(560,T);o.frequency.exponentialRampToValueAtTime(230,T+0.11);g.gain.setValueAtTime(0.0001,T);g.gain.exponentialRampToValueAtTime(0.36,T+0.012);g.gain.exponentialRampToValueAtTime(0.0001,T+0.16);o.connect(g);g.connect(sfxM);o.start(T);o.stop(T+0.18)}
-function sfxBreath(){if(!AC||muted)return;const T=AC.currentTime,s=AC.createBufferSource();s.buffer=nB;const f=AC.createBiquadFilter();f.type='lowpass';f.frequency.setValueAtTime(300,T);f.frequency.linearRampToValueAtTime(1100,T+0.5);const g=AC.createGain();g.gain.setValueAtTime(0.0001,T);g.gain.exponentialRampToValueAtTime(0.34,T+0.2);g.gain.exponentialRampToValueAtTime(0.0001,T+0.72);s.connect(f);f.connect(g);g.connect(sfxM);s.start(T);s.stop(T+0.75)}
-function sfxBlow(){if(!AC||muted)return;const T=AC.currentTime,s=AC.createBufferSource();s.buffer=nB;const f=AC.createBiquadFilter();f.type='bandpass';f.frequency.setValueAtTime(1600,T);f.frequency.exponentialRampToValueAtTime(550,T+0.4);f.Q.value=0.8;const g=AC.createGain();g.gain.setValueAtTime(0.0001,T);g.gain.exponentialRampToValueAtTime(0.44,T+0.03);g.gain.exponentialRampToValueAtTime(0.0001,T+0.46);s.connect(f);f.connect(g);g.connect(sfxM);s.start(T);s.stop(T+0.5)}
-function sfxHorn(){if(!AC||muted)return;const T=AC.currentTime,g=AC.createGain();g.connect(sfxM);g.gain.setValueAtTime(0.0001,T);g.gain.exponentialRampToValueAtTime(0.34,T+0.18);g.gain.setValueAtTime(0.34,T+1.2);g.gain.exponentialRampToValueAtTime(0.0001,T+1.95);const f=AC.createBiquadFilter();f.type='lowpass';f.frequency.value=430;f.connect(g);[[120,'sawtooth'],[121.7,'sawtooth'],[60,'sine']].forEach(([fr,ty])=>{const o=AC.createOscillator();o.type=ty;o.frequency.value=fr;o.connect(f);o.start(T);o.stop(T+2)})}
+function sfxBreath(){playBuf('surface',0.9)}
+function sfxBlow(){playBuf('spout',1.0)}
+function sfxHorn(){playBuf('death',1.0);setTimeout(()=>playBuf('horn',1.0),140)}
 let W,H,dpr=Math.min(window.devicePixelRatio||1,2),SC=1,OX=0,OY=0;
 const N=MM.N, HR=MM.hex.R, HOX=MM.hex.ox, HOY=MM.hex.oy, SQ3=Math.sqrt(3);
 const PRE={'H3':'파나마','3E':'파나마','3F':'파나마','5L':'라이베리아','9H':'몰타','9V':'싱가포르','OW':'덴마크','FL':'프랑스','BO':'중국','BV':'대만','D7':'대한민국','LA':'노르웨이','7J':'일본'};
