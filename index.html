@@ -259,23 +259,28 @@ $('lang').onclick=()=>setLang(LANG==='ko'?'en':'ko');
 /* ===== 배경음: 3곡 랜덤 루프(한 곡 끝나면 다른 랜덤 곡) + 음소거 토글 ===== */
 const BGM=['bgm1.mp3','bgm2.mp3','bgm3.mp3'];let bgmA=null,muted=false,bgmStarted=false;
 try{muted=localStorage.getItem('mm2_muted')==='1'}catch(e){}
-const BGM_VOL=0.06;
-function bgmFade(to,ms){if(!bgmA)return;const from=bgmA.volume,t0=performance.now();(function st(){const k=Math.min(1,(performance.now()-t0)/ms);bgmA.volume=Math.max(0,Math.min(1,from+(to-from)*k));if(k<1)requestAnimationFrame(st)})()}
-function bgmNext(){if(muted)return;let i=Math.floor(Math.random()*BGM.length);if(!bgmA){bgmA=new Audio();bgmA.addEventListener('ended',bgmNext)}bgmA.src=BGM[i];bgmA.volume=0;bgmA.play().catch(()=>{});bgmFade(BGM_VOL,2600)}
+const BGM_VOL=0.05;
+function bgmFade(to,ms){if(bgmGain&&bgmSrc&&AC){const T=AC.currentTime;bgmGain.gain.cancelScheduledValues(T);bgmGain.gain.setValueAtTime(Math.max(0.0001,bgmGain.gain.value),T);bgmGain.gain.linearRampToValueAtTime(Math.max(0.0001,to),T+ms/1000)}else if(bgmA){const from=bgmA.volume,t0=performance.now();(function st(){const k=Math.min(1,(performance.now()-t0)/ms);bgmA.volume=Math.max(0,Math.min(1,from+(to-from)*k));if(k<1)requestAnimationFrame(st)})()}}
+function bgmNext(){if(muted)return;let i=Math.floor(Math.random()*BGM.length);
+ if(!bgmA){bgmA=new Audio();bgmA.addEventListener('ended',bgmNext);
+  if(AC&&AC.createMediaElementSource&&bgmGain&&!bgmSrc){try{bgmSrc=AC.createMediaElementSource(bgmA);bgmSrc.connect(bgmGain)}catch(e){}}}
+ if(!bgmSrc)bgmA.volume=0;
+ bgmA.src=BGM[i];bgmA.play().catch(()=>{});bgmFade(BGM_VOL,2600)}
 function startBgm(){audioInit();audioResume();if(bgmStarted||muted)return;bgmStarted=true;bgmNext()}
 function updSnd(){$('snd').textContent=muted?'🔇':'🔊'}
 $('snd').onclick=()=>{muted=!muted;try{localStorage.setItem('mm2_muted',muted?'1':'0')}catch(e){}
- if(muted){if(bgmA)bgmA.pause()}else{audioInit();audioResume();bgmStarted=true;if(bgmA){bgmA.volume=0;bgmA.play().catch(()=>{});bgmFade(BGM_VOL,1200)}else bgmNext()}updSnd()};
+ if(muted){if(bgmA)bgmA.pause()}else{audioInit();audioResume();bgmStarted=true;if(bgmA){bgmA.play().catch(()=>{});bgmFade(BGM_VOL,1200)}else bgmNext()}updSnd()};
 updSnd();
 window.addEventListener('pointerdown',startBgm,{once:true});
 window.addEventListener('keydown',startBgm,{once:true});
 /* ===== 효과음(Web Audio 합성, 파일 0개) ===== */
-let AC=null,sfxM=null,nB=null,waveG=null,swimG=null,eatT=0,prevHold=false;
+let AC=null,sfxM=null,nB=null,waveG=null,swimG=null,eatT=0,prevHold=false,bgmGain=null,bgmSrc=null;
 function mkNoise(sec){const b=AC.createBuffer(1,Math.floor(AC.sampleRate*sec),AC.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*0.7;return b}
 function loopNoise(type,freq,q){const s=AC.createBufferSource();s.buffer=nB;s.loop=true;const f=AC.createBiquadFilter();f.type=type;f.frequency.value=freq;if(q)f.Q.value=q;const g=AC.createGain();g.gain.value=0;s.connect(f);f.connect(g);g.connect(sfxM);s.start();return g}
 function audioInit(){if(AC)return;try{AC=new (window.AudioContext||window.webkitAudioContext)()}catch(e){return}
  sfxM=AC.createGain();sfxM.gain.value=1.0;sfxM.connect(AC.destination);nB=mkNoise(2);
- waveG=loopNoise('bandpass',520,0.5);swimG=loopNoise('bandpass',900,0.6)}
+ waveG=loopNoise('bandpass',520,0.5);swimG=loopNoise('bandpass',900,0.6);
+ bgmGain=AC.createGain();bgmGain.gain.value=0;bgmGain.connect(AC.destination)}
 function audioResume(){if(AC&&AC.state==='suspended')AC.resume()}
 function sfxAmbient(spT,wvT){if(!AC)return;const m=muted?0:1;if(waveG)waveG.gain.value=(0.04+0.10*wvT)*m;if(swimG)swimG.gain.value=0.18*spT*m}
 function sfxEat(){if(!AC||muted)return;const T=AC.currentTime,o=AC.createOscillator(),g=AC.createGain();o.type='sine';o.frequency.setValueAtTime(560,T);o.frequency.exponentialRampToValueAtTime(230,T+0.11);g.gain.setValueAtTime(0.0001,T);g.gain.exponentialRampToValueAtTime(0.36,T+0.012);g.gain.exponentialRampToValueAtTime(0.0001,T+0.16);o.connect(g);g.connect(sfxM);o.start(T);o.stop(T+0.18)}
