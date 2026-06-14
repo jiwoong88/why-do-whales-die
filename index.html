@@ -275,7 +275,7 @@ window.addEventListener('pointerdown',startBgm,{once:true});
 window.addEventListener('keydown',startBgm,{once:true});
 /* ===== 효과음(Web Audio 합성, 파일 0개) ===== */
 let AC=null,sfxM=null,eatT=0,prevHold=false,bgmGain=null,bgmSrc=null;
-const SFX={},LOOP={},SFX_FILES={swim:'swim.mp3',ambient:'ambient.mp3',engine:'engine.mp3',surface:'surface.mp3',spout:'spout.mp3',death:'death.mp3',horn:'horn.mp3',eat1:'eat1.mp3',eat2:'eat2.mp3',eat3:'eat3.mp3'};
+const SFX={},LOOP={},SFX_FILES={swim:'swim.mp3',ambient:'ambient.mp3',engine:'engine.mp3',surface:'surface.mp3',spout:'spout.mp3',death:'death.mp3',death2:'death2.mp3',horn:'horn.mp3',eat1:'eat1.mp3',eat2:'eat2.mp3',eat3:'eat3.mp3'};
 function loadSfx(name,file){fetch(file).then(r=>r.arrayBuffer()).then(a=>AC.decodeAudioData(a)).then(buf=>{SFX[name]=buf;if(name==='swim'||name==='ambient'||name==='engine')startLoop(name)}).catch(()=>{})}
 function startLoop(name){if(LOOP[name]||!SFX[name]||!AC)return;const s=AC.createBufferSource();s.buffer=SFX[name];s.loop=true;const g=AC.createGain();g.gain.value=0;s.connect(g);g.connect(sfxM);s.start();LOOP[name]={g}}
 function playBuf(name,vol){if(!AC||muted||!SFX[name])return;const s=AC.createBufferSource();s.buffer=SFX[name];const g=AC.createGain();g.gain.value=vol;s.connect(g);g.connect(sfxM);s.start()}
@@ -578,7 +578,7 @@ function draw(dt){
  for(let i=parts.length-1;i>=0;i--){const pa=parts[i];pa.l-=dt;if(pa.l<=0){parts.splice(i,1);continue}
   pa.x+=pa.vx*dt;pa.y+=pa.vy*dt;pa.vx*=0.95;pa.vy*=0.95;const p=px(pa.x,pa.y);ctx.fillStyle=`rgba(120,200,255,${pa.l})`;ctx.beginPath();ctx.arc(p.x,p.y,2.6*SC,0,6.283);ctx.fill()}
 }
-function die(r){dead=true;sfxHorn();const d=gameDays();lastDays=Math.floor(d);let R=recs();R.push({d,b:cnB,k:cnK});R.sort((a,b)=>b.d-a.d);R=R.slice(0,5);
+function die(r){dead=true;if(r==='충돌')sfxHorn();else if(r==='굶주림')playBuf('death2',0.85);else playBuf('death',0.85);const d=gameDays();lastDays=Math.floor(d);let R=recs();R.push({d,b:cnB,k:cnK});R.sort((a,b)=>b.d-a.d);R=R.slice(0,5);
  try{localStorage.setItem('mm2_rec',JSON.stringify(R))}catch(e){}
  const rank=R.findIndex(x=>Math.abs(x.d-d)<1e-9)+1;
  $('oh').textContent={'충돌':t('d_hit'),'질식':t('d_air'),'굶주림':t('d_hunger')}[r];
