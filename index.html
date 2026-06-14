@@ -197,7 +197,7 @@ const L10N={ko:{
  m_surf:'수면 — 숨 쉬는 중', m_low:'잠수 중 — 숨이 줄어 느려진다', m_dive:'잠수 중',
  d_hit:'화물선과 충돌했다', d_air:'숨이 다했다', d_hunger:'크릴에 닿지 못했다',
  best:'🏆 최고 기록', rec_new:' — 🏆 신기록!',
- dest:'행선지', callsign:'호출부호', flagged:'선적', realship:'실제 운항 중인 선박입니다',
+ dest:'행선지', callsign:'호출부호', flagged:'선적', realship:'운항 중인 화물선',
  seelive:'🌊 실제 바다에서 보기 (라이브)', portmajor:'주요 항만',
  o2tip:'<b>산소 (숨)</b><br>잠수하면 닳아요. 떨어지면 느려지다 질식 — 화물선이 다니는 <b>수면</b>으로 올라가 숨을 쉬세요.',
  hgtip:'<b>허기</b><br>시간이 지나면 배고파져요. 바다에 흩어진 <b style="color:#46b87a">크릴</b>을 먹어 채우세요.'
@@ -220,7 +220,7 @@ const L10N={ko:{
  m_surf:'Surface — breathing', m_low:'Diving — low oxygen, slowing', m_dive:'Diving',
  d_hit:'Struck by a cargo ship', d_air:'Out of breath', d_hunger:'Couldn\'t reach the krill',
  best:'🏆 Best runs', rec_new:' — 🏆 New record!',
- dest:'to', callsign:'Call sign', flagged:'flag', realship:'A real ship at sea right now',
+ dest:'to', callsign:'Call sign', flagged:'flag', realship:'A cargo ship in transit',
  seelive:'🌊 See it on the real ocean (live)', portmajor:'Major port',
  o2tip:'<b>Oxygen (breath)</b><br>Drains while diving. Run out and you slow, then suffocate — surface (where the ships are) to breathe.',
  hgtip:'<b>Hunger</b><br>You get hungry over time. Eat <b style="color:#46b87a">krill</b> scattered across the sea to refill.'
@@ -367,7 +367,8 @@ let hold=false,breath=0,canB=true,ts=1,tscale=1,ptr=null,pd=null,last=0,wphase=0
 const keys={};const DAYRATE=0.2,SHIP_K=1.35;
 function seglen(a,b){return Math.hypot(b[0]-a[0],b[1]-a[1])}
 function laneOf(idx){const lane=MM.lanes[idx],rev=Math.random()<0.5,rt=rev?lane.slice().reverse():lane;let segs=[],tot=0;for(let i=1;i<rt.length;i++){const d=seglen(rt[i-1],rt[i]);segs.push(d);tot+=d}return{rt,segs,tot,rev:rev?1:0}}
-function mkOne(meta,laneIdx,type,color,sm,sz,actDay){const L=laneOf(laneIdx);return Object.assign({},meta,L,{type,color,sm,sz,actDay,lane:laneIdx,d:Math.random()*L.tot,dir:Math.random()<0.5?1:-1,fade:0,dx:L.rt[0][0],dy:L.rt[0][1],ang:0,pp:null,burst:1,bt:0})}
+const RENAME={'EVER GIVEN':'EVER GIDEN','MSC IRINA':'MSG IRINA','HMM ALGECIRAS':'HNM ALGECIRA','CMA CGM J. SAADE':'CMA CGN J.SAAD','MAERSK MC-KINNEY':'MARSEK MC-KENNY','COSCO UNIVERSE':'COSGO UNIVERSE','EVER ACE':'EVER ACT','MSC GULSUN':'MSG GULSAN','FRONT ALTAIR':'FRONT ALTAR','APL SENTOSA':'ATL SENTOSA'};
+function mkOne(meta,laneIdx,type,color,sm,sz,actDay){const L=laneOf(laneIdx);return Object.assign({},meta,L,{type,color,sm,sz,actDay,lane:laneIdx,n:RENAME[meta.n]||meta.n,d:Math.random()*L.tot,dir:Math.random()<0.5?1:-1,fade:0,dx:L.rt[0][0],dy:L.rt[0][1],ang:0,pp:null,burst:1,bt:0})}
 function mkShips(){ships=[];const meta=MM.ships,nL=MM.lanes.length,pick=i=>meta[i%meta.length],rl=()=>(Math.random()*nL)|0;
  /* 빨강: 기존 함대(현재 수) — 0~5일에 걸쳐 점증(처음 4척만 0일부터) */
  meta.forEach((m,i)=>{const ad=i<4?0:(i-4)/Math.max(1,meta.length-4)*5;ships.push(mkOne(m,m.lane,'red','#e0544a',1,1,ad))});
@@ -469,8 +470,8 @@ function inspect(sx,sy){
  const dest=best.ends?((best.dir||1)>0?best.ends[1]:best.ends[0]):best.dest,bsp=px(best.dx,best.dy);
  const ty=TR(SHIPTYPE_EN,best.t),fc=fl?(LANG==='en'?(CTRY_EN[fl]||fl):fl):'?',pfx=best.cs.slice(0,2);
  const cardHtml=LANG==='en'
-  ?`<b>${best.n}</b><span class="cs">${best.cs}</span><br>${ty} · ${best.kn}kn · to ${dest}<br>Call sign ${best.cs} — prefix '${pfx}' = flagged <b>${fc}</b><br><span class="sub">${t('realship')}</span><br><span class="track" onclick="openLive()">${t('seelive')}</span>`
-  :`<b>${best.n}</b><span class="cs">${best.cs}</span><br>${ty} · ${best.kn}kn · 행선지 ${dest}<br>호출부호 ${best.cs} — 앞 '${pfx}' = <b>${fc}</b> 선적<br><span class="sub">${t('realship')}</span><br><span class="track" onclick="openLive()">${t('seelive')}</span>`;
+  ?`<b>${best.n}</b><span class="cs">${best.cs}</span><br>${ty} · ${best.kn}kn · to ${dest}<br>Call sign ${best.cs} — prefix '${pfx}' = flagged <b>${fc}</b><br><span class="sub">${t('realship')}</span>`
+  :`<b>${best.n}</b><span class="cs">${best.cs}</span><br>${ty} · ${best.kn}kn · 행선지 ${dest}<br>호출부호 ${best.cs} — 앞 '${pfx}' = <b>${fc}</b> 선적<br><span class="sub">${t('realship')}</span>`;
  showCard(cardHtml,bsp.x,bsp.y+12)}
 
 function frame(now){requestAnimationFrame(frame);let dt=Math.min(0.05,(now-last)/1000);last=now;
