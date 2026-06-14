@@ -363,7 +363,7 @@ function drawWhale(sx,sy,ang,breath,phase,L,wag){
 
 /* ── state ── */
 let ships=[],krill=[],parts=[],trash=[],wh,o2,hg,cnB,cnK,gtime,dead,cardTarget=null;
-let hold=false,breath=0,canB=true,ts=1,tscale=1,ptr=null,pd=null,last=0,wphase=0,stuckT=0;
+let hold=false,breath=0,canB=true,ts=1,tscale=1,ptr=null,pd=null,last=0,wphase=0,stuckT=0,graceT=0;
 const keys={};const DAYRATE=0.2,SHIP_K=1.35;
 function seglen(a,b){return Math.hypot(b[0]-a[0],b[1]-a[1])}
 function laneOf(idx){const lane=MM.lanes[idx],rev=Math.random()<0.5,rt=rev?lane.slice().reverse():lane;let segs=[],tot=0;for(let i=1;i<rt.length;i++){const d=seglen(rt[i-1],rt[i]);segs.push(d);tot+=d}return{rt,segs,tot,rev:rev?1:0}}
@@ -378,7 +378,7 @@ function mkShips(){ships=[];const meta=MM.ships,nL=MM.lanes.length,pick=i=>meta[
  /* 초록: 50일~, 2배 속도·작은 크기 */
  for(let i=0;i<4;i++)ships.push(mkOne(pick(i+6),rl(),'green','#3fae6a',2,0.62,50+Math.random()*3));
  /* 보라: 어선 — 40일~, 경로 무시 랜덤 이동, 2초 낚시 후 이동, 4대 */
- for(let i=0;i<4;i++){const o=mkOne(pick(i),0,'fish','#9a7fd0',1,0.8,25+Math.random()*3),sp=seaSpot(0);Object.assign(o,{t:'어선',n:'Fishing Boat',dx:sp.x,dy:sp.y,ang:Math.random()*6.28,tgt:null,fish:0,fv:N*0.016});ships.push(o)}}
+ for(let i=0;i<4;i++){const o=mkOne(pick(i),0,'fish','#9a7fd0',1,0.8,20+Math.random()*3),sp=seaSpot(0);Object.assign(o,{t:'어선',n:'Fishing Boat',dx:sp.x,dy:sp.y,ang:Math.random()*6.28,tgt:null,fish:0,fv:N*0.016});ships.push(o)}}
 function shipPos(s){let d=s.d,i=0;while(i<s.segs.length-1&&d>s.segs[i]){d-=s.segs[i];i++}
  const a=s.rt[i],b=s.rt[i+1],f=Math.min(1,d/(s.segs[i]||1));s.dx=a[0]+(b[0]-a[0])*f;s.dy=a[1]+(b[1]-a[1])*f;const dr=s.dir||1;s.ang=Math.atan2((b[1]-a[1])*dr,(b[0]-a[0])*dr)}
 function seaSpot(minD){for(let i=0;i<500;i++){const x=60+Math.random()*(N-120),y=60+Math.random()*(N-120);
@@ -389,7 +389,8 @@ const gameDays=()=>gtime*DAYRATE;
 function recs(){try{return JSON.parse(localStorage.getItem('mm2_rec')||'[]')}catch(e){return[]}}
 function reset(){let s=MM.start.slice();if(!inSea(s[0],s[1])){const p=seaSpot(0);s=[p.x,p.y]}
  wh={x:s[0],y:s[1],vx:0,vy:0,ang:0};o2=1;hg=1;cnB=0;cnK=0;gtime=0;dead=false;breath=0;canB=true;ts=1;parts=[];wphase=0;eatT=0;prevHold=false;trash=[];stuckT=0;
- krill=[mkKrill(),mkKrill()];mkShips();ships.forEach(shipPos);
+ krill=[mkKrill(),mkKrill()];mkShips();ships.forEach(shipPos);graceT=1.5;
+ for(const s of ships){if(s.type==='fish')continue;let tr=0;while(Math.hypot(s.dx-wh.x,s.dy-wh.y)<N*0.14&&tr++<10){s.d=(s.d+s.tot*0.27)%s.tot;shipPos(s)}}
  $('over').style.display='none';$('card').style.display='none';tctx.clearRect(0,0,W,H);prewarm()}
 function prewarm(){/* 항로 미리 표시 안 함(난이도) */}
 function resize(){W=innerWidth;H=innerHeight;[cv,tc].forEach(c=>{c.width=W*dpr;c.height=H*dpr});
@@ -475,7 +476,7 @@ function inspect(sx,sy){
 function frame(now){requestAnimationFrame(frame);let dt=Math.min(0.05,(now-last)/1000);last=now;
  if(ts<1)ts=Math.min(1,ts+dt*1.6);const gdt=dt*ts*tscale;
  if(!dead&&tscale>0&&!paused){gtime+=gdt;
-  if(stuckT>0)stuckT-=dt;
+  if(stuckT>0)stuckT-=dt;if(graceT>0)graceT-=dt;
   breath=Math.max(0,Math.min(1,breath+((hold&&stuckT<=0)?dt*2.4:-dt*2.4)));const surf=breath>0.7;
   if(hold&&!prevHold&&stuckT<=0)sfxBreath();prevHold=hold;
   if(surf&&stuckT<=0){const was=o2;o2=Math.min(1,o2+dt/2.2);if(o2<0.6)canB=true;
@@ -506,7 +507,7 @@ function frame(now){requestAnimationFrame(frame);let dt=Math.min(0.05,(now-last)
    s.d+=(s.dir||1)*s.kn*SHIP_K*(s.sm||1)*(s.burst||1)*gdt;
    if(s.d>=s.tot){s.d=s.tot;s.dir=-1;s.pp=null}else if(s.d<=0){s.d=0;s.dir=1;s.pp=null}
    s.fade=Math.min(1,Math.min(s.d,s.tot-s.d)/Math.min(40,s.tot*0.18));shipPos(s)}
-  const wr=surf?15:9;for(const s of ships){if(s.fade>0.3&&Math.hypot(wh.x-s.dx,wh.y-s.dy)<wr+8*(s.sz||1)){die('충돌');break}}
+  const wr=surf?15:9;if(graceT<=0)for(const s of ships){if(s.fade>0.3&&Math.hypot(wh.x-s.dx,wh.y-s.dy)<wr+8*(s.sz||1)){die('충돌');break}}
   let _nd=1e9;for(const s of ships){if(s.fade>0.2){const dd=Math.hypot(wh.x-s.dx,wh.y-s.dy);if(dd<_nd)_nd=dd}}sfxAmbient(Math.min(1,sp/(N*0.13)),Math.max(0,1-_nd/(N*0.22)));
   for(let i=trash.length-1;i>=0;i--){const tr=trash[i];tr.life-=dt;if(tr.life<=0){trash.splice(i,1);continue}if(stuckT<=0&&Math.hypot(wh.x-tr.x,wh.y-tr.y)<16){stuckT=2;trash.splice(i,1)}}
   if(!dead){if(o2<=0)die('질식');else if(hg<=0)die('굶주림')}
