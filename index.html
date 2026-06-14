@@ -324,6 +324,7 @@ function drawAnchor(cx,cy,s){ctx.save();ctx.strokeStyle='#fff';ctx.lineWidth=Mat
 const PROF=[[0,.12],[.12,.34],[.25,.6],[.4,.86],[.55,1],[.68,.97],[.8,.84],[.9,.66],[.96,.46],[1,.27]];
 function wprof(t){for(let i=0;i<PROF.length-1;i++){const a=PROF[i],b=PROF[i+1];if(t<=b[0]){const f=(t-a[0])/(b[0]-a[0]+1e-9);return a[1]+(b[1]-a[1])*f}}return 0}
 const CD=[.55,.65,.73],CS=[.13,.26,.45],ED=[.40,.50,.58],ES=[.07,.16,.30];  /* 잠수=연한 회청, 숨쉴때(부상)=진한 남색 — 대비 복원 */
+const EYE_D=[.34,.40,.46],EYE_S=[.10,.15,.19];  /* 눈: 잠수=회색(덜 무섭게), 부상=진한색 */
 const lerpC=(a,b,f)=>'rgb('+a.map((v,i)=>Math.round((v+(b[i]-v)*f)*255)).join(',')+')';
 const chaik=(p,it)=>{for(let k=0;k<it;k++){let n=[];for(let i=0;i<p.length;i++){const a=p[i],b=p[(i+1)%p.length];n.push([a[0]*.75+b[0]*.25,a[1]*.75+b[1]*.25]);n.push([a[0]*.25+b[0]*.75,a[1]*.25+b[1]*.75])}p=n}return p};
 function drawWhale(sx,sy,ang,breath,phase,L,wag){
@@ -356,7 +357,7 @@ function drawWhale(sx,sy,ang,breath,phase,L,wag){
  const bh=T([spine[Math.floor(spine.length*.78)][0],spine[Math.floor(spine.length*.78)][1]]);ctx.fillStyle=E;ctx.globalAlpha=al;ctx.beginPath();ctx.arc(bh[0],bh[1],L*.04,0,6.283);ctx.fill();
  const ei=Math.floor(spine.length*.82),esp=spine[ei],eq0=spine[ei-2],eq1=spine[ei+2];
  let etx=eq1[0]-eq0[0],ety=eq1[1]-eq0[1];const etl=Math.hypot(etx,ety)+1e-9,enx=-ety/etl,eny=etx/etl;
- ctx.fillStyle='#1a2630';ctx.globalAlpha=1;for(const sg of [1,-1]){const e=T([esp[0]+enx*esp[2]*0.6*sg,esp[1]+eny*esp[2]*0.6*sg]);ctx.beginPath();ctx.arc(e[0],e[1],L*.085,0,6.283);ctx.fill()}
+ ctx.fillStyle=lerpC(EYE_D,EYE_S,breath);ctx.globalAlpha=1;for(const sg of [1,-1]){const e=T([esp[0]+enx*esp[2]*0.6*sg,esp[1]+eny*esp[2]*0.6*sg]);ctx.beginPath();ctx.arc(e[0],e[1],L*.085,0,6.283);ctx.fill()}
  ctx.globalAlpha=1;
 }
 
