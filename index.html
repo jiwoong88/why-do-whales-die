@@ -291,7 +291,7 @@ function sfxAmbient(spT,shipT){if(!AC)return;const m=muted?0:1;
 function sfxEat(){playBuf('eat'+(1+Math.floor(Math.random()*3)),1.0)}
 function sfxBreath(){playBuf('surface',0.9)}
 function sfxBlow(){playBuf('spout',1.0)}
-function sfxHorn(){playBuf('horn',1.0);playBuf('death',1.0)}
+function sfxHorn(){playBuf('horn',0.7);playBuf('death',0.7)}
 let W,H,dpr=Math.min(window.devicePixelRatio||1,2),SC=1,OX=0,OY=0;
 const N=MM.N, HR=MM.hex.R, HOX=MM.hex.ox, HOY=MM.hex.oy, SQ3=Math.sqrt(3);
 const PRE={'H3':'파나마','3E':'파나마','3F':'파나마','5L':'라이베리아','9H':'몰타','9V':'싱가포르','OW':'덴마크','FL':'프랑스','BO':'중국','BV':'대만','D7':'대한민국','LA':'노르웨이','7J':'일본'};
@@ -366,9 +366,17 @@ let ships=[],krill=[],parts=[],wh,o2,hg,cnB,cnK,gtime,dead,cardTarget=null;
 let hold=false,breath=0,canB=true,ts=1,tscale=1,ptr=null,pd=null,last=0,wphase=0;
 const keys={};const DAYRATE=0.2,SHIP_K=1.35;
 function seglen(a,b){return Math.hypot(b[0]-a[0],b[1]-a[1])}
-function mkShips(){ships=MM.ships.map(s=>{const lane=MM.lanes[s.lane],rt=s.rev?lane.slice().reverse():lane;
- let segs=[],tot=0;for(let i=1;i<rt.length;i++){const d=seglen(rt[i-1],rt[i]);segs.push(d);tot+=d}
- return Object.assign({},s,{rt,segs,tot,d:Math.random()*tot,dir:Math.random()<0.5?1:-1,fade:1,dx:rt[0][0],dy:rt[0][1],ang:0,pp:null})})}
+function laneOf(idx){const lane=MM.lanes[idx],rev=Math.random()<0.5,rt=rev?lane.slice().reverse():lane;let segs=[],tot=0;for(let i=1;i<rt.length;i++){const d=seglen(rt[i-1],rt[i]);segs.push(d);tot+=d}return{rt,segs,tot,rev:rev?1:0}}
+function mkOne(meta,laneIdx,type,color,sm,sz,actDay){const L=laneOf(laneIdx);return Object.assign({},meta,L,{type,color,sm,sz,actDay,lane:laneIdx,d:Math.random()*L.tot,dir:Math.random()<0.5?1:-1,fade:0,dx:L.rt[0][0],dy:L.rt[0][1],ang:0,pp:null,burst:1,bt:0})}
+function mkShips(){ships=[];const meta=MM.ships,nL=MM.lanes.length,pick=i=>meta[i%meta.length],rl=()=>(Math.random()*nL)|0;
+ /* 빨강: 기존 함대(현재 수) — 0~5일에 걸쳐 점증(처음 4척만 0일부터) */
+ meta.forEach((m,i)=>{const ad=i<4?0:(i-4)/Math.max(1,meta.length-4)*5;ships.push(mkOne(m,m.lane,'red','#e0544a',1,1,ad))});
+ /* 노랑: 10일~, 빨강의 절반 수, 1.5배 속도, 다른 경로 */
+ for(let i=0;i<7;i++)ships.push(mkOne(pick(i),rl(),'yellow','#f2c14e',1.5,1,10+Math.random()*2));
+ /* 파랑: 30일~, 노랑보다 조금 적게, 평소 빨강속도+랜덤 2배 버스트 */
+ for(let i=0;i<5;i++)ships.push(mkOne(pick(i+3),rl(),'blue','#5aa9e6',1,1,30+Math.random()*3));
+ /* 초록: 50일~, 노랑보다 적게, 2배 속도·작은 크기 */
+ for(let i=0;i<4;i++)ships.push(mkOne(pick(i+6),rl(),'green','#3fae6a',2,0.62,50+Math.random()*3))}
 function shipPos(s){let d=s.d,i=0;while(i<s.segs.length-1&&d>s.segs[i]){d-=s.segs[i];i++}
  const a=s.rt[i],b=s.rt[i+1],f=Math.min(1,d/(s.segs[i]||1));s.dx=a[0]+(b[0]-a[0])*f;s.dy=a[1]+(b[1]-a[1])*f;const dr=s.dir||1;s.ang=Math.atan2((b[1]-a[1])*dr,(b[0]-a[0])*dr)}
 function seaSpot(minD){for(let i=0;i<500;i++){const x=60+Math.random()*(N-120),y=60+Math.random()*(N-120);
@@ -483,14 +491,17 @@ function frame(now){requestAnimationFrame(frame);let dt=Math.min(0.05,(now-last)
   if(tx||ty)wh.ang=Math.atan2(ty,tx);
   else if(sp>0.5)wh.ang=Math.atan2(wh.vy,wh.vx);
   wphase+=dt*(3+sp*0.02);wh.wag=(wh.wag||0)+((Math.min(1,sp/(N*0.22)))-(wh.wag||0))*Math.min(1,dt*5);
+  const hard=gameDays()>=10;const _kt=hard?4:2;while(krill.length<_kt)krill.push(mkKrill());const krec=hard?0.17:0.34;
   for(const k of krill){if(k.amt<=0){if(k.cd>0){k.cd-=dt;if(k.cd<=0)Object.assign(k,mkKrill())}continue}
    k.grow=Math.min(1,(k.grow||0)+dt*1.5);
-   if(Math.hypot(wh.x-k.x,wh.y-k.y)<26){const pd=k.pd==null?Math.ceil(k.amt*6):k.pd;k.amt-=dt*1.6;hg=Math.min(1,hg+dt*0.34);const nd=Math.max(0,Math.ceil(k.amt*6));if(nd<pd)sfxEat();k.pd=nd;if(k.amt<=0){cnK++;k.cd=7+Math.random()*4}}}
-  for(const s of ships){const p0=px(s.dx,s.dy);s.pp={x:p0.x,y:p0.y};
-   s.d+=(s.dir||1)*s.kn*SHIP_K*gdt;
+   if(Math.hypot(wh.x-k.x,wh.y-k.y)<26){const pd=k.pd==null?Math.ceil(k.amt*6):k.pd;k.amt-=dt*1.6;hg=Math.min(1,hg+dt*krec);const nd=Math.max(0,Math.ceil(k.amt*6));if(nd<pd)sfxEat();k.pd=nd;if(k.amt<=0){cnK++;k.cd=7+Math.random()*4}}}
+  const gd=gameDays();
+  for(const s of ships){if(gd<s.actDay){s.fade=0;continue}const p0=px(s.dx,s.dy);s.pp={x:p0.x,y:p0.y};
+   if(s.type==='blue'){s.bt-=dt;if(s.bt<=0){s.burst=Math.random()<0.45?2:1;s.bt=0.7+Math.random()*1.6}}
+   s.d+=(s.dir||1)*s.kn*SHIP_K*(s.sm||1)*(s.burst||1)*gdt;
    if(s.d>=s.tot){s.d=s.tot;s.dir=-1;s.pp=null}else if(s.d<=0){s.d=0;s.dir=1;s.pp=null}
    s.fade=Math.min(1,Math.min(s.d,s.tot-s.d)/Math.min(40,s.tot*0.18));shipPos(s)}
-  const wr=surf?15:9;for(const s of ships){if(s.fade>0.3&&Math.hypot(wh.x-s.dx,wh.y-s.dy)<wr+8){die('충돌');break}}
+  const wr=surf?15:9;for(const s of ships){if(s.fade>0.3&&Math.hypot(wh.x-s.dx,wh.y-s.dy)<wr+8*(s.sz||1)){die('충돌');break}}
   let _nd=1e9;for(const s of ships){if(s.fade>0.2){const dd=Math.hypot(wh.x-s.dx,wh.y-s.dy);if(dd<_nd)_nd=dd}}sfxAmbient(Math.min(1,sp/(N*0.13)),Math.max(0,1-_nd/(N*0.22)));
   if(!dead){if(o2<=0)die('질식');else if(hg<=0)die('굶주림')}
   $('mode').textContent=surf?t('m_surf'):(o2<0.5?t('m_low'):t('m_dive'));
@@ -530,9 +541,9 @@ function draw(dt){
   ctx.fillStyle='rgba(70,184,122,.16)';ctx.beginPath();ctx.arc(p.x,p.y,(24*f+8)*SC,0,6.283);ctx.fill();
   ctx.fillStyle='#46b87a';for(let i=0;i<6;i++){if(i/6>=f)break;const a=k.seed+i*1.2,r=(5+(i%3)*5)*SC;ctx.beginPath();ctx.arc(p.x+Math.cos(a)*r,p.y+Math.sin(a)*r,3*SC,0,6.283);ctx.fill()}}
  // ships + name labels
- for(const s of ships){const fa=(s.fade==null?1:s.fade)*seeAlpha(s.dx,s.dy);if(fa<=0.02)continue;const p=px(s.dx,s.dy),w=20*SC,h=15*SC;ctx.globalAlpha=fa;
+ for(const s of ships){const fa=(s.fade==null?1:s.fade)*seeAlpha(s.dx,s.dy);if(fa<=0.02)continue;const sz=s.sz||1,p=px(s.dx,s.dy),w=20*SC*sz,h=15*SC*sz;ctx.globalAlpha=fa;
   ctx.save();ctx.translate(p.x,p.y+4*SC);rr(ctx,-w/2,-h/2,w,h,5*SC);ctx.fillStyle='rgba(60,80,90,.13)';ctx.fill();ctx.restore();
-  ctx.save();ctx.translate(p.x,p.y);ctx.rotate(s.ang);rr(ctx,-w/2,-h*0.42,w,h*0.84,4*SC);ctx.fillStyle='#e0544a';ctx.fill();
+  ctx.save();ctx.translate(p.x,p.y);ctx.rotate(s.ang);rr(ctx,-w/2,-h*0.42,w,h*0.84,4*SC);ctx.fillStyle=s.color||'#e0544a';ctx.fill();
   ctx.fillStyle='rgba(255,255,255,.85)';rr(ctx,w*0.1,-h*0.2,w*0.26,h*0.4,2*SC);ctx.fill();ctx.restore();
   if(SC>0.22&&fa>0.5){ctx.font=`600 ${Math.max(7,8.5*SC)}px sans-serif`;ctx.textAlign='center';
    ctx.lineWidth=3*SC;ctx.strokeStyle='rgba(238,241,240,.85)';ctx.strokeText(s.n,p.x,p.y-h/2-5*SC);
