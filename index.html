@@ -94,7 +94,16 @@ canvas{position:fixed;inset:0;display:block}
 #rankov h3{margin:0 0 6px;font-size:21px;color:#243a44;font-weight:800}
 #rankov .rkcount{max-width:430px;font-size:12.5px;line-height:1.6;color:#5a6e76;margin:0 0 16px}
 #rankov .rklist{width:100%;max-width:430px;background:#fff;border-radius:16px;padding:10px 16px;box-shadow:0 6px 18px rgba(60,80,90,.12);text-align:left}
-#rankclose{margin-top:20px;background:#2f3a40;color:#fff;border:none;border-radius:22px;padding:12px 28px;font-weight:700;font-size:14px;cursor:pointer}
+#rankclose,#factsclose{margin-top:20px;background:#2f3a40;color:#fff;border:none;border-radius:22px;padding:12px 28px;font-weight:700;font-size:14px;cursor:pointer}
+#factBox{margin-top:16px;width:100%;max-width:330px;background:#fff;border-radius:16px;padding:13px 16px 12px;box-shadow:0 6px 18px rgba(60,80,90,.12);text-align:left}
+#factHead{font-size:11.5px;font-weight:800;color:#2f74b8;margin-bottom:5px}
+#factBody{font-size:12.5px;line-height:1.62;color:#5a6e76}
+#factView{margin-top:9px;font-size:11px}
+#factsov{position:fixed;inset:0;z-index:40;background:rgba(233,241,240,.97);backdrop-filter:blur(5px);display:none;flex-direction:column;align-items:center;overflow-y:auto;padding:40px 18px 32px;text-align:center}
+#factsov h3{margin:0 0 14px;font-size:19px;color:#243a44;font-weight:800}
+.factrow{font-size:12.5px;line-height:1.6;color:#5a6e76;padding:9px 2px;border-bottom:1px solid #eef1f0}
+.factrow:last-child{border-bottom:none}
+.factrow.locked{color:#bcc5c9;font-style:italic}
 .lbrow span{width:18px;text-align:center;color:#aeb9bf;font-weight:700}
 .lbrow b{flex:1;min-width:0;color:#3f5560;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .lbrow em{color:#2f74b8;font-style:normal;font-weight:700}
@@ -162,7 +171,7 @@ canvas{position:fixed;inset:0;display:block}
  <div class="close" id="info_close">시작</div>
  <span class="orglink" onclick="openOrgs()">🐋 고래를 지키는 사람들</span>
 </div>
-<div id="over" class="ui"><h1 id="oh"></h1><p id="op"></p><div id="rank"></div><div id="lbBox"><div id="lbForm"><input id="lbName" maxlength="16" placeholder="이름 (랭킹에 표시)"><button id="lbSubmit">랭킹 등록</button></div><div class="lbttl">🌊 전 세계 랭킹</div><div id="lbList"></div></div><div class="go" id="goagain">다시 잠수 — Enter</div><button id="share">📤 내 기록 공유하기</button><br><span class="orglink" onclick="openOrgs()">🐋 고래를 지키는 사람들</span></div>
+<div id="over" class="ui"><h1 id="oh"></h1><p id="op"></p><div id="factBox"><div id="factHead"></div><div id="factBody"></div><span class="orglink" id="factView" onclick="openFacts()">📖</span></div><div id="rank"></div><div id="lbBox"><div id="lbForm"><input id="lbName" maxlength="16" placeholder="이름 (랭킹에 표시)"><button id="lbSubmit">랭킹 등록</button></div><div class="lbttl">🌊 전 세계 랭킹</div><div id="lbList"></div></div><div class="go" id="goagain">다시 잠수 — Enter</div><button id="share">📤 내 기록 공유하기</button><br><span class="orglink" onclick="openOrgs()">🐋 고래를 지키는 사람들</span></div>
 <div id="orgs">
  <h3>고래를 지키는 사람들</h3>
  <p class="lead">이 게임은 실화입니다. 해마다 전 세계에서 약 2만 마리의 고래가 화물선과 충돌해 죽습니다.<br>이 문제를 직접 다루는 사람들을 모았습니다.</p>
@@ -182,6 +191,11 @@ canvas{position:fixed;inset:0;display:block}
  <p class="rkcount" id="rkCount"></p>
  <div id="rkList" class="rklist"></div>
  <button id="rankclose">← 게임으로</button>
+</div>
+<div id="factsov">
+ <h3 id="factsHead"></h3>
+ <div id="factsList" class="rklist"></div>
+ <button id="factsclose">← 게임으로</button>
 </div>
 <script>
 'use strict';
@@ -212,7 +226,8 @@ const L10N={ko:{
  dest:'행선지', callsign:'호출부호', flagged:'선적', realship:'운항 중인 화물선',
  seelive:'🌊 실제 바다에서 보기 (라이브)', portmajor:'주요 항만',
  o2tip:'<b>산소 (숨)</b><br>잠수하면 닳아요. 떨어지면 느려지다 질식 — 화물선이 다니는 <b>수면</b>으로 올라가 숨을 쉬세요.',
- hgtip:'<b>허기</b><br>시간이 지나면 배고파져요. 바다에 흩어진 <b style="color:#46b87a">크릴</b>을 먹어 채우세요.'
+ hgtip:'<b>허기</b><br>시간이 지나면 배고파져요. 바다에 흩어진 <b style="color:#46b87a">크릴</b>을 먹어 채우세요.',
+ facts_new:'🐋 새로 알게 된 사실', facts_seen:'🐋 고래 이야기', facts_view:'📖 모은 사실 보기', facts_all:'📖 모은 사실', facts_locked:'🔒 아직 모으지 못한 사실'
 },en:{
  title:'Why Whales Die', start:'Start', back:'← Back to game', goagain:'Dive again — Enter',
  breathe:'Breathe', breathe_sub:'hold',
@@ -235,7 +250,8 @@ const L10N={ko:{
  dest:'to', callsign:'Call sign', flagged:'flag', realship:'A cargo ship in transit',
  seelive:'🌊 See it on the real ocean (live)', portmajor:'Major port',
  o2tip:'<b>Oxygen (breath)</b><br>Drains while diving. Run out and you slow, then suffocate — surface (where the ships are) to breathe.',
- hgtip:'<b>Hunger</b><br>You get hungry over time. Eat <b style="color:#46b87a">krill</b> scattered across the sea to refill.'
+ hgtip:'<b>Hunger</b><br>You get hungry over time. Eat <b style="color:#46b87a">krill</b> scattered across the sea to refill.',
+ facts_new:'🐋 A fact you just learned', facts_seen:'🐋 Whale fact', facts_view:'📖 View collected facts', facts_all:'📖 Facts collected', facts_locked:'🔒 Not collected yet'
 }};
 const WD={ko:['일','월','화','수','목','금','토'],en:['Sun','Mon','Tue','Wed','Thu','Fri','Sat']};
 const CONT={ko:['아메리카','아시아','유럽·아프리카','오세아니아'],en:['Americas','Asia','Europe & Africa','Oceania']};
@@ -616,6 +632,36 @@ function draw(dt){
  for(let i=parts.length-1;i>=0;i--){const pa=parts[i];pa.l-=dt;if(pa.l<=0){parts.splice(i,1);continue}
   pa.x+=pa.vx*dt;pa.y+=pa.vy*dt;pa.vx*=0.95;pa.vy*=0.95;const p=px(pa.x,pa.y);ctx.fillStyle=`rgba(120,200,255,${pa.l})`;ctx.beginPath();ctx.arc(p.x,p.y,2.6*SC,0,6.283);ctx.fill()}
 }
+const FACTS=[
+ {ko:'대왕고래는 지구 역사상 가장 큰 동물 — 최대 30m, 혀만 코끼리만 하다.',en:'The blue whale is the largest animal that has ever lived — up to 30m; its tongue alone weighs as much as an elephant.'},
+ {ko:'선박과의 충돌은 대왕고래의 가장 큰 사망 원인 중 하나다.',en:'Ship strikes are one of the leading causes of blue whale death.'},
+ {ko:'해마다 전 세계에서 약 2만 마리의 고래가 배에 치여 죽는다.',en:'About 20,000 whales are killed by ships worldwide every year.'},
+ {ko:'배가 10노트로 감속하면 고래 치사 충돌이 크게 줄어든다.',en:'Slowing ships to 10 knots sharply reduces fatal whale strikes.'},
+ {ko:'대왕고래의 심장은 자동차만 하고, 박동은 3km 밖에서도 감지된다.',en:"A blue whale's heart is the size of a small car; its beat can be detected from 3km away."},
+ {ko:'고래는 수면으로 올라와 숨을 쉬어야 해서, 바쁜 항로와 겹칠 수밖에 없다.',en:'Whales must surface to breathe, so they inevitably overlap with busy shipping lanes.'},
+ {ko:'고래 한 마리는 평생 수십 톤의 탄소를 몸에 저장해 기후를 돕는다.',en:'A single whale stores tens of tons of carbon over its life, helping fight climate change.'},
+ {ko:'고래 배설물은 식물성 플랑크톤을 키우고, 그 플랑크톤이 지구 산소의 상당량을 만든다.',en:"Whale poop fertilizes plankton that produce a large share of Earth's oxygen."},
+ {ko:'북대서양참고래는 350여 마리만 남았고, 선박 충돌이 가장 큰 위협이다.',en:'Fewer than ~350 North Atlantic right whales remain; ship strikes are their top threat.'},
+ {ko:'제주 남방큰돌고래는 한국 연안에 100여 마리뿐이다.',en:'Only about 100 Indo-Pacific bottlenose dolphins live off the coast of Jeju, Korea.'},
+ {ko:'충돌당한 고래는 한참 헤엄치다 멀리서 죽어, 실제 사망 수는 더 많다.',en:'Struck whales often swim off and die far away, so the real death toll is higher than recorded.'},
+ {ko:'배 위치는 AIS로 공개되지만, 고래 위치는 예측하기 어렵다.',en:'Ship positions are public via AIS, but whales are very hard to track.'},
+ {ko:'어구에 얽히는 혼획도 고래의 큰 사망 원인이다.',en:'Entanglement in fishing gear is another major cause of whale death.'},
+ {ko:'일부 항만은 고래를 위한 감속 구역을 운영한다.',en:'Some ports run voluntary slow-down zones to protect whales.'},
+ {ko:'대왕고래는 하루에 크릴을 4톤까지 먹는다.',en:'A blue whale can eat up to 4 tons of krill in a single day.'},
+ {ko:'고래 노래는 바닷속에서 수백 km를 여행한다.',en:'Whale songs can travel hundreds of kilometers through the ocean.'},
+ {ko:'고래가 죽어 가라앉으면, 그 사체가 수십 년간 심해 생태계를 먹여 살린다.',en:'When a whale dies and sinks, its body feeds a deep-sea ecosystem for decades.'},
+ {ko:'당신의 공유 한 번이, 이 문제를 모르던 누군가에게 닿는다.',en:"One share of yours reaches someone who didn't know this was happening."}
+];
+function getFacts(){try{return JSON.parse(localStorage.getItem('mm2_facts')||'[]')}catch(e){return[]}}
+function revealFact(){const got=getFacts(),un=FACTS.map((_,i)=>i).filter(i=>got.indexOf(i)<0);let idx,isNew=false;
+ if(un.length){idx=un[Math.floor(Math.random()*un.length)];got.push(idx);isNew=true;try{localStorage.setItem('mm2_facts',JSON.stringify(got))}catch(e){}}
+ else idx=Math.floor(Math.random()*FACTS.length);
+ return{idx,isNew,count:getFacts().length}}
+function factsRender(){const el=$('factsList');if(!el)return;const got=getFacts();
+ $('factsHead').textContent=`${t('facts_all')} ${got.length}/${FACTS.length}`;
+ el.innerHTML=FACTS.map((f,i)=>got.indexOf(i)>=0?`<div class="factrow">${esc(LANG==='en'?f.en:f.ko)}</div>`:`<div class="factrow locked">${t('facts_locked')}</div>`).join('')}
+function openFacts(){$('factsov').style.display='flex';$('factsov').scrollTop=0;paused=true;factsRender()}
+$('factsclose').onclick=()=>{$('factsov').style.display='none';paused=false};
 function die(r){dead=true;if(r==='충돌')sfxHorn();else if(r==='굶주림')playBuf('death2',0.85);else playBuf('death',0.85);const d=gameDays();lastDays=Math.floor(d);let R=recs();R.push({d,b:cnB,k:cnK});R.sort((a,b)=>b.d-a.d);R=R.slice(0,5);
  try{localStorage.setItem('mm2_rec',JSON.stringify(R))}catch(e){}
  const rank=R.findIndex(x=>Math.abs(x.d-d)<1e-9)+1;
@@ -625,6 +671,7 @@ function die(r){dead=true;if(r==='충돌')sfxHorn();else if(r==='굶주림')play
  $('rank').innerHTML=t('best')+'<br>'+R.map((x,i)=>LANG==='en'?`${i+1}. <b>${Math.floor(x.d)}d</b> — breaths ${x.b} · krill ${x.k}`:`${i+1}. <b>${Math.floor(x.d)}일</b> — 숨 ${x.b} · 크릴 ${x.k}`).join('<br>');
  if(LB_ON()){$('rank').style.display='none';$('lbBox').style.display='block';const btn=$('lbSubmit');btn.disabled=false;btn.textContent=t('lb_submit');$('lbForm').style.opacity=1;try{$('lbName').value=localStorage.getItem('mm2_name')||''}catch(e){}lbRender().catch(()=>{})}
  else{$('rank').style.display='';$('lbBox').style.display='none'}
+ const ff=revealFact(),FF=FACTS[ff.idx];$('factHead').textContent=(ff.isNew?t('facts_new'):t('facts_seen'))+` · ${ff.count}/${FACTS.length}`;$('factBody').textContent=LANG==='en'?FF.en:FF.ko;$('factView').textContent=t('facts_view');
  $('over').style.display='flex'}
 applyI18N();resize();reset();last=performance.now();requestAnimationFrame(frame);
 </script></body></html>
