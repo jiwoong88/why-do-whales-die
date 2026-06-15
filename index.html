@@ -61,11 +61,12 @@ canvas{position:fixed;inset:0;display:block}
 #breathe span{font-size:15px;font-weight:700}
 #breathe small{font-size:9.5px;color:#a7b4ba;margin-top:2px}
 #breathe.on{background:#dceffb;box-shadow:0 0 0 4px rgba(47,116,184,.18),0 6px 20px rgba(60,80,90,.2)}
-#pad{position:fixed;left:22px;bottom:28px;width:132px;height:132px;border-radius:50%;z-index:6;touch-action:none;
+#pad{position:fixed;left:-46px;bottom:-40px;width:268px;height:268px;border-radius:50%;z-index:6;touch-action:none;background:transparent}
+#padface{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:132px;height:132px;border-radius:50%;pointer-events:none;
  background:rgba(255,255,255,.5);box-shadow:0 4px 16px rgba(60,80,90,.16),inset 0 0 0 2px rgba(255,255,255,.5)}
-#padknob{position:absolute;left:50%;top:50%;width:56px;height:56px;border-radius:50%;background:#fff;
+#padknob{position:absolute;left:50%;top:50%;width:56px;height:56px;border-radius:50%;background:#fff;pointer-events:none;
  box-shadow:0 3px 10px rgba(60,80,90,.28);transform:translate(-50%,-50%)}
-#pad.on #padknob{background:#dceffb}
+#pad.on #padknob{background:#dceffb}#pad.on #padface{background:rgba(220,239,251,.55)}
 #hint{bottom:14px;left:50%;transform:translateX(-50%);font-size:11px;color:#a7b4ba;text-align:center;white-space:nowrap}
 #mode{top:18px;left:50%;transform:translateX(-50%);background:rgba(255,255,255,.8);border-radius:20px;
  padding:6px 16px;font-size:12.5px;font-weight:600;box-shadow:0 3px 10px rgba(60,80,90,.1)}
@@ -163,7 +164,7 @@ canvas{position:fixed;inset:0;display:block}
  <div class="g"><svg class="gi" id="gi_hg" style="cursor:pointer;pointer-events:auto" viewBox="0 0 24 24"><path d="M2.5 12c3.5-5 12-5 16 0-4 5-12.5 5-16 0z" fill="#46b87a"/><path d="M18 12l4-3.2v6.4z" fill="#46b87a"/><circle cx="8" cy="10.6" r="1.1" fill="#fff"/></svg><div class="bar" id="hg"><i></i></div></div>
 </div>
 <button class="ui" id="breathe"><span>숨쉬기</span><small>길게</small></button>
-<div id="pad"><div id="padknob"></div></div>
+<div id="pad"><div id="padface"></div><div id="padknob"></div></div>
 <div class="ui" id="hint">왼쪽 방향패드로 헤엄 · 오른쪽 숨쉬기(길게) · 화물선을 피해</div>
 <div id="card" class="ui"></div>
 <div id="info" class="ui">
@@ -457,7 +458,7 @@ bb.addEventListener('pointerdown',e=>{hold=true;bb.classList.add('on');e.prevent
 ['pointerup','pointercancel','pointerleave'].forEach(ev=>bb.addEventListener(ev,()=>{hold=false;bb.classList.remove('on')}));
 /* 방향패드(아날로그 썸스틱) — 키보드만큼 즉각 반응 */
 const pad=$('pad'),knob=$('padknob'),stick={x:0,y:0,active:false,fresh:false};
-function padMove(e){const r=pad.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2,mx=r.width*0.36;
+function padMove(e){const r=pad.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2,mx=52;
  let dx=e.clientX-cx,dy=e.clientY-cy;const d=Math.hypot(dx,dy);if(d>mx){dx=dx/d*mx;dy=dy/d*mx}
  stick.x=dx/mx;stick.y=dy/mx;knob.style.transform=`translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
  if(wh&&!dead){const mm=Math.hypot(stick.x,stick.y);if(mm>0.12){wh.ang=Math.atan2(stick.y,stick.x);/* 터치 즉시 그 방향으로 스냅 */}}}
