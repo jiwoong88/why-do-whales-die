@@ -355,6 +355,19 @@ const PROF=[[0,.12],[.12,.34],[.25,.6],[.4,.86],[.55,1],[.68,.97],[.8,.84],[.9,.
 function wprof(t){for(let i=0;i<PROF.length-1;i++){const a=PROF[i],b=PROF[i+1];if(t<=b[0]){const f=(t-a[0])/(b[0]-a[0]+1e-9);return a[1]+(b[1]-a[1])*f}}return 0}
 const CD=[.55,.65,.73],CS=[.13,.26,.45],ED=[.40,.50,.58],ES=[.07,.16,.30];  /* 잠수=연한 회청, 숨쉴때(부상)=진한 남색 — 대비 복원 */
 const EYE_D=[.34,.40,.46],EYE_S=[.10,.15,.19];  /* 눈: 잠수=회색(덜 무섭게), 부상=진한색 */
+/* 추천수별 고래 스킨: 0기본·1노랑·2하늘·3연두·4주황·5핑크·6핑크+하트·7핑크+하트+반짝이 */
+const SKINS=[
+ {cd:[.55,.65,.73],cs:[.13,.26,.45],ed:[.40,.50,.58],es:[.07,.16,.30]},
+ {cd:[.97,.86,.42],cs:[.86,.64,.12],ed:[.72,.56,.10],es:[.50,.40,.05]},
+ {cd:[.60,.82,.96],cs:[.22,.55,.82],ed:[.38,.60,.80],es:[.12,.40,.66]},
+ {cd:[.72,.90,.55],cs:[.36,.68,.26],ed:[.50,.72,.34],es:[.24,.50,.16]},
+ {cd:[.99,.75,.40],cs:[.92,.50,.10],ed:[.78,.50,.18],es:[.62,.36,.07]},
+ {cd:[.98,.72,.84],cs:[.88,.42,.62],ed:[.82,.52,.64],es:[.62,.30,.46]},
+ {cd:[.98,.72,.84],cs:[.88,.42,.62],ed:[.82,.52,.64],es:[.62,.30,.46],heart:1},
+ {cd:[.99,.74,.86],cs:[.90,.44,.64],ed:[.84,.54,.66],es:[.64,.32,.48],heart:1,sparkle:1}];
+function cosTier(){return Math.max(0,Math.min(7,(refCount||0)|0))}
+function drawHeart(x,y,s){ctx.beginPath();ctx.moveTo(x,y+s*.35);ctx.bezierCurveTo(x-s,y-s*.25,x-s,y-s*.95,x,y-s*.45);ctx.bezierCurveTo(x+s,y-s*.95,x+s,y-s*.25,x,y+s*.35);ctx.closePath();ctx.fill()}
+function spark(x,y,s){ctx.beginPath();ctx.moveTo(x,y-s);ctx.lineTo(x+s*.26,y-s*.26);ctx.lineTo(x+s,y);ctx.lineTo(x+s*.26,y+s*.26);ctx.lineTo(x,y+s);ctx.lineTo(x-s*.26,y+s*.26);ctx.lineTo(x-s,y);ctx.lineTo(x-s*.26,y-s*.26);ctx.closePath();ctx.fill()}
 const lerpC=(a,b,f)=>'rgb('+a.map((v,i)=>Math.round((v+(b[i]-v)*f)*255)).join(',')+')';
 const chaik=(p,it)=>{for(let k=0;k<it;k++){let n=[];for(let i=0;i<p.length;i++){const a=p[i],b=p[(i+1)%p.length];n.push([a[0]*.75+b[0]*.25,a[1]*.75+b[1]*.25]);n.push([a[0]*.25+b[0]*.75,a[1]*.25+b[1]*.75])}p=n}return p};
 function drawWhale(sx,sy,ang,breath,phase,L,wag){
@@ -376,7 +389,7 @@ function drawWhale(sx,sy,ang,breath,phase,L,wag){
  for(const s of [1,-1]){const bx2=sp[0]+nx*sp[2]*s*.7,by2=sp[1]+ny*sp[2]*s*.7;
   let dx=nx*s*.7-tx/tl*.7,dy=ny*s*.7-ty/tl*.7;const dl=Math.hypot(dx,dy)+1e-9;dx/=dl;dy/=dl;const pp=[-dy,dx];
   pcs.push(chaik([[bx2+pp[0]*FWp,by2+pp[1]*FWp],[bx2+dx*FL,by2+dy*FL],[bx2-pp[0]*FWp,by2-pp[1]*FWp]],1))}
- const C=lerpC(CD,CS,breath),E=lerpC(ED,ES,breath),al=.72+.28*breath;
+ const sk=SKINS[cosTier()],C=lerpC(sk.cd,sk.cs,breath),E=lerpC(sk.ed,sk.es,breath),al=.72+.28*breath;
  const fillP=(pts)=>{ctx.beginPath();pts.forEach((p,i)=>{const t=T(p);i?ctx.lineTo(t[0],t[1]):ctx.moveTo(t[0],t[1])});ctx.closePath()};
  if(breath>.5){const t=T([0,0]);ctx.beginPath();ctx.arc(t[0],t[1],L*.62,0,6.283);ctx.strokeStyle='rgba(95,196,232,.55)';ctx.lineWidth=2.2;ctx.stroke()}
  ctx.globalAlpha=al;
@@ -388,6 +401,8 @@ function drawWhale(sx,sy,ang,breath,phase,L,wag){
  const ei=Math.floor(spine.length*.82),esp=spine[ei],eq0=spine[ei-2],eq1=spine[ei+2];
  let etx=eq1[0]-eq0[0],ety=eq1[1]-eq0[1];const etl=Math.hypot(etx,ety)+1e-9,enx=-ety/etl,eny=etx/etl;
  ctx.fillStyle=lerpC(EYE_D,EYE_S,breath);ctx.globalAlpha=1;for(const sg of [1,-1]){const e=T([esp[0]+enx*esp[2]*0.6*sg,esp[1]+eny*esp[2]*0.6*sg]);ctx.beginPath();ctx.arc(e[0],e[1],L*.085,0,6.283);ctx.fill()}
+ if(sk.heart){ctx.fillStyle='rgba(255,255,255,.95)';ctx.globalAlpha=al;for(const tt of [0.42,0.6]){const hp=spine[Math.floor(spine.length*tt)],h=T([hp[0],hp[1]]);drawHeart(h[0],h[1],L*.17)}}
+ if(sk.sparkle){ctx.fillStyle='#fff';for(let i=0;i<5;i++){const a=phase*0.6+i*1.5,rr2=L*(0.78+0.22*Math.sin(phase*1.3+i)),tw=0.35+0.65*Math.abs(Math.sin(phase*2.2+i*1.9));ctx.globalAlpha=tw;spark(sx+Math.cos(a)*rr2,sy+Math.sin(a)*rr2,L*.13)}}
  ctx.globalAlpha=1;
 }
 
@@ -444,14 +459,15 @@ bb.addEventListener('pointerdown',e=>{hold=true;bb.classList.add('on');e.prevent
 const pad=$('pad'),knob=$('padknob'),stick={x:0,y:0,active:false,fresh:false};
 function padMove(e){const r=pad.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2,mx=r.width*0.36;
  let dx=e.clientX-cx,dy=e.clientY-cy;const d=Math.hypot(dx,dy);if(d>mx){dx=dx/d*mx;dy=dy/d*mx}
- stick.x=dx/mx;stick.y=dy/mx;knob.style.transform=`translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`}
+ stick.x=dx/mx;stick.y=dy/mx;knob.style.transform=`translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+ if(wh&&!dead){const mm=Math.hypot(stick.x,stick.y);if(mm>0.12){wh.ang=Math.atan2(stick.y,stick.x);/* 터치 즉시 그 방향으로 스냅 */}}}
 /* window 기반 멀티터치 조이스틱 — 손가락이 패드 밖으로 나가도 추적, 다른 손가락(숨쉬기)과 독립 */
 stick.id=null;
 pad.addEventListener('pointerdown',e=>{stick.active=true;stick.fresh=true;stick.id=e.pointerId;pad.classList.add('on');padMove(e);e.preventDefault()},{passive:false});
 function padEnd(e){if(stick.active&&(!e||e.pointerId===stick.id)){stick.active=false;stick.id=null;stick.x=0;stick.y=0;pad.classList.remove('on');knob.style.transform='translate(-50%,-50%)'}}
 window.addEventListener('pointermove',e=>{if(stick.active&&e.pointerId===stick.id)padMove(e)});
 window.addEventListener('pointerup',padEnd);window.addEventListener('pointercancel',padEnd);
-cv.addEventListener('pointerdown',e=>{ptr={x:e.clientX,y:e.clientY};pd={x:e.clientX,y:e.clientY,t:performance.now()}});
+cv.addEventListener('pointerdown',e=>{ptr={x:e.clientX,y:e.clientY};pd={x:e.clientX,y:e.clientY,t:performance.now()};if(wh&&!dead){const d=toD(e.clientX,e.clientY);if(Math.hypot(d.x-wh.x,d.y-wh.y)>14)wh.ang=Math.atan2(d.y-wh.y,d.x-wh.x)}});
 cv.addEventListener('pointermove',e=>{if(ptr)ptr={x:e.clientX,y:e.clientY}});
 cv.addEventListener('pointerup',e=>{if(pd&&performance.now()-pd.t<260&&Math.hypot(e.clientX-pd.x,e.clientY-pd.y)<8)inspect(e.clientX,e.clientY);ptr=null;pd=null});
 $('l_restart').onclick=()=>openRank();
@@ -484,18 +500,11 @@ function myRid(){let r=null;try{r=localStorage.getItem('mm2_rid')}catch(e){}if(!
 async function refRecord(){if(!LB_ON())return;let u=null;try{u=new URLSearchParams(location.search).get('ref')}catch(e){}if(!u||u===myRid())return;let done=null;try{done=localStorage.getItem('mm2_reffed')}catch(e){}if(done)return;
  try{const ok=await fetch(`${SUPA_URL}/rest/v1/referrals`,{method:'POST',headers:{apikey:SUPA_KEY,'Content-Type':'application/json',Prefer:'return=minimal'},body:JSON.stringify({ref:u.slice(0,40)})});if(ok.ok)try{localStorage.setItem('mm2_reffed','1')}catch(e){}}catch(e){}}
 async function refFetch(){if(!LB_ON())return;try{const r=await fetch(`${SUPA_URL}/rest/v1/referrals?ref=eq.${encodeURIComponent(myRid())}&select=id`,{headers:{apikey:SUPA_KEY,Prefer:'count=exact',Range:'0-0'}});const cr=r.headers.get('content-range');if(cr){refCount=+cr.split('/')[1]||0;try{localStorage.setItem('mm2_refcount',refCount)}catch(e){}}}catch(e){}}
-function friendCount(){return refCount>=5?3:refCount>=3?2:refCount>=1?1:0}
-function drawFriends(x,y,ang,L){const n=friendCount();if(n<=0)return;const ca=Math.cos(ang),sa=Math.sin(ang),off=[[-1.35,0.75],[-1.35,-0.75],[-2.0,0]];
- for(let i=0;i<n;i++){const bx=off[i][0]*L,by=off[i][1]*L+Math.sin(wphase*1.3+i*2)*L*0.18,fx=x+bx*ca-by*sa,fy=y+bx*sa+by*ca;
-  ctx.save();ctx.translate(fx,fy);ctx.rotate(ang+Math.sin(wphase+i)*0.15);ctx.fillStyle='#4db3a0';
-  ctx.beginPath();ctx.ellipse(0,0,L*0.3,L*0.19,0,0,6.283);ctx.fill();
-  ctx.beginPath();ctx.moveTo(-L*0.26,0);ctx.lineTo(-L*0.48,-L*0.17);ctx.lineTo(-L*0.48,L*0.17);ctx.closePath();ctx.fill();
-  ctx.fillStyle='#1a2630';ctx.beginPath();ctx.arc(L*0.16,-L*0.05,L*0.045,0,6.283);ctx.fill();ctx.restore()}}
 function openRank(){$('rankov').style.display='flex';$('rankov').scrollTop=0;paused=true;rkRender().catch(()=>{})}
 $('rankclose').onclick=()=>{$('rankov').style.display='none';paused=false};
 async function rkRender(){const el=$('rkList');if(!el)return;el.innerHTML=`<div class="lbempty">${t('lb_loading')}</div>`;await refFetch();const rows=await lbTop(20),cnt=await lbCount(),u=LANG==='en'?'d':'일';
  $('rkCount').textContent=LANG==='en'?`${cnt.toLocaleString()} whales have already swum these lanes`:`지금까지 ${cnt.toLocaleString()}마리의 고래가 이 바다를 헤엄쳤습니다`;
- $('rkMine').textContent=refCount>0?(LANG==='en'?`🐋 ${refCount} people became a whale thanks to you — friends now swim with you`:`🐋 당신 덕분에 ${refCount}명이 고래가 되어봤어요 — 친구 물고기가 함께 헤엄쳐요`):(LANG==='en'?'Share your link → invited friends become fish that swim with your whale 🐟':'내 링크로 초대하면 친구 물고기가 고래와 함께 헤엄쳐요 🐟');
+ $('rkMine').textContent=refCount>0?(LANG==='en'?`🐋 ${refCount} people became a whale thanks to you — your whale glows in a special color`:`🐋 당신 덕분에 ${refCount}명이 고래가 되어봤어요 — 고래가 특별한 색으로 빛나요`):(LANG==='en'?'Share your link → your whale changes color & pattern as friends join ✨':'내 링크로 초대하면 추천 수만큼 고래 색·무늬·반짝임이 생겨요 ✨');
  el.innerHTML=rows.length?rows.map((x,i)=>`<div class="lbrow"><span>${i+1}</span><span class="fl">${ccFlag(x.country)}</span><b>${esc(x.name)}</b><em>${Math.floor(x.days)}${u}</em></div>`).join(''):`<div class="lbempty">${t('lb_empty')}</div>`}
 $('lbSubmit').onclick=async()=>{const nm=($('lbName').value||'').trim()||t('anon');try{localStorage.setItem('mm2_name',nm)}catch(e){}const btn=$('lbSubmit');btn.disabled=true;btn.textContent=t('lb_submitting');const ok=await lbSubmit(nm,lastDays,cnB,cnK);btn.textContent=ok?t('lb_done'):t('lb_fail');if(ok){$('lbForm').style.opacity=.55;lbRender().catch(()=>{})}else btn.disabled=false};
 const SHARE_MSG={
@@ -557,7 +566,7 @@ function frame(now){requestAnimationFrame(frame);let dt=Math.min(0.05,(now-last)
   else o2-=dt/24;
   hg-=dt/40;const slow=o2>=0.8?1:o2>=0.5?0.65:o2>=0.3?0.4:Math.max(0.12,o2/0.3*0.4),SPD=N*0.13*(surf?0.05:1)*slow*(stuckT>0?0.35:1);
   let tx=0,ty=0;if(keys.ArrowLeft||keys.KeyA)tx-=1;if(keys.ArrowRight||keys.KeyD)tx+=1;if(keys.ArrowUp||keys.KeyW)ty-=1;if(keys.ArrowDown||keys.KeyS)ty+=1;
-  if(!tx&&!ty&&stick.active){const sm=Math.hypot(stick.x,stick.y);if(sm>0.18){tx=stick.x;ty=stick.y}}
+  if(!tx&&!ty&&stick.active){const sm=Math.hypot(stick.x,stick.y);if(sm>0.12){tx=stick.x;ty=stick.y}}
   if(tx||ty){const m=Math.hypot(tx,ty);tx=tx/m*SPD;ty=ty/m*SPD}else if(ptr&&!stick.active){const d=toD(ptr.x,ptr.y),dx=d.x-wh.x,dy=d.y-wh.y,dd=Math.hypot(dx,dy);if(dd>14){tx=dx/dd*SPD;ty=dy/dd*SPD}}
   if(tx||ty){wh.vx=tx;wh.vy=ty}else{const f=Math.min(1,dt*7);wh.vx-=wh.vx*f;wh.vy-=wh.vy*f}  /* 브롤스타즈식: 스틱 방향 즉시 이동(관성 최소), 떼면 미끄러져 정지 */
   let nx=wh.x+wh.vx*gdt,ny=wh.y+wh.vy*gdt;
@@ -634,7 +643,6 @@ function draw(dt){
   ctx.globalAlpha=1}
  // whale
  if(!dead&&wh){const w=px(wh.x,wh.y);drawWhale(w.x,w.y,wh.ang,breath,wphase,19*SC*(1+0.33*breath),wh.wag||0);
-  drawFriends(w.x,w.y,wh.ang,19*SC*(1+0.33*breath));
   if(stuckT>0){ctx.globalAlpha=0.35+0.5*Math.abs(Math.sin(gtime*9));ctx.fillStyle='#6b7074';for(const o of [[3,-4],[-3,3],[7,2],[-6,-2],[1,5]]){ctx.fillRect(w.x+o[0]*SC-2*SC,w.y+o[1]*SC-2.1*SC,4*SC,4.2*SC)}ctx.globalAlpha=1}}
  // 카드 → 대상(배/항구) 점선 리더선 (배가 움직이면 따라감)
  if(cardTarget&&$('card').style.display==='block'){
