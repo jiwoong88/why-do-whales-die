@@ -92,7 +92,8 @@ canvas{position:fixed;inset:0;display:block}
 .lbrow .fl{font-size:14px;width:18px;text-align:center}
 #rankov{position:fixed;inset:0;z-index:40;background:rgba(233,241,240,.97);backdrop-filter:blur(5px);display:none;flex-direction:column;align-items:center;overflow-y:auto;padding:40px 18px 32px;text-align:center}
 #rankov h3{margin:0 0 6px;font-size:21px;color:#243a44;font-weight:800}
-#rankov .rkcount{max-width:430px;font-size:12.5px;line-height:1.6;color:#5a6e76;margin:0 0 16px}
+#rankov .rkcount{max-width:430px;font-size:12.5px;line-height:1.6;color:#5a6e76;margin:0 0 8px}
+#rankov .rkmine{max-width:430px;font-size:12px;line-height:1.55;color:#2f74b8;font-weight:700;margin:0 0 16px}
 #rankov .rklist{width:100%;max-width:430px;background:#fff;border-radius:16px;padding:10px 16px;box-shadow:0 6px 18px rgba(60,80,90,.12);text-align:left}
 #rankclose,#factsclose{margin-top:20px;background:#2f3a40;color:#fff;border:none;border-radius:22px;padding:12px 28px;font-weight:700;font-size:14px;cursor:pointer}
 #factBox{margin-top:16px;width:100%;max-width:330px;background:#fff;border-radius:16px;padding:13px 16px 12px;box-shadow:0 6px 18px rgba(60,80,90,.12);text-align:left}
@@ -189,6 +190,7 @@ canvas{position:fixed;inset:0;display:block}
 <div id="rankov">
  <h3>🌊 전 세계 랭킹</h3>
  <p class="rkcount" id="rkCount"></p>
+ <p class="rkmine" id="rkMine"></p>
  <div id="rkList" class="rklist"></div>
  <button id="rankclose">← 게임으로</button>
 </div>
@@ -476,10 +478,24 @@ async function lbTop(n){if(!LB_ON())return[];try{const r=await fetch(`${SUPA_URL
 async function lbCount(){if(!LB_ON())return 0;try{const r=await fetch(`${SUPA_URL}/rest/v1/whale_scores?select=id`,{headers:{apikey:SUPA_KEY,Prefer:'count=exact',Range:'0-0'}});const cr=r.headers.get('content-range');return cr?(+cr.split('/')[1]||0):0}catch(e){return 0}}
 async function lbSubmit(name,days,b,k){if(!LB_ON())return false;try{const r=await fetch(`${SUPA_URL}/rest/v1/whale_scores`,{method:'POST',headers:{apikey:SUPA_KEY,'Content-Type':'application/json',Prefer:'return=minimal'},body:JSON.stringify({name:(name||'').slice(0,16),days,breaths:b,krill:k,country:myCC()})});return r.ok}catch(e){return false}}
 async function lbRender(){const el=$('lbList');if(!el)return;el.innerHTML=`<div class="lbempty">${t('lb_loading')}</div>`;const rows=await lbTop(8);const u=LANG==='en'?'d':'일';el.innerHTML=rows.length?rows.map((x,i)=>`<div class="lbrow"><span>${i+1}</span><span class="fl">${ccFlag(x.country)}</span><b>${esc(x.name)}</b><em>${Math.floor(x.days)}${u}</em></div>`).join(''):`<div class="lbempty">${t('lb_empty')}</div>`}
+/* ===== 추천(referral) → 친구 물고기 코스튬 + 임팩트 ===== */
+let refCount=0;try{refCount=+localStorage.getItem('mm2_refcount')||0}catch(e){}
+function myRid(){let r=null;try{r=localStorage.getItem('mm2_rid')}catch(e){}if(!r){r=Math.random().toString(36).slice(2,10);try{localStorage.setItem('mm2_rid',r)}catch(e){}}return r}
+async function refRecord(){if(!LB_ON())return;let u=null;try{u=new URLSearchParams(location.search).get('ref')}catch(e){}if(!u||u===myRid())return;let done=null;try{done=localStorage.getItem('mm2_reffed')}catch(e){}if(done)return;
+ try{const ok=await fetch(`${SUPA_URL}/rest/v1/referrals`,{method:'POST',headers:{apikey:SUPA_KEY,'Content-Type':'application/json',Prefer:'return=minimal'},body:JSON.stringify({ref:u.slice(0,40)})});if(ok.ok)try{localStorage.setItem('mm2_reffed','1')}catch(e){}}catch(e){}}
+async function refFetch(){if(!LB_ON())return;try{const r=await fetch(`${SUPA_URL}/rest/v1/referrals?ref=eq.${encodeURIComponent(myRid())}&select=id`,{headers:{apikey:SUPA_KEY,Prefer:'count=exact',Range:'0-0'}});const cr=r.headers.get('content-range');if(cr){refCount=+cr.split('/')[1]||0;try{localStorage.setItem('mm2_refcount',refCount)}catch(e){}}}catch(e){}}
+function friendCount(){return refCount>=5?3:refCount>=3?2:refCount>=1?1:0}
+function drawFriends(x,y,ang,L){const n=friendCount();if(n<=0)return;const ca=Math.cos(ang),sa=Math.sin(ang),off=[[-1.35,0.75],[-1.35,-0.75],[-2.0,0]];
+ for(let i=0;i<n;i++){const bx=off[i][0]*L,by=off[i][1]*L+Math.sin(wphase*1.3+i*2)*L*0.18,fx=x+bx*ca-by*sa,fy=y+bx*sa+by*ca;
+  ctx.save();ctx.translate(fx,fy);ctx.rotate(ang+Math.sin(wphase+i)*0.15);ctx.fillStyle='#4db3a0';
+  ctx.beginPath();ctx.ellipse(0,0,L*0.3,L*0.19,0,0,6.283);ctx.fill();
+  ctx.beginPath();ctx.moveTo(-L*0.26,0);ctx.lineTo(-L*0.48,-L*0.17);ctx.lineTo(-L*0.48,L*0.17);ctx.closePath();ctx.fill();
+  ctx.fillStyle='#1a2630';ctx.beginPath();ctx.arc(L*0.16,-L*0.05,L*0.045,0,6.283);ctx.fill();ctx.restore()}}
 function openRank(){$('rankov').style.display='flex';$('rankov').scrollTop=0;paused=true;rkRender().catch(()=>{})}
 $('rankclose').onclick=()=>{$('rankov').style.display='none';paused=false};
-async function rkRender(){const el=$('rkList');if(!el)return;el.innerHTML=`<div class="lbempty">${t('lb_loading')}</div>`;const rows=await lbTop(20),cnt=await lbCount(),u=LANG==='en'?'d':'일';
+async function rkRender(){const el=$('rkList');if(!el)return;el.innerHTML=`<div class="lbempty">${t('lb_loading')}</div>`;await refFetch();const rows=await lbTop(20),cnt=await lbCount(),u=LANG==='en'?'d':'일';
  $('rkCount').textContent=LANG==='en'?`${cnt.toLocaleString()} whales have already swum these lanes`:`지금까지 ${cnt.toLocaleString()}마리의 고래가 이 바다를 헤엄쳤습니다`;
+ $('rkMine').textContent=refCount>0?(LANG==='en'?`🐋 ${refCount} people became a whale thanks to you — friends now swim with you`:`🐋 당신 덕분에 ${refCount}명이 고래가 되어봤어요 — 친구 물고기가 함께 헤엄쳐요`):(LANG==='en'?'Share your link → invited friends become fish that swim with your whale 🐟':'내 링크로 초대하면 친구 물고기가 고래와 함께 헤엄쳐요 🐟');
  el.innerHTML=rows.length?rows.map((x,i)=>`<div class="lbrow"><span>${i+1}</span><span class="fl">${ccFlag(x.country)}</span><b>${esc(x.name)}</b><em>${Math.floor(x.days)}${u}</em></div>`).join(''):`<div class="lbempty">${t('lb_empty')}</div>`}
 $('lbSubmit').onclick=async()=>{const nm=($('lbName').value||'').trim()||t('anon');try{localStorage.setItem('mm2_name',nm)}catch(e){}const btn=$('lbSubmit');btn.disabled=true;btn.textContent=t('lb_submitting');const ok=await lbSubmit(nm,lastDays,cnB,cnK);btn.textContent=ok?t('lb_done'):t('lb_fail');if(ok){$('lbForm').style.opacity=.55;lbRender().catch(()=>{})}else btn.disabled=false};
 const SHARE_MSG={
@@ -498,7 +514,7 @@ const SHARE_MSG={
  th:d=>`ฉันรอดมา ${d} วันใน "ทำไมวาฬถึงตาย" 🐋 คุณหลบเรือบรรทุกได้นานกว่าไหม?`,
  ar:d=>`نجوت ${d} يومًا في «لماذا تموت الحيتان» 🐋 هل يمكنك تفادي سفن الشحن مدةً أطول؟`,
  hi:d=>`मैं "व्हेल क्यों मरती हैं" में ${d} दिन ज़िंदा रहा 🐋 क्या तुम मालवाहक जहाज़ों से ज़्यादा देर बच सकते हो?`};
-function shareScore(){const url='https://gorae-hwamulseon.vercel.app';
+function shareScore(){const url='https://gorae-hwamulseon.vercel.app/?ref='+myRid();
  const sl=(navigator.language||'en').slice(0,2).toLowerCase(),loc=(SHARE_MSG[sl]||SHARE_MSG.en)(lastDays);
  const mono=(sl==='en'||sl==='ko'||sl==='ja');/* 한국·일본은 현지어만, 그 외는 +영어 */
  const txt=mono?loc:loc+'\n'+SHARE_MSG.en(lastDays);
@@ -618,6 +634,7 @@ function draw(dt){
   ctx.globalAlpha=1}
  // whale
  if(!dead&&wh){const w=px(wh.x,wh.y);drawWhale(w.x,w.y,wh.ang,breath,wphase,19*SC*(1+0.33*breath),wh.wag||0);
+  drawFriends(w.x,w.y,wh.ang,19*SC*(1+0.33*breath));
   if(stuckT>0){ctx.globalAlpha=0.35+0.5*Math.abs(Math.sin(gtime*9));ctx.fillStyle='#6b7074';for(const o of [[3,-4],[-3,3],[7,2],[-6,-2],[1,5]]){ctx.fillRect(w.x+o[0]*SC-2*SC,w.y+o[1]*SC-2.1*SC,4*SC,4.2*SC)}ctx.globalAlpha=1}}
  // 카드 → 대상(배/항구) 점선 리더선 (배가 움직이면 따라감)
  if(cardTarget&&$('card').style.display==='block'){
@@ -673,5 +690,5 @@ function die(r){dead=true;if(r==='충돌')sfxHorn();else if(r==='굶주림')play
  else{$('rank').style.display='';$('lbBox').style.display='none'}
  const ff=revealFact(),FF=FACTS[ff.idx];$('factHead').textContent=(ff.isNew?t('facts_new'):t('facts_seen'))+` · ${ff.count}/${FACTS.length}`;$('factBody').textContent=LANG==='en'?FF.en:FF.ko;$('factView').textContent=t('facts_view');
  $('over').style.display='flex'}
-applyI18N();resize();reset();last=performance.now();requestAnimationFrame(frame);
+applyI18N();refRecord();refFetch();resize();reset();last=performance.now();requestAnimationFrame(frame);
 </script></body></html>
