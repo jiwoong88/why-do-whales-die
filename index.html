@@ -484,7 +484,8 @@ const SHARE_MSG={
  hi:d=>`मैं "व्हेल क्यों मरती हैं" में ${d} दिन ज़िंदा रहा 🐋 क्या तुम मालवाहक जहाज़ों से ज़्यादा देर बच सकते हो?`};
 function shareScore(){const url='https://gorae-hwamulseon.vercel.app';
  const sl=(navigator.language||'en').slice(0,2).toLowerCase(),loc=(SHARE_MSG[sl]||SHARE_MSG.en)(lastDays);
- const txt=sl==='en'?loc:loc+'\n'+SHARE_MSG.en(lastDays);
+ const mono=(sl==='en'||sl==='ko'||sl==='ja');/* 한국·일본은 현지어만, 그 외는 +영어 */
+ const txt=mono?loc:loc+'\n'+SHARE_MSG.en(lastDays);
  if(navigator.share){navigator.share({title:'Why Whales Die · 왜 죽는 고래?',text:txt,url}).catch(()=>{});return}
  const full=txt+'\n'+url;
  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(full).then(()=>{const b=$('share'),o=b.textContent;b.textContent=t('share_copied');setTimeout(()=>b.textContent=o,1800)}).catch(()=>prompt(t('share_prompt'),full))}
