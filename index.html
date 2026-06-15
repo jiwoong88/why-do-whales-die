@@ -89,6 +89,12 @@ canvas{position:fixed;inset:0;display:block}
 .lbttl{font-size:12px;font-weight:700;color:#5a6e76;margin-bottom:7px;text-align:left}
 #lbList{background:#fff;border-radius:16px;padding:8px 14px;box-shadow:0 6px 18px rgba(60,80,90,.12);text-align:left}
 .lbrow{display:flex;align-items:center;gap:9px;font-size:13px;line-height:1.95;color:#7c8c93}
+.lbrow .fl{font-size:14px;width:18px;text-align:center}
+#rankov{position:fixed;inset:0;z-index:40;background:rgba(233,241,240,.97);backdrop-filter:blur(5px);display:none;flex-direction:column;align-items:center;overflow-y:auto;padding:40px 18px 32px;text-align:center}
+#rankov h3{margin:0 0 6px;font-size:21px;color:#243a44;font-weight:800}
+#rankov .rkcount{max-width:430px;font-size:12.5px;line-height:1.6;color:#5a6e76;margin:0 0 16px}
+#rankov .rklist{width:100%;max-width:430px;background:#fff;border-radius:16px;padding:10px 16px;box-shadow:0 6px 18px rgba(60,80,90,.12);text-align:left}
+#rankclose{margin-top:20px;background:#2f3a40;color:#fff;border:none;border-radius:22px;padding:12px 28px;font-weight:700;font-size:14px;cursor:pointer}
 .lbrow span{width:18px;text-align:center;color:#aeb9bf;font-weight:700}
 .lbrow b{flex:1;min-width:0;color:#3f5560;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .lbrow em{color:#2f74b8;font-style:normal;font-weight:700}
@@ -133,7 +139,7 @@ canvas{position:fixed;inset:0;display:block}
  <div id="clock"><i id="ch"></i><i class="h2" id="cm"></i></div>
 </div>
 <div class="ui" id="lctl">
- <button class="btn badge" id="l_restart" style="position:relative"><svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 1 2.3 5.6M4 12V7m0 5h5"/></svg><span id="krc">0</span></button>
+ <button class="btn" id="l_restart" title="랭킹"><svg viewBox="0 0 24 24"><path d="M6 20V11M12 20V5M18 20v-6"/></svg></button>
  <button class="btn" id="l_live" title="실제 바다 보기"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="2.6"/><path d="M5.6 5.6a9 9 0 0 0 0 12.8M18.4 5.6a9 9 0 0 1 0 12.8M8.7 8.7a4.7 4.7 0 0 0 0 6.6M15.3 8.7a4.7 4.7 0 0 1 0 6.6"/></svg><span class="dot"></span></button>
 </div>
 <div id="real">
@@ -170,6 +176,12 @@ canvas{position:fixed;inset:0;display:block}
  <p class="disc">이 게임은 위 단체들과 후원·광고 관계가 전혀 없습니다.<br>그저 더 알고 싶은 분들을 위해 길을 모아둔 것뿐입니다.</p>
  <a class="credit" href="https://linktr.ee/88pitta" target="_blank" rel="noopener">made by 지웅 · 다른 작업 보기 ›</a>
  <button id="orgsclose">← 게임으로</button>
+</div>
+<div id="rankov">
+ <h3>🌊 전 세계 랭킹</h3>
+ <p class="rkcount" id="rkCount"></p>
+ <div id="rkList" class="rklist"></div>
+ <button id="rankclose">← 게임으로</button>
 </div>
 <script>
 'use strict';
@@ -424,7 +436,7 @@ window.addEventListener('pointerup',padEnd);window.addEventListener('pointercanc
 cv.addEventListener('pointerdown',e=>{ptr={x:e.clientX,y:e.clientY};pd={x:e.clientX,y:e.clientY,t:performance.now()}});
 cv.addEventListener('pointermove',e=>{if(ptr)ptr={x:e.clientX,y:e.clientY}});
 cv.addEventListener('pointerup',e=>{if(pd&&performance.now()-pd.t<260&&Math.hypot(e.clientX-pd.x,e.clientY-pd.y)<8)inspect(e.clientX,e.clientY);ptr=null;pd=null});
-$('l_restart').onclick=()=>reset();
+$('l_restart').onclick=()=>openRank();
 $('gi_o2').onclick=()=>{cardTarget=null;const r=$('gi_o2').getBoundingClientRect();showCard(t('o2tip'),r.left+r.width/2,r.bottom)};
 $('gi_hg').onclick=()=>{cardTarget=null;const r=$('gi_hg').getBoundingClientRect();showCard(t('hgtip'),r.left+r.width/2,r.bottom)};
 $('back').onclick=()=>$('info').style.display='flex';
@@ -442,9 +454,17 @@ const SUPA_URL='https://nzhjzhenqguoisxulfvl.supabase.co';
 const SUPA_KEY='sb_publishable_7f97doyJYumsDKR_ci43kQ_ipW8gR-3';/* publishable key (공개돼도 안전) */
 const LB_ON=()=>!!(SUPA_URL&&SUPA_KEY);
 function esc(s){return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
-async function lbTop(){if(!LB_ON())return[];try{const r=await fetch(`${SUPA_URL}/rest/v1/whale_scores?select=name,days&order=days.desc&limit=8`,{headers:{apikey:SUPA_KEY}});return r.ok?await r.json():[]}catch(e){return[]}}
-async function lbSubmit(name,days,b,k){if(!LB_ON())return false;try{const r=await fetch(`${SUPA_URL}/rest/v1/whale_scores`,{method:'POST',headers:{apikey:SUPA_KEY,'Content-Type':'application/json',Prefer:'return=minimal'},body:JSON.stringify({name:(name||'').slice(0,16),days,breaths:b,krill:k})});return r.ok}catch(e){return false}}
-async function lbRender(){const el=$('lbList');if(!el)return;el.innerHTML=`<div class="lbempty">${t('lb_loading')}</div>`;const rows=await lbTop();const u=LANG==='en'?'d':'일';el.innerHTML=rows.length?rows.map((x,i)=>`<div class="lbrow"><span>${i+1}</span><b>${esc(x.name)}</b><em>${Math.floor(x.days)}${u}</em></div>`).join(''):`<div class="lbempty">${t('lb_empty')}</div>`}
+function ccFlag(cc){if(!cc||cc.length!==2)return '🌊';const A=0x1F1E6,C=cc.toUpperCase();return String.fromCodePoint(A+C.charCodeAt(0)-65,A+C.charCodeAt(1)-65)}
+function myCC(){try{const m=(navigator.language||'').split('-')[1];if(m&&m.length===2)return m.toUpperCase()}catch(e){}return ''}
+async function lbTop(n){if(!LB_ON())return[];try{const r=await fetch(`${SUPA_URL}/rest/v1/whale_scores?select=name,days,country&order=days.desc&limit=${n||8}`,{headers:{apikey:SUPA_KEY}});return r.ok?await r.json():[]}catch(e){return[]}}
+async function lbCount(){if(!LB_ON())return 0;try{const r=await fetch(`${SUPA_URL}/rest/v1/whale_scores?select=id`,{headers:{apikey:SUPA_KEY,Prefer:'count=exact',Range:'0-0'}});const cr=r.headers.get('content-range');return cr?(+cr.split('/')[1]||0):0}catch(e){return 0}}
+async function lbSubmit(name,days,b,k){if(!LB_ON())return false;try{const r=await fetch(`${SUPA_URL}/rest/v1/whale_scores`,{method:'POST',headers:{apikey:SUPA_KEY,'Content-Type':'application/json',Prefer:'return=minimal'},body:JSON.stringify({name:(name||'').slice(0,16),days,breaths:b,krill:k,country:myCC()})});return r.ok}catch(e){return false}}
+async function lbRender(){const el=$('lbList');if(!el)return;el.innerHTML=`<div class="lbempty">${t('lb_loading')}</div>`;const rows=await lbTop(8);const u=LANG==='en'?'d':'일';el.innerHTML=rows.length?rows.map((x,i)=>`<div class="lbrow"><span>${i+1}</span><span class="fl">${ccFlag(x.country)}</span><b>${esc(x.name)}</b><em>${Math.floor(x.days)}${u}</em></div>`).join(''):`<div class="lbempty">${t('lb_empty')}</div>`}
+function openRank(){$('rankov').style.display='flex';$('rankov').scrollTop=0;paused=true;rkRender().catch(()=>{})}
+$('rankclose').onclick=()=>{$('rankov').style.display='none';paused=false};
+async function rkRender(){const el=$('rkList');if(!el)return;el.innerHTML=`<div class="lbempty">${t('lb_loading')}</div>`;const rows=await lbTop(20),cnt=await lbCount(),u=LANG==='en'?'d':'일';
+ $('rkCount').textContent=LANG==='en'?`${cnt.toLocaleString()} whales have already swum these lanes`:`지금까지 ${cnt.toLocaleString()}마리의 고래가 이 바다를 헤엄쳤습니다`;
+ el.innerHTML=rows.length?rows.map((x,i)=>`<div class="lbrow"><span>${i+1}</span><span class="fl">${ccFlag(x.country)}</span><b>${esc(x.name)}</b><em>${Math.floor(x.days)}${u}</em></div>`).join(''):`<div class="lbempty">${t('lb_empty')}</div>`}
 $('lbSubmit').onclick=async()=>{const nm=($('lbName').value||'').trim()||t('anon');try{localStorage.setItem('mm2_name',nm)}catch(e){}const btn=$('lbSubmit');btn.disabled=true;btn.textContent=t('lb_submitting');const ok=await lbSubmit(nm,lastDays,cnB,cnK);btn.textContent=ok?t('lb_done'):t('lb_fail');if(ok){$('lbForm').style.opacity=.55;lbRender().catch(()=>{})}else btn.disabled=false};
 function shareScore(){const url='https://gorae-hwamulseon.vercel.app';
  const txt=LANG==='en'?`I survived ${lastDays} days in "Why Whales Die" 🐋 Can you dodge the cargo ships longer?`:`「왜 죽는 고래?」에서 ${lastDays}일 살아남았어요 🐋 화물선을 피해 더 버틸 수 있나요?`;
@@ -516,7 +536,7 @@ function frame(now){requestAnimationFrame(frame);let dt=Math.min(0.05,(now-last)
   $('mode').textContent=surf?t('m_surf'):(o2<0.5?t('m_low'):t('m_dive'));
   $('day').textContent=Math.floor(gameDays());$('wd').textContent=WD[LANG][Math.floor(gameDays())%7];
   const cang=gameDays()*6.283;$('ch').style.transform=`translate(-50%,-100%) rotate(${cang}rad)`;$('cm').style.transform=`translate(-50%,-100%) rotate(${cang/12}rad)`;
-  $('krc').textContent=cnK;document.querySelector('#o2 i').style.width=(o2*100)+'%';document.querySelector('#hg i').style.width=(hg*100)+'%';
+  document.querySelector('#o2 i').style.width=(o2*100)+'%';document.querySelector('#hg i').style.width=(hg*100)+'%';
  }else if(AC)sfxAmbient(0,0);
  draw(dt)}
 
