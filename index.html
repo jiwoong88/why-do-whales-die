@@ -95,6 +95,7 @@ canvas{position:fixed;inset:0;display:block}
 #rankov h3{margin:0 0 6px;font-size:21px;color:#243a44;font-weight:800}
 #rankov .rkcount{max-width:430px;font-size:12.5px;line-height:1.6;color:#5a6e76;margin:0 0 8px}
 #rankov .rkmine{max-width:430px;font-size:12px;line-height:1.55;color:#2f74b8;font-weight:700;margin:0 0 16px}
+#rankov #skincv{display:block;margin:0 auto 10px}
 #rankov .rklist{width:100%;max-width:430px;background:#fff;border-radius:16px;padding:10px 16px;box-shadow:0 6px 18px rgba(60,80,90,.12);text-align:left}
 #rankclose,#factsclose{margin-top:20px;background:#2f3a40;color:#fff;border:none;border-radius:22px;padding:12px 28px;font-weight:700;font-size:14px;cursor:pointer}
 #factBox{margin-top:16px;width:100%;max-width:330px;background:#fff;border-radius:16px;padding:13px 16px 12px;box-shadow:0 6px 18px rgba(60,80,90,.12);text-align:left}
@@ -191,6 +192,7 @@ canvas{position:fixed;inset:0;display:block}
 <div id="rankov">
  <h3>🌊 전 세계 랭킹</h3>
  <p class="rkcount" id="rkCount"></p>
+ <canvas id="skincv" width="220" height="86"></canvas>
  <p class="rkmine" id="rkMine"></p>
  <div id="rkList" class="rklist"></div>
  <button id="rankclose">← 게임으로</button>
@@ -501,11 +503,23 @@ function myRid(){let r=null;try{r=localStorage.getItem('mm2_rid')}catch(e){}if(!
 async function refRecord(){if(!LB_ON())return;let u=null;try{u=new URLSearchParams(location.search).get('ref')}catch(e){}if(!u||u===myRid())return;let done=null;try{done=localStorage.getItem('mm2_reffed')}catch(e){}if(done)return;
  try{const ok=await fetch(`${SUPA_URL}/rest/v1/referrals`,{method:'POST',headers:{apikey:SUPA_KEY,'Content-Type':'application/json',Prefer:'return=minimal'},body:JSON.stringify({ref:u.slice(0,40)})});if(ok.ok)try{localStorage.setItem('mm2_reffed','1')}catch(e){}}catch(e){}}
 async function refFetch(){if(!LB_ON())return;try{const r=await fetch(`${SUPA_URL}/rest/v1/referrals?ref=eq.${encodeURIComponent(myRid())}&select=id`,{headers:{apikey:SUPA_KEY,Prefer:'count=exact',Range:'0-0'}});const cr=r.headers.get('content-range');if(cr){refCount=+cr.split('/')[1]||0;try{localStorage.setItem('mm2_refcount',refCount)}catch(e){}}}catch(e){}}
-function openRank(){$('rankov').style.display='flex';$('rankov').scrollTop=0;paused=true;rkRender().catch(()=>{})}
+function miniWhale(g,cx,cy,L,tier,ph){const sk=SKINS[tier],rgb=a=>`rgb(${Math.round(a[0]*255)},${Math.round(a[1]*255)},${Math.round(a[2]*255)})`;
+ g.save();g.translate(cx,cy+Math.sin(ph*3)*1.5);
+ g.fillStyle=rgb(sk.ed);g.beginPath();g.moveTo(-L*.95,0);g.lineTo(-L*1.5,-L*.55);g.quadraticCurveTo(-L*1.15,0,-L*1.5,L*.55);g.closePath();g.fill();
+ g.fillStyle=rgb(sk.cd);g.beginPath();g.ellipse(0,0,L,L*.52,0,0,6.283);g.fill();g.strokeStyle=rgb(sk.ed);g.lineWidth=L*.07;g.stroke();
+ g.fillStyle='#1a2630';for(const s of [-1,1]){g.beginPath();g.arc(L*.45,s*L*.2,L*.11,0,6.283);g.fill()}
+ if(sk.heart){g.fillStyle='#fff';const s=L*.2,x=L*.02,y=-L*.02;g.beginPath();g.moveTo(x,y+s*.35);g.bezierCurveTo(x-s,y-s*.25,x-s,y-s*.95,x,y-s*.45);g.bezierCurveTo(x+s,y-s*.95,x+s,y-s*.25,x,y+s*.35);g.closePath();g.fill()}
+ if(sk.sparkle){g.fillStyle='#fff';for(let i=0;i<5;i++){const a=ph*1.5+i*1.4,r=L*(1.15+.25*Math.sin(ph*2+i)),tw=.4+.6*Math.abs(Math.sin(ph*3+i*1.8)),sx=Math.cos(a)*r,sy=Math.sin(a)*r,ss=L*.16;g.globalAlpha=tw;g.beginPath();g.moveTo(sx,sy-ss);g.lineTo(sx+ss*.26,sy-ss*.26);g.lineTo(sx+ss,sy);g.lineTo(sx+ss*.26,sy+ss*.26);g.lineTo(sx,sy+ss);g.lineTo(sx-ss*.26,sy+ss*.26);g.lineTo(sx-ss,sy);g.lineTo(sx-ss*.26,sy-ss*.26);g.closePath();g.fill()}g.globalAlpha=1}
+ g.restore()}
+let skinRAF=null;
+function startSkinShow(){const c2=$('skincv');if(!c2)return;const g=c2.getContext('2d');
+ (function loop(){if($('rankov').style.display!=='flex'){skinRAF=null;return}const now=performance.now(),ph=now/1000,tier=Math.floor(now/850)%8;
+  g.clearRect(0,0,c2.width,c2.height);miniWhale(g,c2.width/2,c2.height/2,24,tier,ph);skinRAF=requestAnimationFrame(loop)})()}
+function openRank(){$('rankov').style.display='flex';$('rankov').scrollTop=0;paused=true;startSkinShow();rkRender().catch(()=>{})}
 $('rankclose').onclick=()=>{$('rankov').style.display='none';paused=false};
 async function rkRender(){const el=$('rkList');if(!el)return;el.innerHTML=`<div class="lbempty">${t('lb_loading')}</div>`;await refFetch();const rows=await lbTop(20),cnt=await lbCount(),u=LANG==='en'?'d':'일';
  $('rkCount').textContent=LANG==='en'?`${cnt.toLocaleString()} whales have already swum these lanes`:`지금까지 ${cnt.toLocaleString()}마리의 고래가 이 바다를 헤엄쳤습니다`;
- $('rkMine').textContent=refCount>0?(LANG==='en'?`🐋 ${refCount} people became a whale thanks to you — your whale glows in a special color`:`🐋 당신 덕분에 ${refCount}명이 고래가 되어봤어요 — 고래가 특별한 색으로 빛나요`):(LANG==='en'?'Share your link → your whale changes color & pattern as friends join ✨':'내 링크로 초대하면 추천 수만큼 고래 색·무늬·반짝임이 생겨요 ✨');
+ $('rkMine').textContent=refCount>0?(LANG==='en'?`🐋 ${refCount} people became a whale thanks to you — your whale's look has changed`:`🐋 당신 덕분에 ${refCount}명이 고래가 되어봤어요 — 고래 외형이 바뀌었어요`):(LANG==='en'?'Share your link → your whale\'s look changes with each friend you invite':'내 링크로 초대하면 추천 수만큼 고래 외형이 바뀌어요');
  el.innerHTML=rows.length?rows.map((x,i)=>`<div class="lbrow"><span>${i+1}</span><span class="fl">${ccFlag(x.country)}</span><b>${esc(x.name)}</b><em>${Math.floor(x.days)}${u}</em></div>`).join(''):`<div class="lbempty">${t('lb_empty')}</div>`}
 $('lbSubmit').onclick=async()=>{const nm=($('lbName').value||'').trim()||t('anon');try{localStorage.setItem('mm2_name',nm)}catch(e){}const btn=$('lbSubmit');btn.disabled=true;btn.textContent=t('lb_submitting');const ok=await lbSubmit(nm,lastDays,cnB,cnK);btn.textContent=ok?t('lb_done'):t('lb_fail');if(ok){$('lbForm').style.opacity=.55;lbRender().catch(()=>{})}else btn.disabled=false};
 const SHARE_MSG={
@@ -616,7 +630,7 @@ function draw(dt){
  // trails
  tctx.globalCompositeOperation='destination-out';tctx.fillStyle='rgba(0,0,0,.03)';tctx.fillRect(0,0,W,H);
  tctx.globalCompositeOperation='source-over';tctx.lineCap='round';
- for(const s of ships){if(s.pp&&s.fade>0.3&&seeAlpha(s.dx,s.dy)>0.35){const p=px(s.dx,s.dy);tctx.strokeStyle='rgba(224,138,96,.42)';tctx.lineWidth=7*SC;tctx.beginPath();tctx.moveTo(s.pp.x,s.pp.y);tctx.lineTo(p.x,p.y);tctx.stroke()}}
+ for(const s of ships){if(s.pp&&s.fade>0.3&&seeAlpha(s.dx,s.dy)>0.35){const p=px(s.dx,s.dy);tctx.strokeStyle=s.color||'#e0544a';tctx.globalAlpha=.42;tctx.lineWidth=7*SC;tctx.beginPath();tctx.moveTo(s.pp.x,s.pp.y);tctx.lineTo(p.x,p.y);tctx.stroke()}}tctx.globalAlpha=1;
  ctx.drawImage(tc,0,0,W,H);
  // ports + name
  ctx.textAlign='center';
