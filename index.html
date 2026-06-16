@@ -44,7 +44,7 @@ canvas{position:fixed;inset:0;display:block}
 #tctl .tb svg{width:26px;height:26px;fill:currentColor;stroke:none}
 #tctl .tb.on{color:#2f74b8}
 #tctl .tb:active{transform:scale(.9)}
-#lctl{bottom:160px;left:50%;transform:translateX(-50%);display:flex;flex-direction:row;gap:18px}
+#lctl{bottom:160px;left:50%;transform:translateX(-50%);display:flex;flex-direction:row;gap:18px;z-index:9}
 #lctl .btn{width:48px;height:48px}
 #lctl .badge span{position:absolute;right:-3px;bottom:-3px;background:#3f5560;color:#fff;font-size:11px;font-weight:700;
  width:21px;height:21px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 5px rgba(0,0,0,.2)}
@@ -55,13 +55,13 @@ canvas{position:fixed;inset:0;display:block}
 .g .bar i{display:block;height:100%;border-radius:6px;transition:width .15s}
 #o2 i{background:linear-gradient(90deg,#2f74b8,#6fc0ef)}
 #hg i{background:linear-gradient(90deg,#46b87a,#86d6a6)}
-#breathe{bottom:32px;right:24px;width:92px;height:92px;border-radius:50%;
+#breathe{bottom:32px;right:24px;width:92px;height:92px;border-radius:50%;z-index:9;
  background:#fff;box-shadow:0 6px 20px rgba(60,80,90,.2);cursor:pointer;display:flex;flex-direction:column;
  align-items:center;justify-content:center;color:#2f74b8;border:none;touch-action:none}
 #breathe span{font-size:15px;font-weight:700}
 #breathe small{font-size:9.5px;color:#a7b4ba;margin-top:2px}
 #breathe.on{background:#dceffb;box-shadow:0 0 0 4px rgba(47,116,184,.18),0 6px 20px rgba(60,80,90,.2)}
-#pad{position:fixed;left:-46px;bottom:-40px;width:268px;height:268px;border-radius:50%;z-index:6;touch-action:none;background:transparent}
+#pad{position:fixed;left:-152px;bottom:-146px;width:480px;height:480px;border-radius:50%;z-index:6;touch-action:none;background:transparent}
 #padface{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:132px;height:132px;border-radius:50%;pointer-events:none;
  background:rgba(255,255,255,.5);box-shadow:0 4px 16px rgba(60,80,90,.16),inset 0 0 0 2px rgba(255,255,255,.5)}
 #padknob{position:absolute;left:50%;top:50%;width:56px;height:56px;border-radius:50%;background:#fff;pointer-events:none;
@@ -438,7 +438,7 @@ function recs(){try{return JSON.parse(localStorage.getItem('mm2_rec')||'[]')}cat
 function reset(){let s=MM.start.slice();if(!inSea(s[0],s[1])){const p=seaSpot(0);s=[p.x,p.y]}
  wh={x:s[0],y:s[1],vx:0,vy:0,ang:0};o2=1;hg=1;cnB=0;cnK=0;gtime=0;dead=false;breath=0;canB=true;ts=1;parts=[];wphase=0;eatT=0;prevHold=false;trash=[];stuckT=0;
  krill=[mkKrill(),mkKrill()];mkShips();ships.forEach(shipPos);graceT=1.5;
- for(const s of ships){if(s.type==='fish')continue;let tr=0;while(Math.hypot(s.dx-wh.x,s.dy-wh.y)<N*0.14&&tr++<10){s.d=(s.d+s.tot*0.27)%s.tot;shipPos(s)}}
+ for(const s of ships){if(s.type==='fish')continue;let tr=0;while(Math.hypot(s.dx-wh.x,s.dy-wh.y)<N*0.20&&tr++<12){s.d=(s.d+s.tot*0.27)%s.tot;shipPos(s)}}
  $('over').style.display='none';$('card').style.display='none';tctx.clearRect(0,0,W,H);prewarm()}
 function prewarm(){/* 항로 미리 표시 안 함(난이도) */}
 function resize(){W=innerWidth;H=innerHeight;[cv,tc].forEach(c=>{c.width=W*dpr;c.height=H*dpr});
