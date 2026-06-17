@@ -256,7 +256,7 @@ const L10N={ko:{
  o2tip:'<b>산소 (숨)</b><br>잠수하면 닳아요. 떨어지면 느려지다 질식 — 화물선이 다니는 <b>수면</b>으로 올라가 숨을 쉬세요.',
  hgtip:'<b>허기</b><br>시간이 지나면 배고파져요. 바다에 흩어진 <b style="color:#46b87a">크릴</b>을 먹어 채우세요.',
  facts_new:'🐋 새로 알게 된 사실', facts_seen:'🐋 고래 이야기', facts_view:'📖 모은 사실 보기', facts_all:'📖 모은 사실', facts_locked:'🔒 아직 모으지 못한 사실',
- live_label:'🔴 지금 이 순간 실제 바다 보러가기', about_link:'ⓘ 이 게임 이야기'
+ live_label:'🔴 이순간 바다 보러가기', about_link:'ⓘ 이 게임 이야기'
 },en:{
  title:'Why Whales Die', start:'Start', back:'← Back to game', goagain:'Dive again — Enter',
  breathe:'Breathe', breathe_sub:'hold',
@@ -281,7 +281,7 @@ const L10N={ko:{
  o2tip:'<b>Oxygen (breath)</b><br>Drains while diving. Run out and you slow, then suffocate — surface (where the ships are) to breathe.',
  hgtip:'<b>Hunger</b><br>You get hungry over time. Eat <b style="color:#46b87a">krill</b> scattered across the sea to refill.',
  facts_new:'🐋 A fact you just learned', facts_seen:'🐋 Whale fact', facts_view:'📖 View collected facts', facts_all:'📖 Facts collected', facts_locked:'🔒 Not collected yet',
- live_label:'🔴 See the real ocean, right now', about_link:'ⓘ About this game'
+ live_label:'🔴 See the real ocean now', about_link:'ⓘ About this game'
 }};
 const WD={ko:['일','월','화','수','목','금','토'],en:['Sun','Mon','Tue','Wed','Thu','Fri','Sat']};
 const CONT={ko:['아메리카','아시아','유럽·아프리카','오세아니아'],en:['Americas','Asia','Europe & Africa','Oceania']};
@@ -400,7 +400,7 @@ function spark(x,y,s){ctx.beginPath();ctx.moveTo(x,y-s);ctx.lineTo(x+s*.26,y-s*.
 const lerpC=(a,b,f)=>'rgb('+a.map((v,i)=>Math.round((v+(b[i]-v)*f)*255)).join(',')+')';
 const chaik=(p,it)=>{for(let k=0;k<it;k++){let n=[];for(let i=0;i<p.length;i++){const a=p[i],b=p[(i+1)%p.length];n.push([a[0]*.75+b[0]*.25,a[1]*.75+b[1]*.25]);n.push([a[0]*.25+b[0]*.75,a[1]*.25+b[1]*.75])}p=n}return p};
 function drawWhale(sx,sy,ang,breath,phase,L,wag){
- const Wm=L*.225,A=Wm*.5*wag,n=40,ca=Math.cos(ang),sa=Math.sin(ang);
+ const Wm=L*.205,A=Wm*.5*wag,n=40,ca=Math.cos(ang),sa=Math.sin(ang);
  const T=(p)=>[sx+p[0]*ca-p[1]*sa, sy+p[0]*sa+p[1]*ca];
  let spine=[];for(let i=0;i<=n;i++){const t=i/n,x=(t-.46)*L,yo=A*Math.sin(2.3*Math.PI*(1-t)+phase)*(1-t);spine.push([x,yo,wprof(t)*Wm])}
  let top=[],bot=[];for(let i=0;i<spine.length;i++){const s=spine[i],p0=spine[Math.max(0,i-1)],p1=spine[Math.min(spine.length-1,i+1)];
@@ -429,9 +429,7 @@ function drawWhale(sx,sy,ang,breath,phase,L,wag){
  const bh=T([spine[Math.floor(spine.length*.78)][0],spine[Math.floor(spine.length*.78)][1]]);ctx.fillStyle=E;ctx.globalAlpha=al;ctx.beginPath();ctx.arc(bh[0],bh[1],L*.04,0,6.283);ctx.fill();
  const ei=Math.floor(spine.length*.82),esp=spine[ei],eq0=spine[ei-2],eq1=spine[ei+2];
  let etx=eq1[0]-eq0[0],ety=eq1[1]-eq0[1];const etl=Math.hypot(etx,ety)+1e-9,enx=-ety/etl,eny=etx/etl;
- const eyeC=lerpC(EYE_D,EYE_S,breath);ctx.globalAlpha=1;for(const sg of [1,-1]){const elx=esp[0]+enx*esp[2]*0.55*sg,ely=esp[1]+eny*esp[2]*0.55*sg,e=T([elx,ely]);
-  ctx.fillStyle=eyeC;ctx.beginPath();ctx.arc(e[0],e[1],L*.115,0,6.283);ctx.fill();
-  const hl=T([elx+L*.06,ely-L*.045]);ctx.fillStyle='rgba(255,255,255,.95)';ctx.beginPath();ctx.arc(hl[0],hl[1],L*.05,0,6.283);ctx.fill()}
+ ctx.fillStyle=lerpC(EYE_D,EYE_S,breath);ctx.globalAlpha=1;for(const sg of [1,-1]){const e=T([esp[0]+enx*esp[2]*0.6*sg,esp[1]+eny*esp[2]*0.6*sg]);ctx.beginPath();ctx.arc(e[0],e[1],L*.085,0,6.283);ctx.fill()}
  if(sk.heart){ctx.fillStyle='rgba(255,255,255,.95)';ctx.globalAlpha=al;for(const tt of [0.42,0.6]){const hp=spine[Math.floor(spine.length*tt)],h=T([hp[0],hp[1]]);drawHeart(h[0],h[1],L*.17)}}
  if(sk.sparkle){ctx.fillStyle='#fff';for(let i=0;i<5;i++){const a=phase*0.6+i*1.5,rr2=L*(0.78+0.22*Math.sin(phase*1.3+i)),tw=0.35+0.65*Math.abs(Math.sin(phase*2.2+i*1.9));ctx.globalAlpha=tw;spark(sx+Math.cos(a)*rr2,sy+Math.sin(a)*rr2,L*.13)}}
  ctx.globalAlpha=1;
