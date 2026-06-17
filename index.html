@@ -105,9 +105,11 @@ html,body{width:100%;height:100%;overflow:hidden;background:#eef1f0;
 #factView{margin-top:9px;font-size:11px}
 #factsov{position:fixed;inset:0;z-index:40;background:rgba(233,241,240,.97);backdrop-filter:blur(5px);display:none;flex-direction:column;align-items:center;overflow-y:auto;padding:40px 18px 32px;text-align:center}
 #factsov h3{margin:0 0 14px;font-size:19px;color:#243a44;font-weight:800}
-.factrow{font-size:12.5px;line-height:1.6;color:#5a6e76;padding:9px 2px;border-bottom:1px solid #eef1f0}
+.factrow{display:flex;align-items:center;gap:11px;font-size:12.5px;line-height:1.55;color:#5a6e76;padding:9px 2px;border-bottom:1px solid #eef1f0}
 .factrow:last-child{border-bottom:none}
 .factrow.locked{color:#bcc5c9;font-style:italic}
+.fm{flex:none;width:27px;height:27px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;background:#eef1f0;border:2px dashed #cdd6da;filter:grayscale(1) opacity(.45)}
+.fm.got{background:radial-gradient(circle at 34% 28%,#86d6c4,#2f9e86);border:2px solid #2f9e86;box-shadow:0 2px 7px rgba(47,158,134,.3);filter:none}
 #factsBar{width:100%;max-width:430px;height:9px;border-radius:5px;background:#dfe7e6;overflow:hidden;margin:0 auto 14px}
 #factsBar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#46b87a,#2f74b8);border-radius:5px;transition:width .45s ease}
 #medalGrid{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;max-width:430px;margin:0 auto 18px}
@@ -205,7 +207,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:#eef1f0;
 <div id="factsov">
  <h3 id="factsHead"></h3>
  <div id="factsBar"><i></i></div>
- <div id="medalGrid"></div>
  <div id="factsList" class="rklist"></div>
  <button id="factsclose">← 게임으로</button>
 </div>
@@ -605,14 +606,14 @@ function frame(now){requestAnimationFrame(frame);let dt=Math.min(0.05,(now-last)
    if(Math.hypot(wh.x-k.x,wh.y-k.y)<26){const pd=k.pd==null?Math.ceil(k.amt*6):k.pd;k.amt-=dt*1.6;hg=Math.min(1,hg+dt*krec);const nd=Math.max(0,Math.ceil(k.amt*6));if(nd<pd)sfxEat();k.pd=nd;if(k.amt<=0){cnK++;k.cd=7+Math.random()*4}}}
   const gd=gameDays();
   for(const s of ships){if(gd<s.actDay){s.fade=0;continue}const p0=px(s.dx,s.dy);s.pp={x:p0.x,y:p0.y};
-   if(s.type==='fish'){if(s.fish>0)s.fish-=gdt;else{if(!s.tgt)s.tgt=fishTgt();const fx=s.tgt.x-s.dx,fy=s.tgt.y-s.dy,fd=Math.hypot(fx,fy)+1e-6;if(fd<8){s.fish=2;s.tgt=null;if(gd>=40&&trash.length<14&&Math.random()<0.6)trash.push({x:s.dx,y:s.dy,life:16,seed:Math.random()*9})}else{const st=Math.min(fd,(s.fv||16)*gdt);s.dx+=fx/fd*st;s.dy+=fy/fd*st;s.ang=Math.atan2(fy,fx)}}s.fade=1;continue}
+   if(s.type==='fish'){if(s.fish>0)s.fish-=gdt;else{if(!s.tgt)s.tgt=fishTgt();const fx=s.tgt.x-s.dx,fy=s.tgt.y-s.dy,fd=Math.hypot(fx,fy)+1e-6;if(fd<8){s.fish=2;s.tgt=null;if(gd>=40&&Math.random()<0.6){trash.push({x:s.dx,y:s.dy,seed:Math.random()*9});if(trash.length>50)trash.shift()}}else{const st=Math.min(fd,(s.fv||16)*gdt);s.dx+=fx/fd*st;s.dy+=fy/fd*st;s.ang=Math.atan2(fy,fx)}}s.fade=1;continue}
    if(s.type==='blue'){s.bt-=dt;if(s.bt<=0){s.burst=Math.random()<0.45?2:1;s.bt=0.7+Math.random()*1.6}}
    s.d+=(s.dir||1)*s.kn*SHIP_K*(s.sm||1)*(s.burst||1)*gdt;
    if(s.d>=s.tot){s.d=s.tot;s.dir=-1;s.pp=null}else if(s.d<=0){s.d=0;s.dir=1;s.pp=null}
    s.fade=Math.min(1,Math.min(s.d,s.tot-s.d)/Math.min(40,s.tot*0.18));shipPos(s)}
   const wr=surf?15:9;if(graceT<=0)for(const s of ships){if(s.fade>0.3&&Math.hypot(wh.x-s.dx,wh.y-s.dy)<wr+8*(s.sz||1)){die('충돌');break}}
   let _nd=1e9;for(const s of ships){if(s.fade>0.2){const dd=Math.hypot(wh.x-s.dx,wh.y-s.dy);if(dd<_nd)_nd=dd}}sfxAmbient(Math.min(1,sp/(N*0.13)),Math.max(0,1-_nd/(N*0.22)));
-  for(let i=trash.length-1;i>=0;i--){const tr=trash[i];tr.life-=dt;if(tr.life<=0){trash.splice(i,1);continue}if(stuckT<=0&&Math.hypot(wh.x-tr.x,wh.y-tr.y)<16){stuckT=2;trash.splice(i,1)}}
+  for(let i=trash.length-1;i>=0;i--){const tr=trash[i];if(stuckT<=0&&Math.hypot(wh.x-tr.x,wh.y-tr.y)<16){stuckT=2;trash.splice(i,1)}}
   if(!dead){if(o2<=0)die('질식');else if(hg<=0)die('굶주림')}
   $('mode').textContent=surf?t('m_surf'):(o2<0.5?t('m_low'):t('m_dive'));
   $('day').textContent=Math.floor(gameDays());$('wd').textContent=WD[LANG][Math.floor(gameDays())%7];
@@ -651,7 +652,7 @@ function draw(dt){
   ctx.fillStyle='rgba(70,184,122,.16)';ctx.beginPath();ctx.arc(p.x,p.y,(24*f+8)*SC,0,6.283);ctx.fill();
   ctx.fillStyle='#46b87a';for(let i=0;i<6;i++){if(i/6>=f)break;const a=k.seed+i*1.2,r=(5+(i%3)*5)*SC;ctx.beginPath();ctx.arc(p.x+Math.cos(a)*r,p.y+Math.sin(a)*r,3*SC,0,6.283);ctx.fill()}}
  // 어선 쓰레기
- for(const tr of trash){const a=Math.min(1,tr.life/2)*seeAlpha(tr.x,tr.y);if(a<=0.02)continue;const p=px(tr.x,tr.y);ctx.globalAlpha=a;
+ for(const tr of trash){const a=seeAlpha(tr.x,tr.y);if(a<=0.02)continue;const p=px(tr.x,tr.y);ctx.globalAlpha=a;
   ctx.fillStyle='#7d8488';for(let i=0;i<3;i++){const an=tr.seed+i*2.1,r=(2+i*2)*SC;ctx.fillRect(p.x+Math.cos(an)*r-1.6*SC,p.y+Math.sin(an)*r-1.6*SC,3.2*SC,3.2*SC)}
   ctx.strokeStyle='rgba(110,116,120,.5)';ctx.lineWidth=1*SC;ctx.beginPath();ctx.arc(p.x,p.y,7*SC,0,6.283);ctx.stroke();ctx.globalAlpha=1}
  // ships + name labels
@@ -707,8 +708,7 @@ function revealFact(){const got=getFacts(),un=FACTS.map((_,i)=>i).filter(i=>got.
 function factsRender(){const got=getFacts();
  $('factsHead').textContent=`${t('facts_all')} ${got.length}/${FACTS.length}`;
  const bar=document.querySelector('#factsBar i');if(bar)bar.style.width=(got.length/FACTS.length*100)+'%';
- const mg=$('medalGrid');if(mg)mg.innerHTML=FACTS.map((f,i)=>got.indexOf(i)>=0?'<div class="medal got">🐋</div>':'<div class="medal"></div>').join('');
- const el=$('factsList');if(el)el.innerHTML=got.length?FACTS.map((f,i)=>got.indexOf(i)>=0?`<div class="factrow">${esc(LANG==='en'?f.en:f.ko)}</div>`:'').join(''):`<div class="lbempty">${t('facts_locked')}</div>`}
+ const el=$('factsList');if(el)el.innerHTML=FACTS.map((f,i)=>got.indexOf(i)>=0?`<div class="factrow"><span class="fm got">🐋</span><span>${esc(LANG==='en'?f.en:f.ko)}</span></div>`:`<div class="factrow locked"><span class="fm">🐋</span><span>${t('facts_locked')}</span></div>`).join('')}
 function openFacts(){$('factsov').style.display='flex';$('factsov').scrollTop=0;paused=true;factsRender()}
 $('factsclose').onclick=()=>{$('factsov').style.display='none';paused=false};
 function die(r){dead=true;if(r==='충돌')sfxHorn();else if(r==='굶주림')playBuf('death2',0.85);else playBuf('death',0.85);const d=gameDays();lastDays=Math.floor(d);let R=recs();R.push({d,b:cnB,k:cnK});R.sort((a,b)=>b.d-a.d);R=R.slice(0,5);
