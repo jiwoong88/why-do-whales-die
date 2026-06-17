@@ -44,8 +44,10 @@ html,body{width:100%;height:100%;overflow:hidden;background:#eef1f0;
 #tctl .tb svg{width:26px;height:26px;fill:currentColor;stroke:none}
 #tctl .tb.on{color:#2f74b8}
 #tctl .tb:active{transform:scale(.9)}
-#lctl{bottom:160px;left:50%;transform:translateX(-50%);display:flex;flex-direction:row;gap:18px;z-index:9}
-#lctl .btn{width:48px;height:48px}
+#lctl{bottom:150px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:8px;z-index:9}
+#lctl .btn{width:54px;height:54px}
+#livelbl{font-size:11px;font-weight:700;color:#3f5560;background:rgba(255,255,255,.8);padding:5px 12px;border-radius:14px;cursor:pointer;box-shadow:0 2px 8px rgba(60,80,90,.12);white-space:nowrap}
+#l_restart{top:64px;right:18px;width:42px;height:42px;z-index:9}
 #lctl .badge span{position:absolute;right:-3px;bottom:-3px;background:#3f5560;color:#fff;font-size:11px;font-weight:700;
  width:21px;height:21px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 5px rgba(0,0,0,.2)}
 #gauges{left:14px;top:56px;width:116px}
@@ -69,7 +71,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#eef1f0;
 #pad.on #padknob{background:#dceffb}#pad.on #padface{background:rgba(220,239,251,.55)}
 #hint{bottom:14px;left:50%;transform:translateX(-50%);font-size:11px;color:#a7b4ba;text-align:center;white-space:nowrap}
 #mode{top:18px;left:50%;transform:translateX(-50%);background:rgba(255,255,255,.8);border-radius:20px;
- padding:6px 16px;font-size:12.5px;font-weight:600;box-shadow:0 3px 10px rgba(60,80,90,.1)}
+ padding:6px 18px;font-size:15px;font-weight:800;color:#2f74b8;box-shadow:0 3px 10px rgba(60,80,90,.1)}
 #card{left:16px;bottom:230px;max-width:188px;background:rgba(255,255,255,.82);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);border-radius:11px;padding:7px 10px;
  font-size:9.5px;line-height:1.45;box-shadow:0 5px 16px rgba(60,80,90,.18);display:none}
 #card b{font-size:11px;color:#3f5560}#card .cs{color:#e0544a;font-weight:700;margin-left:4px;font-size:9px}#card .sub{color:#a7b4ba;font-size:8.5px}
@@ -105,6 +107,12 @@ html,body{width:100%;height:100%;overflow:hidden;background:#eef1f0;
 #factView{margin-top:9px;font-size:11px}
 #factsov{position:fixed;inset:0;z-index:40;background:rgba(233,241,240,.97);backdrop-filter:blur(5px);display:none;flex-direction:column;align-items:center;overflow-y:auto;padding:40px 18px 32px;text-align:center}
 #factsov h3{margin:0 0 14px;font-size:19px;color:#243a44;font-weight:800}
+#aboutov{position:fixed;inset:0;z-index:40;background:rgba(233,241,240,.98);backdrop-filter:blur(5px);display:none;flex-direction:column;align-items:center;overflow-y:auto;padding:40px 20px 34px}
+#aboutov h3{margin:0 0 6px;font-size:19px;color:#243a44;font-weight:800;text-align:center}
+#aboutBody{max-width:440px;font-size:13px;line-height:1.7;color:#5a6e76;text-align:left}
+#aboutBody h4{color:#243a44;font-size:14px;margin:16px 0 4px}
+#aboutBody p{margin:0 0 6px}#aboutBody .adisc{color:#9aa8ae;font-size:11px;margin-top:14px}
+#aboutclose{margin-top:20px;background:#2f3a40;color:#fff;border:none;border-radius:22px;padding:12px 28px;font-weight:700;font-size:14px;cursor:pointer}
 .factrow{display:flex;align-items:center;gap:11px;font-size:12.5px;line-height:1.55;color:#5a6e76;padding:9px 2px;border-bottom:1px solid #eef1f0}
 .factrow:last-child{border-bottom:none}
 .factrow.locked{color:#bcc5c9;font-style:italic}
@@ -152,15 +160,16 @@ html,body{width:100%;height:100%;overflow:hidden;background:#eef1f0;
 <button class="ui btn" id="back"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
 <button class="ui" id="lang">EN</button>
 <button class="ui" id="snd" title="배경음">🔊</button>
-<div class="ui" id="mode">잠수 중</div>
+<div class="ui" id="mode">0</div>
+<button class="ui btn" id="l_restart" title="랭킹"><svg viewBox="0 0 24 24"><path d="M6 20V11M12 20V5M18 20v-6"/></svg></button>
 <div class="ui" id="topr">
  <div id="flag"><svg viewBox="0 0 48 58"><path d="M4 4h40v50l-20-12-20 12z"/></svg><b id="day">0</b><s>DAY</s></div>
  <div id="wd">일</div>
  <div id="clock"><i id="ch"></i><i class="h2" id="cm"></i></div>
 </div>
 <div class="ui" id="lctl">
- <button class="btn" id="l_restart" title="랭킹"><svg viewBox="0 0 24 24"><path d="M6 20V11M12 20V5M18 20v-6"/></svg></button>
  <button class="btn" id="l_live" title="실제 바다 보기"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="2.6"/><path d="M5.6 5.6a9 9 0 0 0 0 12.8M18.4 5.6a9 9 0 0 1 0 12.8M8.7 8.7a4.7 4.7 0 0 0 0 6.6M15.3 8.7a4.7 4.7 0 0 1 0 6.6"/></svg><span class="dot"></span></button>
+ <span id="livelbl" onclick="openLive()"></span>
 </div>
 <div id="real">
  <div id="realbar">지금 이 순간의 <b>실제 바다</b>입니다.<br>저 점 하나하나가 진짜 화물선 — 고래는 이 사이를 헤엄칩니다.</div>
@@ -180,6 +189,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#eef1f0;
  <h2>왜 죽는 고래?</h2>
  <p>당신은 대왕고래입니다.<br>잠수하면 안전하지만 산소가 닳고,<br>숨을 쉬려면 화물선이 다니는 수면으로 올라와야 합니다.<br>흩어진 <b style="color:#46b87a">크릴</b>을 먹어 허기를 채우고,<br>실제 항로를 달리는 <b style="color:#e0544a">화물선</b>을 피해 오래 살아남으세요.<br><br><span style="color:#a7b4ba;font-size:12px">선박과의 충돌은 대왕고래의 가장 큰 사망 원인 중 하나 —<br>해마다 전 세계에서 약 2만 마리의 고래가 배에 치여 죽습니다.</span></p>
  <div class="close" id="info_close">시작</div>
+ <span class="orglink" id="aboutLink" onclick="openAbout()">ⓘ 이 게임 이야기</span>
  <span class="orglink" onclick="openOrgs()">🐋 고래를 지키는 사람들</span>
 </div>
 <div id="over" class="ui"><h1 id="oh"></h1><p id="op"></p><div id="factBox"><div id="factHead"></div><div id="factBody"></div><span class="orglink" id="factView" onclick="openFacts()">📖</span></div><div id="rank"></div><div id="lbBox"><div id="lbForm"><input id="lbName" maxlength="16" placeholder="이름 (랭킹에 표시)"><button id="lbSubmit">랭킹 등록</button></div><div class="lbttl">🌊 전 세계 랭킹</div><div id="lbList"></div></div><div class="go" id="goagain">다시 잠수 — Enter</div><button id="share">📤 내 기록 공유하기</button><br><span class="orglink" onclick="openOrgs()">🐋 고래를 지키는 사람들</span></div>
@@ -209,6 +219,11 @@ html,body{width:100%;height:100%;overflow:hidden;background:#eef1f0;
  <div id="factsBar"><i></i></div>
  <div id="factsList" class="rklist"></div>
  <button id="factsclose">← 게임으로</button>
+</div>
+<div id="aboutov">
+ <h3 id="aboutHead">ⓘ</h3>
+ <div id="aboutBody"></div>
+ <button id="aboutclose">← 게임으로</button>
 </div>
 <script>
 'use strict';
@@ -240,7 +255,8 @@ const L10N={ko:{
  seelive:'🌊 실제 바다에서 보기 (라이브)', portmajor:'주요 항만',
  o2tip:'<b>산소 (숨)</b><br>잠수하면 닳아요. 떨어지면 느려지다 질식 — 화물선이 다니는 <b>수면</b>으로 올라가 숨을 쉬세요.',
  hgtip:'<b>허기</b><br>시간이 지나면 배고파져요. 바다에 흩어진 <b style="color:#46b87a">크릴</b>을 먹어 채우세요.',
- facts_new:'🐋 새로 알게 된 사실', facts_seen:'🐋 고래 이야기', facts_view:'📖 모은 사실 보기', facts_all:'📖 모은 사실', facts_locked:'🔒 아직 모으지 못한 사실'
+ facts_new:'🐋 새로 알게 된 사실', facts_seen:'🐋 고래 이야기', facts_view:'📖 모은 사실 보기', facts_all:'📖 모은 사실', facts_locked:'🔒 아직 모으지 못한 사실',
+ live_label:'🔴 지금 이 순간 실제 바다 보러가기', about_link:'ⓘ 이 게임 이야기'
 },en:{
  title:'Why Whales Die', start:'Start', back:'← Back to game', goagain:'Dive again — Enter',
  breathe:'Breathe', breathe_sub:'hold',
@@ -264,7 +280,8 @@ const L10N={ko:{
  seelive:'🌊 See it on the real ocean (live)', portmajor:'Major port',
  o2tip:'<b>Oxygen (breath)</b><br>Drains while diving. Run out and you slow, then suffocate — surface (where the ships are) to breathe.',
  hgtip:'<b>Hunger</b><br>You get hungry over time. Eat <b style="color:#46b87a">krill</b> scattered across the sea to refill.',
- facts_new:'🐋 A fact you just learned', facts_seen:'🐋 Whale fact', facts_view:'📖 View collected facts', facts_all:'📖 Facts collected', facts_locked:'🔒 Not collected yet'
+ facts_new:'🐋 A fact you just learned', facts_seen:'🐋 Whale fact', facts_view:'📖 View collected facts', facts_all:'📖 Facts collected', facts_locked:'🔒 Not collected yet',
+ live_label:'🔴 See the real ocean, right now', about_link:'ⓘ About this game'
 }};
 const WD={ko:['일','월','화','수','목','금','토'],en:['Sun','Mon','Tue','Wed','Thu','Fri','Sat']};
 const CONT={ko:['아메리카','아시아','유럽·아프리카','오세아니아'],en:['Americas','Asia','Europe & Africa','Oceania']};
@@ -283,6 +300,7 @@ function applyI18N(){
  $('realopen').textContent=t('realopen');$('lbSubmit').textContent=t('lb_submit');
  $('breathe').querySelector('span').textContent=t('breathe');$('breathe').querySelector('small').textContent=t('breathe_sub');
  $('hint').textContent=t('hint');$('lbName').placeholder=t('lb_name_ph');$('l_live').title=t('live_title');
+ {const ll=$('livelbl');if(ll)ll.textContent=t('live_label');const al2=$('aboutLink');if(al2)al2.textContent=t('about_link')}
  $('realbar').innerHTML=t('realbar');$('share').textContent=t('share_btn');
  document.querySelector('#info h2').textContent=t('title');
  document.querySelector('#info p').innerHTML=t('info_p');
@@ -300,7 +318,7 @@ $('lang').onclick=()=>setLang(LANG==='ko'?'en':'ko');
 /* ===== 배경음: 3곡 랜덤 루프(한 곡 끝나면 다른 랜덤 곡) + 음소거 토글 ===== */
 const BGM=['bgm1.mp3','bgm2.mp3','bgm3.mp3'];let bgmA=null,muted=false,bgmStarted=false;
 try{muted=localStorage.getItem('mm2_muted')==='1'}catch(e){}
-const BGM_VOL=0.2;
+const BGM_VOL=0.22;
 function bgmFade(to,ms){if(bgmGain&&bgmSrc&&AC){const T=AC.currentTime;bgmGain.gain.cancelScheduledValues(T);bgmGain.gain.setValueAtTime(Math.max(0.0001,bgmGain.gain.value),T);bgmGain.gain.linearRampToValueAtTime(Math.max(0.0001,to),T+ms/1000)}else if(bgmA){const from=bgmA.volume,t0=performance.now();(function st(){const k=Math.min(1,(performance.now()-t0)/ms);bgmA.volume=Math.max(0,Math.min(1,from+(to-from)*k));if(k<1)requestAnimationFrame(st)})()}}
 function bgmNext(){if(muted)return;let i=Math.floor(Math.random()*BGM.length);
  if(!bgmA){bgmA=new Audio();bgmA.addEventListener('ended',bgmNext);
@@ -326,7 +344,7 @@ function audioInit(){if(AC)return;try{AC=new (window.AudioContext||window.webkit
  for(const k in SFX_FILES)loadSfx(k,SFX_FILES[k])}
 function audioResume(){if(AC&&AC.state==='suspended')AC.resume()}
 function sfxAmbient(spT,shipT){if(!AC)return;const m=muted?0:1;
- if(LOOP.ambient)LOOP.ambient.g.gain.value=0.4*m;
+ if(LOOP.ambient)LOOP.ambient.g.gain.value=0.48*m;
  if(LOOP.swim)LOOP.swim.g.gain.value=0.9*spT*m;
  if(LOOP.engine)LOOP.engine.g.gain.value=0.3*shipT*m}
 function sfxEat(){playBuf('eat'+(1+Math.floor(Math.random()*3)),1.0)}
@@ -615,7 +633,7 @@ function frame(now){requestAnimationFrame(frame);let dt=Math.min(0.05,(now-last)
   let _nd=1e9;for(const s of ships){if(s.fade>0.2){const dd=Math.hypot(wh.x-s.dx,wh.y-s.dy);if(dd<_nd)_nd=dd}}sfxAmbient(Math.min(1,sp/(N*0.13)),Math.max(0,1-_nd/(N*0.22)));
   for(let i=trash.length-1;i>=0;i--){const tr=trash[i];if(stuckT<=0&&Math.hypot(wh.x-tr.x,wh.y-tr.y)<16){stuckT=2;trash.splice(i,1)}}
   if(!dead){if(o2<=0)die('질식');else if(hg<=0)die('굶주림')}
-  $('mode').textContent=surf?t('m_surf'):(o2<0.5?t('m_low'):t('m_dive'));
+  $('mode').textContent=LANG==='en'?Math.round(dist/10).toLocaleString()+' pts':Math.round(dist/10).toLocaleString()+'점';
   $('day').textContent=Math.floor(gameDays());$('wd').textContent=WD[LANG][Math.floor(gameDays())%7];
   const cang=gameDays()*6.283;$('ch').style.transform=`translate(-50%,-100%) rotate(${cang}rad)`;$('cm').style.transform=`translate(-50%,-100%) rotate(${cang/12}rad)`;
   document.querySelector('#o2 i').style.width=(o2*100)+'%';document.querySelector('#hg i').style.width=(hg*100)+'%';
@@ -711,6 +729,10 @@ function factsRender(){const got=getFacts();
  const el=$('factsList');if(el)el.innerHTML=FACTS.map((f,i)=>got.indexOf(i)>=0?`<div class="factrow"><span class="fm got">🐋</span><span>${esc(LANG==='en'?f.en:f.ko)}</span></div>`:`<div class="factrow locked"><span class="fm">🐋</span><span>${t('facts_locked')}</span></div>`).join('')}
 function openFacts(){$('factsov').style.display='flex';$('factsov').scrollTop=0;paused=true;factsRender()}
 $('factsclose').onclick=()=>{$('factsov').style.display='none';paused=false};
+const ABOUT_KO=`<h4>왜 만들었나</h4><p>선박과의 충돌은 대왕고래의 가장 큰 사망 원인 중 하나입니다. 해마다 약 2만 마리의 고래가 배에 치여 죽지만, 대부분 먼바다에서 조용히 사라져 잘 보이지 않아요. 통계로는 와닿지 않는 이 일을, 직접 고래가 되어 그 바다를 헤엄쳐보며 느꼈으면 했습니다.</p><h4>조작법</h4><p>· 왼쪽 화면을 누른 방향으로 고래가 즉시 헤엄칩니다.<br>· 오른쪽 <b>숨쉬기</b>를 길게 눌러 수면에서 호흡하세요 — 단, 수면은 배가 다니는 곳입니다.<br>· 흩어진 초록 <b>크릴</b>을 먹어 허기를 채우세요.</p><h4>시스템</h4><p>· <b>산소</b> — 잠수 중 닳고, 수면에서 숨 쉬면 회복.<br>· <b>허기</b> — 시간이 지나면 줄고, 크릴로 회복.<br>· <b>점수</b> — 헤엄친 거리만큼 오릅니다(가만히 있으면 0).<br>· <b>배</b> — 빨강(기본)·노랑(빠름)·파랑(랜덤 가속)·초록(작고 2배 빠름)·보라(어선 — 경로 없이 떠돌며 쓰레기 투기). 쓰레기에 닿으면 2초간 느려지고 숨을 못 쉽니다.<br>· 날이 갈수록 배가 늘고 빨라집니다.<br>· 친구를 초대하면 고래 외형이 바뀌고, 죽을 때마다 고래에 대한 <b>사실</b>이 하나씩 풀립니다.</p><p class="adisc">광고 없는 캠페인 프로젝트입니다.</p>`;
+const ABOUT_EN=`<h4>Why this exists</h4><p>Ship strikes are one of the leading causes of blue whale death. About 20,000 whales are killed by ships every year, but most vanish quietly far out at sea, unseen. We made this so you could feel it — not as a statistic, but by becoming a whale and swimming those lanes yourself.</p><h4>Controls</h4><p>· Touch the left side; the whale instantly turns where you press.<br>· Hold the <b>Breathe</b> button (right) to breathe at the surface — but the surface is where the ships run.<br>· Eat scattered green <b>krill</b> to ease your hunger.</p><h4>Systems</h4><p>· <b>Oxygen</b> — drains while diving, refills at the surface.<br>· <b>Hunger</b> — drops over time, refilled by krill.<br>· <b>Score</b> — rises with how far you swim (0 if you sit still).<br>· <b>Ships</b> — red (basic), yellow (fast), blue (random bursts), green (small & 2× fast), purple (fishing boats that wander off-route and dump trash). Touching trash slows you and blocks breathing for 2s.<br>· Each day brings more and faster ships.<br>· Inviting friends changes your whale's look; each death unlocks a new <b>fact</b> about whales.</p><p class="adisc">An ad-free campaign project.</p>`;
+function openAbout(){$('aboutHead').textContent=t('about_link');$('aboutBody').innerHTML=LANG==='en'?ABOUT_EN:ABOUT_KO;$('aboutov').style.display='flex';$('aboutov').scrollTop=0;paused=true}
+$('aboutclose').onclick=()=>{$('aboutov').style.display='none';paused=false};
 function die(r){dead=true;if(r==='충돌')sfxHorn();else if(r==='굶주림')playBuf('death2',0.85);else playBuf('death',0.85);const d=gameDays();lastDays=Math.floor(d);lastScore=Math.round(dist/10);let R=recs();R.push({d,s:lastScore,b:cnB,k:cnK});R.sort((a,b)=>(b.s||0)-(a.s||0));R=R.slice(0,5);
  try{localStorage.setItem('mm2_rec',JSON.stringify(R))}catch(e){}
  const rank=R.findIndex(x=>x.s===lastScore)+1;
