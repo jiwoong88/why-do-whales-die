@@ -446,7 +446,7 @@ const mkKrill=()=>{let b=null;for(let i=0;i<60;i++){const s=KS[(Math.random()*KS
 const gameDays=()=>gtime*DAYRATE;
 function recs(){try{return JSON.parse(localStorage.getItem('mm2_rec')||'[]')}catch(e){return[]}}
 function reset(){let s=MM.start.slice();if(!inSea(s[0],s[1])){const p=seaSpot(0);s=[p.x,p.y]}
- wh={x:s[0],y:s[1],vx:0,vy:0,ang:0};o2=1;hg=1;cnB=0;cnK=0;gtime=0;dead=false;breath=0;canB=true;ts=1;parts=[];wphase=0;eatT=0;prevHold=false;trash=[];stuckT=0;
+ wh={x:s[0],y:s[1],vx:0,vy:0,ang:0};o2=1;hg=1;cnB=0;cnK=0;gtime=0;dead=false;breath=0;canB=true;ts=1;parts=[];wphase=0;eatT=0;prevHold=false;trash=[];stuckT=0;dist=0;
  krill=[mkKrill(),mkKrill()];mkShips();ships.forEach(shipPos);graceT=1.5;
  for(const s of ships){if(s.type==='fish')continue;let tr=0;while(Math.hypot(s.dx-wh.x,s.dy-wh.y)<N*0.20&&tr++<12){s.d=(s.d+s.tot*0.27)%s.tot;shipPos(s)}}
  $('over').style.display='none';$('card').style.display='none';tctx.clearRect(0,0,W,H);prewarm()}
@@ -493,7 +493,7 @@ $('l_live').onclick=openLive;
 $('realclose').onclick=()=>{$('real').style.opacity=0;$('real').style.pointerEvents='none';paused=false};
 function openOrgs(){$('orgs').style.display='flex';$('orgs').scrollTop=0;paused=true}
 $('orgsclose').onclick=()=>{$('orgs').style.display='none';paused=false};
-let lastDays=0;
+let lastDays=0,dist=0,lastScore=0;
 /* ===== 전 세계 랭킹(Supabase) — 아래 두 값만 채우면 자동 활성화 ===== */
 const SUPA_URL='https://nzhjzhenqguoisxulfvl.supabase.co';
 const SUPA_KEY='sb_publishable_7f97doyJYumsDKR_ci43kQ_ipW8gR-3';/* publishable key (공개돼도 안전) */
@@ -504,7 +504,7 @@ function myCC(){try{const m=(navigator.language||'').split('-')[1];if(m&&m.lengt
 async function lbTop(n){if(!LB_ON())return[];try{const r=await fetch(`${SUPA_URL}/rest/v1/whale_scores?select=name,days,country&order=days.desc&limit=${n||8}`,{headers:{apikey:SUPA_KEY}});return r.ok?await r.json():[]}catch(e){return[]}}
 async function lbCount(){if(!LB_ON())return 0;try{const r=await fetch(`${SUPA_URL}/rest/v1/whale_scores?select=id`,{headers:{apikey:SUPA_KEY,Prefer:'count=exact',Range:'0-0'}});const cr=r.headers.get('content-range');return cr?(+cr.split('/')[1]||0):0}catch(e){return 0}}
 async function lbSubmit(name,days,b,k){if(!LB_ON())return false;try{const r=await fetch(`${SUPA_URL}/rest/v1/whale_scores`,{method:'POST',headers:{apikey:SUPA_KEY,'Content-Type':'application/json',Prefer:'return=minimal'},body:JSON.stringify({name:(name||'').slice(0,16),days,breaths:b,krill:k,country:myCC()})});return r.ok}catch(e){return false}}
-async function lbRender(){const el=$('lbList');if(!el)return;el.innerHTML=`<div class="lbempty">${t('lb_loading')}</div>`;const rows=await lbTop(8);const u=LANG==='en'?'d':'일';el.innerHTML=rows.length?rows.map((x,i)=>`<div class="lbrow"><span>${i+1}</span><span class="fl">${ccFlag(x.country)}</span><b>${esc(x.name)}</b><em>${Math.floor(x.days)}${u}</em></div>`).join(''):`<div class="lbempty">${t('lb_empty')}</div>`}
+async function lbRender(){const el=$('lbList');if(!el)return;el.innerHTML=`<div class="lbempty">${t('lb_loading')}</div>`;const rows=await lbTop(8);const u=LANG==='en'?' pts':'점';el.innerHTML=rows.length?rows.map((x,i)=>`<div class="lbrow"><span>${i+1}</span><span class="fl">${ccFlag(x.country)}</span><b>${esc(x.name)}</b><em>${Math.floor(x.days).toLocaleString()}${u}</em></div>`).join(''):`<div class="lbempty">${t('lb_empty')}</div>`}
 /* ===== 추천(referral) → 친구 물고기 코스튬 + 임팩트 ===== */
 let refCount=0;try{refCount=+localStorage.getItem('mm2_refcount')||0}catch(e){}
 function myRid(){let r=null;try{r=localStorage.getItem('mm2_rid')}catch(e){}if(!r){r=Math.random().toString(36).slice(2,10);try{localStorage.setItem('mm2_rid',r)}catch(e){}}return r}
@@ -525,11 +525,11 @@ function startSkinShow(){const c2=$('skincv');if(!c2)return;const g=c2.getContex
   g.clearRect(0,0,c2.width,c2.height);miniWhale(g,c2.width/2,c2.height/2,Math.min(c2.width,c2.height)*0.27,tier,ph);skinRAF=requestAnimationFrame(loop)})()}
 function openRank(){$('rankov').style.display='flex';$('rankov').scrollTop=0;paused=true;startSkinShow();rkRender().catch(()=>{})}
 $('rankclose').onclick=()=>{$('rankov').style.display='none';paused=false};
-async function rkRender(){const el=$('rkList');if(!el)return;el.innerHTML=`<div class="lbempty">${t('lb_loading')}</div>`;await refFetch();const rows=await lbTop(20),cnt=await lbCount(),u=LANG==='en'?'d':'일';
+async function rkRender(){const el=$('rkList');if(!el)return;el.innerHTML=`<div class="lbempty">${t('lb_loading')}</div>`;await refFetch();const rows=await lbTop(20),cnt=await lbCount(),u=LANG==='en'?' pts':'점';
  $('rkCount').textContent=LANG==='en'?`${cnt.toLocaleString()} whales have already swum these lanes`:`지금까지 ${cnt.toLocaleString()}마리의 고래가 이 바다를 헤엄쳤습니다`;
  $('rkMine').textContent=refCount>0?(LANG==='en'?`🐋 ${refCount} people became a whale thanks to you — your whale's look has changed`:`🐋 당신 덕분에 ${refCount}명이 고래가 되어봤어요 — 고래 외형이 바뀌었어요`):(LANG==='en'?'Share your link → your whale\'s look changes with each friend who joins':'내 링크로 초대 성공 수 만큼 고래 외형이 바뀌어요');
- el.innerHTML=rows.length?rows.map((x,i)=>`<div class="lbrow"><span>${i+1}</span><span class="fl">${ccFlag(x.country)}</span><b>${esc(x.name)}</b><em>${Math.floor(x.days)}${u}</em></div>`).join(''):`<div class="lbempty">${t('lb_empty')}</div>`}
-$('lbSubmit').onclick=async()=>{const nm=($('lbName').value||'').trim()||t('anon');try{localStorage.setItem('mm2_name',nm)}catch(e){}const btn=$('lbSubmit');btn.disabled=true;btn.textContent=t('lb_submitting');const ok=await lbSubmit(nm,lastDays,cnB,cnK);btn.textContent=ok?t('lb_done'):t('lb_fail');if(ok){$('lbForm').style.opacity=.55;lbRender().catch(()=>{})}else btn.disabled=false};
+ el.innerHTML=rows.length?rows.map((x,i)=>`<div class="lbrow"><span>${i+1}</span><span class="fl">${ccFlag(x.country)}</span><b>${esc(x.name)}</b><em>${Math.floor(x.days).toLocaleString()}${u}</em></div>`).join(''):`<div class="lbempty">${t('lb_empty')}</div>`}
+$('lbSubmit').onclick=async()=>{const nm=($('lbName').value||'').trim()||t('anon');try{localStorage.setItem('mm2_name',nm)}catch(e){}const btn=$('lbSubmit');btn.disabled=true;btn.textContent=t('lb_submitting');const ok=await lbSubmit(nm,lastScore,cnB,cnK);btn.textContent=ok?t('lb_done'):t('lb_fail');if(ok){$('lbForm').style.opacity=.55;lbRender().catch(()=>{})}else btn.disabled=false};
 const SHARE_MSG={
  ko:d=>`「왜 죽는 고래?」에서 ${d}일 살아남았어요 🐋 화물선을 피해 더 버틸 수 있나요?`,
  en:d=>`I survived ${d} days in "Why Whales Die" 🐋 Can you dodge the cargo ships longer?`,
@@ -595,7 +595,7 @@ function frame(now){requestAnimationFrame(frame);let dt=Math.min(0.05,(now-last)
   let nx=wh.x+wh.vx*gdt,ny=wh.y+wh.vy*gdt;
   const ob=MM.oceanbox;nx=Math.max(ob[0]+12,Math.min(ob[2]-12,nx));ny=Math.max(ob[1]+12,Math.min(ob[3]-12,ny));
   if(inSea(nx,ny)){wh.x=nx;wh.y=ny}else if(inSea(nx,wh.y))wh.x=nx;else if(inSea(wh.x,ny))wh.y=ny;
-  const sp=Math.hypot(wh.vx,wh.vy);
+  const sp=Math.hypot(wh.vx,wh.vy);dist+=sp*gdt;
   /* 머리는 항상 입력 방향을 즉시 향함(머리 지연 없음) */
   if(tx||ty)wh.ang=Math.atan2(ty,tx);
   else if(sp>0.5)wh.ang=Math.atan2(wh.vy,wh.vx);
@@ -711,13 +711,13 @@ function factsRender(){const got=getFacts();
  const el=$('factsList');if(el)el.innerHTML=FACTS.map((f,i)=>got.indexOf(i)>=0?`<div class="factrow"><span class="fm got">🐋</span><span>${esc(LANG==='en'?f.en:f.ko)}</span></div>`:`<div class="factrow locked"><span class="fm">🐋</span><span>${t('facts_locked')}</span></div>`).join('')}
 function openFacts(){$('factsov').style.display='flex';$('factsov').scrollTop=0;paused=true;factsRender()}
 $('factsclose').onclick=()=>{$('factsov').style.display='none';paused=false};
-function die(r){dead=true;if(r==='충돌')sfxHorn();else if(r==='굶주림')playBuf('death2',0.85);else playBuf('death',0.85);const d=gameDays();lastDays=Math.floor(d);let R=recs();R.push({d,b:cnB,k:cnK});R.sort((a,b)=>b.d-a.d);R=R.slice(0,5);
+function die(r){dead=true;if(r==='충돌')sfxHorn();else if(r==='굶주림')playBuf('death2',0.85);else playBuf('death',0.85);const d=gameDays();lastDays=Math.floor(d);lastScore=Math.round(dist/10);let R=recs();R.push({d,s:lastScore,b:cnB,k:cnK});R.sort((a,b)=>(b.s||0)-(a.s||0));R=R.slice(0,5);
  try{localStorage.setItem('mm2_rec',JSON.stringify(R))}catch(e){}
- const rank=R.findIndex(x=>Math.abs(x.d-d)<1e-9)+1;
+ const rank=R.findIndex(x=>x.s===lastScore)+1;
  $('oh').textContent={'충돌':t('d_hit'),'질식':t('d_air'),'굶주림':t('d_hunger')}[r];
  const sfx=rank===1?t('rec_new'):rank<=5?(LANG==='en'?` — #${rank}`:` — ${rank}위`):'';
- $('op').innerHTML=LANG==='en'?`Survived <b>${Math.floor(d)} days</b>${sfx}<br>Breaths <b>${cnB}</b> · Krill <b>${cnK}</b>`:`버틴 항해 <b>${Math.floor(d)}일</b>${sfx}<br>살아 쉰 숨 <b>${cnB}번</b> · 먹은 크릴 <b>${cnK}덩이</b>`;
- $('rank').innerHTML=t('best')+'<br>'+R.map((x,i)=>LANG==='en'?`${i+1}. <b>${Math.floor(x.d)}d</b> — breaths ${x.b} · krill ${x.k}`:`${i+1}. <b>${Math.floor(x.d)}일</b> — 숨 ${x.b} · 크릴 ${x.k}`).join('<br>');
+ $('op').innerHTML=LANG==='en'?`Score <b>${lastScore.toLocaleString()}</b>${sfx}<br>Survived ${Math.floor(d)} days · Breaths ${cnB} · Krill ${cnK}`:`점수 <b>${lastScore.toLocaleString()}</b>${sfx}<br>${Math.floor(d)}일 생존 · 숨 ${cnB} · 크릴 ${cnK}`;
+ $('rank').innerHTML=t('best')+'<br>'+R.map((x,i)=>LANG==='en'?`${i+1}. <b>${(x.s||0).toLocaleString()} pts</b> — ${Math.floor(x.d)}d`:`${i+1}. <b>${(x.s||0).toLocaleString()}점</b> — ${Math.floor(x.d)}일`).join('<br>');
  if(LB_ON()){$('rank').style.display='none';$('lbBox').style.display='block';const btn=$('lbSubmit');btn.disabled=false;btn.textContent=t('lb_submit');$('lbForm').style.opacity=1;try{$('lbName').value=localStorage.getItem('mm2_name')||''}catch(e){}lbRender().catch(()=>{})}
  else{$('rank').style.display='';$('lbBox').style.display='none'}
  const ff=revealFact(),FF=FACTS[ff.idx];$('factHead').textContent=(ff.isNew?t('facts_new'):t('facts_seen'))+` · ${ff.count}/${FACTS.length}`;$('factBody').textContent=LANG==='en'?FF.en:FF.ko;$('factView').textContent=t('facts_view');
