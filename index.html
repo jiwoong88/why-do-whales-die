@@ -26,7 +26,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#eef1f0;
  box-shadow:0 4px 14px rgba(60,80,90,.16);cursor:pointer;color:#6b7d85;transition:transform .1s}
 .btn:active{transform:scale(.92)}
 .btn svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
-#back{top:18px;left:18px;width:42px;height:42px}
+#back{top:18px;left:18px;width:42px;height:42px;font-size:21px}
 #lang{top:24px;left:70px;background:rgba(255,255,255,.82);border:none;border-radius:16px;padding:7px 12px;font-size:12px;font-weight:800;color:#3f5560;cursor:pointer;box-shadow:0 3px 10px rgba(60,80,90,.15)}
 #snd{top:24px;left:120px;background:rgba(255,255,255,.82);border:none;border-radius:16px;padding:6px 10px;font-size:14px;line-height:1;cursor:pointer;box-shadow:0 3px 10px rgba(60,80,90,.15)}
 #topr{top:16px;right:18px;display:flex;align-items:center;gap:12px}
@@ -158,7 +158,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#eef1f0;
 #orgsclose{margin-top:18px;background:#2f3a40;color:#fff;border:none;border-radius:22px;padding:12px 28px;font-weight:700;font-size:14px;cursor:pointer}
 </style></head><body>
 <canvas id="cv"></canvas><div id="flash"></div>
-<button class="ui btn" id="back"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
+<button class="ui btn" id="back" title="게임 설명">🐋</button>
 <button class="ui" id="lang">EN</button>
 <button class="ui" id="snd" title="배경음">🔊</button>
 <div class="ui" id="mode">0</div>
@@ -190,7 +190,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:#eef1f0;
  <h2>왜 죽는 고래?</h2>
  <p>당신은 대왕고래입니다.<br>잠수하면 안전하지만 산소가 닳고,<br>숨을 쉬려면 화물선이 다니는 수면으로 올라와야 합니다.<br>흩어진 <b style="color:#46b87a">크릴</b>을 먹어 허기를 채우고,<br>실제 항로를 달리는 <b style="color:#e0544a">화물선</b>을 피해 오래 살아남으세요.<br><br><span style="color:#a7b4ba;font-size:12px">선박과의 충돌은 대왕고래의 가장 큰 사망 원인 중 하나 —<br>해마다 전 세계에서 약 2만 마리의 고래가 배에 치여 죽습니다.</span></p>
  <div class="close" id="info_close">시작</div>
- <span class="orglink" id="aboutLink" onclick="openAbout()">ⓘ 이 게임 이야기</span>
  <span class="orglink" onclick="openOrgs()">🐋 고래를 지키는 사람들</span>
 </div>
 <div id="over" class="ui"><h1 id="oh"></h1><p id="op"></p><div id="factBox"><div id="factHead"></div><div id="factBody"></div><span class="orglink" id="factView" onclick="openFacts()">📖</span></div><div id="rank"></div><div id="lbBox"><div id="lbForm"><input id="lbName" maxlength="16" placeholder="이름 (랭킹에 표시)"><button id="lbSubmit">랭킹 등록</button></div><div class="lbttl">🌊 전 세계 랭킹</div><div id="lbList"></div></div><div class="go" id="goagain">다시 잠수 — Enter</div><button id="share">📤 내 기록 공유하기</button><br><span class="orglink" onclick="openOrgs()">🐋 고래를 지키는 사람들</span></div>
@@ -503,7 +502,7 @@ cv.addEventListener('pointerup',e=>{if(pd&&performance.now()-pd.t<260&&Math.hypo
 $('l_restart').onclick=()=>openRank();
 $('gi_o2').onclick=()=>{cardTarget=null;const r=$('gi_o2').getBoundingClientRect();showCard(t('o2tip'),r.left+r.width/2,r.bottom)};
 $('gi_hg').onclick=()=>{cardTarget=null;const r=$('gi_hg').getBoundingClientRect();showCard(t('hgtip'),r.left+r.width/2,r.bottom)};
-$('back').onclick=()=>$('info').style.display='flex';
+$('back').onclick=()=>openAbout();
 /* 실제 바다(라이브 AIS) — 디졸브로 전환해 심각성을 체감 */
 let paused=false;
 const VF='https://www.vesselfinder.com/aismap?zoom=2&lat=25&lon=-20&width=1280&height=900&names=true&clicktoact=false';
