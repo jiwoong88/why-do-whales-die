@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#04080f">
+<title>고래와 화물선</title>
+<style>
+  :root{
+    --abyss:#04080f;
+    --deep:#071521;
+    --teal:#0c3a4a;
+    --surface:#14586a;
+    --cyan:#7fe6ff;
+    --amber:#ffb35c;
+    --warn:#ff5a4d;
+    --ink:#eaf6ff;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;overflow:hidden;background:var(--abyss);}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",sans-serif;
+    color:var(--ink);
+    touch-action:none;
+    user-select:none;-webkit-user-select:none;
+  }
+  #stage{position:fixed;inset:0;}
+  canvas{display:block;width:100%;height:100%;}
+
+  /* ---- HUD ---- */
+  #hud{position:fixed;inset:0;pointer-events:none;}
+  .meta{
+    position:absolute;top:calc(env(safe-area-inset-top) + 16px);left:18px;
+    font-size:11px;letter-spacing:.22em;text-transform:uppercase;
+    color:rgba(234,246,255,.55);line-height:1.9;
+  }
+  .meta b{color:var(--cyan);font-weight:600;letter-spacing:.1em;}
+
+  /* oxygen / breath gauge */
+  #breathWrap{
+    position:absolute;left:50%;transform:translateX(-50%);
+    bottom:calc(env(safe-area-inset-bottom) + 26px);
+    width:min(62vw,280px);
+  }
+  #breathLabel{
+    text-align:center;font-size:10px;letter-spacing:.34em;text-transform:uppercase;
+    color:rgba(234,246,255,.45);margin-bottom:8px;
+  }
+  #breathBar{
+    height:3px;border-radius:2px;background:rgba(127,230,255,.12);overflow:hidden;
+  }
+  #breathFill{
+    height:100%;width:100%;border-radius:2px;
+    background:linear-gradient(90deg,var(--cyan),#baf4ff);
+    transition:background .3s;
+  }
+
+  /* vignette warning */
+  #vignette{
+    position:fixed;inset:0;pointer-events:none;opacity:0;
+    box-shadow:inset 0 0 140px 40px rgba(255,90,77,.0);
+    transition:opacity .12s;
+  }
+
+  /* ---- overlays ---- */
+  .card{
+    position:fixed;inset:0;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;text-align:center;
+    padding:0 32px;background:rgba(4,8,15,.34);
+    backdrop-filter:blur(1.5px);-webkit-backdrop-filter:blur(1.5px);
+    transition:opacity .6s;
+  }
+  .card.hide{opacity:0;pointer-events:none;}
+  .kicker{
+    font-size:11px;letter-spacing:.4em;text-transform:uppercase;
+    color:var(--amber);margin-bottom:22px;opacity:.9;
+  }
+  .title{
+    font-size:clamp(34px,11vw,58px);font-weight:200;letter-spacing:.04em;
+    line-height:1.05;margin-bottom:26px;
+    text-shadow:0 2px 40px rgba(127,230,255,.25);
+  }
+  .title .amp{font-weight:200;opacity:.5;font-style:italic;margin:0 .15em;}
+  .cause{
+    max-width:30ch;font-size:13.5px;line-height:1.85;font-weight:300;
+    color:rgba(234,246,255,.72);margin-bottom:42px;
+  }
+  .cause b{color:var(--cyan);font-weight:400;}
+  .cta{
+    font-size:12px;letter-spacing:.3em;text-transform:uppercase;
+    color:rgba(234,246,255,.85);
+    border:1px solid rgba(127,230,255,.4);
+    padding:14px 30px;border-radius:40px;
+    animation:pulse 2.6s ease-in-out infinite;
+  }
+  @keyframes pulse{0%,100%{opacity:.55;}50%{opacity:1;box-shadow:0 0 30px rgba(127,230,255,.18);}}
+
+  /* game over stats */
+  .stats{display:flex;gap:34px;margin:8px 0 38px;}
+  .stat{display:flex;flex-direction:column;gap:6px;}
+  .stat .num{font-size:32px;font-weight:200;color:var(--cyan);}
+  .stat .lab{font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:rgba(234,246,255,.5);}
+  .footnote{
+    position:absolute;bottom:calc(env(safe-area-inset-bottom) + 22px);
+    font-size:10px;letter-spacing:.18em;color:rgba(234,246,255,.32);
+    text-transform:uppercase;
+  }
+</style>
+</head>
+<body>
+  <div id="stage"><canvas id="c"></canvas></div>
+
+  <div id="hud">
+    <div class="meta">
+      깊이 <b id="mDepth">—</b><br>
+      생존 <b id="mTime">0s</b><br>
+      호흡 <b id="mBreath">0</b>
+    </div>
+    <div id="breathWrap">
+      <div id="breathLabel">숨</div>
+      <div id="breathBar"><div id="breathFill"></div></div>
+    </div>
+  </div>
+  <div id="vignette"></div>
+
+  <!-- TITLE -->
+  <div class="card" id="titleCard">
+    <div class="kicker">실화에서 시작된 게임</div>
+    <h1 class="title">고래<span class="amp">와</span>화물선</h1>
+    <p class="cause">대왕고래의 가장 큰 사망 원인은 <b>화물선과의 충돌</b>이야.<br>숨을 쉬려면 수면으로 올라와야 하는데 — 거기가 바로 항로거든.</p>
+    <div class="cta" id="startBtn">화면을 누르면 잠수</div>
+    <div class="footnote">드래그로 헤엄 · 수면에서 숨쉬기 · 배를 피해</div>
+  </div>
+
+  <!-- GAME OVER -->
+  <div class="card hide" id="overCard">
+    <div class="kicker" id="overKicker">충돌</div>
+    <h1 class="title" style="font-size:clamp(26px,8vw,40px)">다시 잠수할까</h1>
+    <div class="stats">
+      <div class="stat"><span class="num" id="oTime">0s</span><span class="lab">버틴 시간</span></div>
+      <div class="stat"><span class="num" id="oBreath">0</span><span class="lab">살아 쉰 숨</span></div>
+    </div>
+    <div class="cta" id="retryBtn">다시</div>
+    <div class="footnote" id="overFoot">매년 수백 마리가 이렇게 사라진다</div>
+  </div>
+
+<script>
+(()=>{
+const cv=document.getElementById('c'),ctx=cv.getContext('2d');
+let W=0,H=0,DPR=1;
+function resize(){
+  DPR=Math.min(window.devicePixelRatio||1,2);
+  W=window.innerWidth;H=window.innerHeight;
+  cv.width=W*DPR;cv.height=H*DPR;
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+}
+window.addEventListener('resize',resize);resize();
+
+// ---------- world layout ----------
+// y: 0 = sky/surface top. surfaceY band = breathing zone (dangerous).
+let surfaceY=()=> Math.max(70, H*0.16);   // waterline
+const SURFACE_BAND=46;                      // how deep counts as "at surface"
+
+// ---------- state ----------
+const S={mode:'title', t:0, breaths:0, last:performance.now(),
+         oxygen:1, shake:0, danger:0, flash:0, breathFx:0, slow:0};
+
+// ---------- whale ----------
+const whale={
+  x:0,y:0, vx:0,vy:0, tx:0,ty:0, dir:1, phase:0, hit:0
+};
+function resetWhale(){
+  whale.x=W*0.5; whale.y=H*0.62;
+  whale.tx=whale.x; whale.ty=whale.y;
+  whale.vx=whale.vy=0; whale.dir=1; whale.hit=0;
+}
+
+// ---------- ships ----------
+let ships=[];
+function spawnShip(initial){
+  const dirR=Math.random()<0.5;
+  const speed=(0.4+Math.random()*0.7)*(dirR?1:-1);
+  const len=70+Math.random()*120;
+  ships.push({
+    x: initial? Math.random()*W : (dirR? -len-40 : W+len+40),
+    base: surfaceY(),
+    bob: Math.random()*Math.PI*2,
+    len, h: 16+len*0.12,
+    draft: 10+Math.random()*16,        // how far hull dips below waterline
+    speed,
+    glow: Math.random()*Math.PI*2,
+    lights: 2+((Math.random()*3)|0)
+  });
+}
+function initShips(){ships=[];for(let i=0;i<5;i++)spawnShip(true);}
+
+// ---------- plankton / particles ----------
+let plankton=[], bubbles=[], spray=[];
+function initPlankton(){
+  plankton=[];
+  const n=Math.min(70,Math.floor(W*H/14000));
+  for(let i=0;i<n;i++)plankton.push({
+    x:Math.random()*W,y:surfaceY()+Math.random()*(H-surfaceY()),
+    z:0.3+Math.random()*0.7, r:0.6+Math.random()*1.6, p:Math.random()*Math.PI*2
+  });
+}
+function blow(x,y,scale){
+  scale=scale||1;
+  const n=Math.round(26*scale);
+  for(let i=0;i<n;i++){
+    const a=-Math.PI/2 + (Math.random()-0.5)*0.9;
+    const sp=(1.2+Math.random()*3.2)*scale;
+    spray.push({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,life:1,r:(1+Math.random()*2.5)*scale});
+  }
+}
+function bubble(x,y){
+  bubbles.push({x:x+(Math.random()-0.5)*14,y,vy:-(0.3+Math.random()*0.6),r:1+Math.random()*2,life:1});
+}
+
+// ---------- input ----------
+let pointing=false;
+function setTarget(cx,cy){whale.tx=cx;whale.ty=Math.max(surfaceY()-SURFACE_BAND*0.4,cy);}
+function pointerDown(e){
+  if(S.mode==='title'){start();}
+  else if(S.mode==='over'){return;} // handled by button
+  pointing=true;const p=pt(e);setTarget(p.x,p.y);
+}
+function pointerMove(e){if(pointing){const p=pt(e);setTarget(p.x,p.y);}}
+function pointerUp(){pointing=false;}
+function pt(e){const t=e.touches?e.touches[0]:e;return{x:t.clientX,y:t.clientY};}
+cv.addEventListener('touchstart',e=>{e.preventDefault();pointerDown(e);},{passive:false});
+cv.addEventListener('touchmove',e=>{e.preventDefault();pointerMove(e);},{passive:false});
+cv.addEventListener('touchend',e=>{e.preventDefault();pointerUp();},{passive:false});
+cv.addEventListener('mousedown',pointerDown);
+cv.addEventListener('mousemove',pointerMove);
+window.addEventListener('mouseup',pointerUp);
+
+document.getElementById('startBtn').addEventListener('click',e=>{e.stopPropagation();start();});
+document.getElementById('retryBtn').addEventListener('click',e=>{e.stopPropagation();start();});
+// allow tapping anywhere on title to start
+document.getElementById('titleCard').addEventListener('click',()=>{if(S.mode==='title')start();});
+
+function start(){
+  document.getElementById('titleCard').classList.add('hide');
+  document.getElementById('overCard').classList.add('hide');
+  S.mode='playing';S.t=0;S.breaths=0;S.oxygen=1;S.shake=0;S.danger=0;
+  resetWhale();initShips();initPlankton();bubbles=[];spray=[];
+}
+
+function gameOver(reason){
+  if(S.mode!=='playing')return;
+  S.mode='over';S.flash=1;
+  if(navigator.vibrate)navigator.vibrate([40,30,80]);
+  document.getElementById('oTime').textContent=Math.floor(S.t)+'s';
+  document.getElementById('oBreath').textContent=S.breaths;
+  document.getElementById('overKicker').textContent= reason==='drown'?'질식':'충돌';
+  document.getElementById('overFoot').textContent= reason==='drown'
+     ? '숨을 참다 가라앉았다' : '매년 수백 마리가 이렇게 사라진다';
+  setTimeout(()=>document.getElementById('overCard').classList.remove('hide'),420);
+}
+
+// ---------- update ----------
+function update(dt){
+  S.t+=dt;
+  // whale physics — heavy inertia glide
+  const ax=(whale.tx-whale.x)*0.0009*1000*dt;
+  const ay=(whale.ty-whale.y)*0.0009*1000*dt;
+  whale.vx+=ax;whale.vy+=ay;
+  whale.vx*=Math.pow(0.86,dt*60);whale.vy*=Math.pow(0.86,dt*60);
+  whale.x+=whale.vx*dt*60*0.13;whale.y+=whale.vy*dt*60*0.13;
+  whale.x=Math.max(30,Math.min(W-30,whale.x));
+  whale.y=Math.max(surfaceY()-SURFACE_BAND, Math.min(H-30,whale.y));
+  if(Math.abs(whale.vx)>0.3)whale.dir=whale.vx>0?1:-1;
+  const spd=Math.hypot(whale.vx,whale.vy);
+  whale.phase+=dt*(3+spd*0.5);
+  if(spd>0.6 && Math.random()<0.4)bubble(whale.x-whale.dir*26,whale.y+6);
+
+  // oxygen: depletes underwater, refills at surface (if no ship directly above)
+  const sy=surfaceY();
+  const atSurface = whale.y < sy + SURFACE_BAND;
+  let shipAbove=false;
+  for(const s of ships){
+    if(Math.abs(s.x-whale.x)<s.len*0.5+24){shipAbove=true;break;}
+  }
+  if(atSurface && !shipAbove){
+    const before=S.oxygen;
+    S.oxygen=Math.min(1,S.oxygen+dt*0.55);
+    if(before<1){ if(Math.random()<dt*8) blow(whale.x+whale.dir*8, sy-4); }
+    // count a breath when crossing from low to refilled — THE "찍히는 장면"
+    if(before<0.4 && S.oxygen>0.4){
+      S.breaths++;
+      blow(whale.x+whale.dir*8,sy-6, 3);   // big spray
+      S.breathFx=1; S.slow=0.42;           // cyan flash + brief slow-mo
+      if(navigator.vibrate)navigator.vibrate([10,20,10]);
+    }
+  }else{
+    S.oxygen-=dt*0.045;
+  }
+  if(S.oxygen<=0){gameOver('drown');}
+
+  // ships
+  for(const s of ships){
+    s.x+=s.speed*dt*60;
+    s.bob+=dt*1.4;s.glow+=dt*2;
+    s.base=surfaceY();
+  }
+  ships=ships.filter(s=> s.x>-s.len-80 && s.x<W+s.len+80);
+  while(ships.length<5)spawnShip(false);
+
+  // collision + danger proximity
+  S.danger=0;
+  for(const s of ships){
+    const hullBottom=s.base+s.draft;
+    const dx=Math.abs(whale.x-s.x);
+    // whale near surface & under a ship
+    const near = dx<s.len*0.5+30 && whale.y< hullBottom+50;
+    if(near){
+      const prox=1-Math.min(1,(Math.max(0,dx-s.len*0.5)/30 + Math.max(0,whale.y-hullBottom)/50));
+      S.danger=Math.max(S.danger,prox);
+    }
+    // hit: whale body overlaps hull footprint
+    if(dx< s.len*0.5+18 && whale.y< hullBottom+14 && whale.y> s.base-30){
+      whale.hit=1;S.shake=14;gameOver('crash');
+    }
+  }
+  if(S.danger>0.45 && navigator.vibrate && Math.random()<dt*4)navigator.vibrate(8);
+
+  // particles
+  for(const b of bubbles){b.y+=b.vy*dt*60;b.life-=dt*0.5;}
+  bubbles=bubbles.filter(b=>b.life>0&&b.y>sy-20);
+  for(const p of spray){p.x+=p.vx;p.y+=p.vy;p.vy+=0.12;p.life-=dt*1.1;}
+  spray=spray.filter(p=>p.life>0);
+  for(const k of plankton){k.p+=dt*0.4; k.y+=Math.sin(k.p)*0.06; k.x-=0.05*k.z;}
+  plankton.forEach(k=>{if(k.x< -4)k.x=W+4;});
+
+  if(S.shake>0)S.shake*=Math.pow(0.86,dt*60);
+  if(S.flash>0)S.flash-=dt*1.5;
+  if(S.breathFx>0)S.breathFx-=dt*1.8;
+}
+
+// ---------- render ----------
+function draw(){
+  const sy=surfaceY();
+  ctx.clearRect(0,0,W,H);
+
+  // shake
+  let sx=0,syk=0;
+  if(S.shake>0.2){sx=(Math.random()-0.5)*S.shake;syk=(Math.random()-0.5)*S.shake;}
+  ctx.save();ctx.translate(sx,syk);
+
+  // --- water gradient ---
+  const g=ctx.createLinearGradient(0,sy-60,0,H);
+  g.addColorStop(0,'#1a6076');
+  g.addColorStop(0.10,'#0e4456');
+  g.addColorStop(0.40,'#08283a');
+  g.addColorStop(1,'#03070e');
+  ctx.fillStyle=g;ctx.fillRect(0,sy-60,W,H-sy+60);
+  // sky above waterline
+  const sk=ctx.createLinearGradient(0,0,0,sy);
+  sk.addColorStop(0,'#0a1622');sk.addColorStop(1,'#123344');
+  ctx.fillStyle=sk;ctx.fillRect(0,0,W,sy);
+
+  // --- godrays ---
+  ctx.save();ctx.globalCompositeOperation='lighter';
+  const rayN=4;
+  for(let i=0;i<rayN;i++){
+    const rx=W*(0.12+i*0.26)+Math.sin(S.t*0.2+i)*30;
+    const w=60+i*10;
+    const rg=ctx.createLinearGradient(rx,sy,rx,H*0.85);
+    rg.addColorStop(0,'rgba(127,230,255,0.10)');
+    rg.addColorStop(1,'rgba(127,230,255,0)');
+    ctx.fillStyle=rg;
+    ctx.beginPath();
+    ctx.moveTo(rx-w*0.3,sy);ctx.lineTo(rx+w*0.3,sy);
+    ctx.lineTo(rx+w,H*0.9);ctx.lineTo(rx-w,H*0.9);
+    ctx.closePath();ctx.fill();
+  }
+  ctx.restore();
+
+  // --- waterline shimmer ---
+  ctx.save();
+  ctx.strokeStyle='rgba(127,230,255,0.25)';ctx.lineWidth=1;
+  ctx.beginPath();
+  for(let x=0;x<=W;x+=8){
+    const yy=sy+Math.sin(x*0.03+S.t*1.4)*2.2;
+    x===0?ctx.moveTo(x,yy):ctx.lineTo(x,yy);
+  }
+  ctx.stroke();ctx.restore();
+
+  // --- plankton ---
+  ctx.save();ctx.globalCompositeOperation='lighter';
+  for(const k of plankton){
+    ctx.globalAlpha=0.12+0.18*Math.abs(Math.sin(k.p))*k.z;
+    ctx.fillStyle='#bdecff';
+    ctx.beginPath();ctx.arc(k.x,k.y,k.r*k.z,0,7);ctx.fill();
+  }
+  ctx.globalAlpha=1;ctx.restore();
+
+  // --- ships ---
+  for(const s of ships)drawShip(s,sy);
+
+  // --- bubbles ---
+  ctx.save();
+  for(const b of bubbles){
+    ctx.globalAlpha=b.life*0.4;ctx.strokeStyle='rgba(190,236,255,0.7)';ctx.lineWidth=1;
+    ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,7);ctx.stroke();
+  }
+  ctx.globalAlpha=1;ctx.restore();
+
+  // --- whale ---
+  drawWhale();
+
+  // --- spray ---
+  ctx.save();ctx.globalCompositeOperation='lighter';
+  for(const p of spray){
+    ctx.globalAlpha=p.life*0.8;ctx.fillStyle='#dff6ff';
+    ctx.beginPath();ctx.arc(p.x,p.y,p.r*p.life,0,7);ctx.fill();
+  }
+  ctx.globalAlpha=1;ctx.restore();
+
+  ctx.restore(); // shake
+
+  // --- flash on death ---
+  if(S.flash>0){
+    ctx.fillStyle='rgba(255,90,77,'+(S.flash*0.5)+')';
+    ctx.fillRect(0,0,W,H);
+  }
+  // --- cyan bloom on breath (the kept frame) ---
+  if(S.breathFx>0){
+    const e=Math.max(0,Math.min(1,S.breathFx));
+    ctx.save();ctx.globalCompositeOperation='lighter';
+    const bg=ctx.createLinearGradient(0,0,0,H*0.5);
+    bg.addColorStop(0,'rgba(190,244,255,'+(e*0.32)+')');
+    bg.addColorStop(1,'rgba(127,230,255,0)');
+    ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
+    ctx.restore();
+  }
+}
+
+function drawShip(s,sy){
+  const y=s.base+Math.sin(s.bob)*2;
+  const hl=s.len*0.5;
+  ctx.save();
+  // hull reflection / draft (under water danger footprint)
+  const dg=ctx.createLinearGradient(0,y,0,y+s.draft+10);
+  dg.addColorStop(0,'rgba(255,179,92,0.16)');
+  dg.addColorStop(1,'rgba(255,179,92,0)');
+  ctx.fillStyle=dg;
+  ctx.beginPath();
+  ctx.moveTo(s.x-hl,y);ctx.lineTo(s.x+hl,y);
+  ctx.lineTo(s.x+hl*0.7,y+s.draft);ctx.lineTo(s.x-hl*0.7,y+s.draft);
+  ctx.closePath();ctx.fill();
+
+  // hull silhouette (above + slightly below waterline)
+  ctx.fillStyle='#05101b';
+  ctx.beginPath();
+  ctx.moveTo(s.x-hl,y-s.h*0.2);
+  ctx.lineTo(s.x+hl,y-s.h*0.2);
+  ctx.lineTo(s.x+hl*0.82,y+s.draft);
+  ctx.lineTo(s.x-hl*0.82,y+s.draft);
+  ctx.closePath();ctx.fill();
+  // deck block
+  ctx.fillStyle='#0a1a28';
+  const bw=hl*0.5;
+  ctx.fillRect(s.x+(s.speed>0?-bw:0), y-s.h*0.85, bw, s.h*0.7);
+  // running lights (amber)
+  ctx.globalCompositeOperation='lighter';
+  const gl=0.5+0.5*Math.sin(s.glow);
+  for(let i=0;i<s.lights;i++){
+    const lx=s.x-hl*0.7+ (i/(s.lights-1||1))*hl*1.4;
+    ctx.fillStyle='rgba(255,179,92,'+(0.5+0.4*gl)+')';
+    ctx.beginPath();ctx.arc(lx,y-s.h*0.3,1.6,0,7);ctx.fill();
+  }
+  // mast light
+  ctx.fillStyle='rgba(255,210,150,'+(0.6+0.4*gl)+')';
+  ctx.beginPath();ctx.arc(s.x,y-s.h*1.05,2,0,7);ctx.fill();
+  ctx.restore();
+}
+
+function drawWhale(){
+  const x=whale.x,y=whale.y,d=whale.dir;
+  const wag=Math.sin(whale.phase)*0.5;
+  ctx.save();
+  ctx.translate(x,y);ctx.scale(d,1);
+  ctx.rotate(Math.max(-0.4,Math.min(0.4,whale.vy*0.04*d)));
+
+  const L=58,Hh=26; // body size
+  // soft cyan rim glow
+  ctx.save();ctx.globalCompositeOperation='lighter';
+  const rg=ctx.createRadialGradient(0,0,4,0,0,L*1.1);
+  rg.addColorStop(0,'rgba(127,230,255,0.18)');
+  rg.addColorStop(1,'rgba(127,230,255,0)');
+  ctx.fillStyle=rg;ctx.beginPath();ctx.arc(0,0,L*1.1,0,7);ctx.fill();
+  ctx.restore();
+
+  // tail
+  ctx.save();
+  ctx.translate(-L*0.5,0);ctx.rotate(wag*0.5);
+  ctx.fillStyle='#0a1f2c';
+  ctx.beginPath();
+  ctx.moveTo(0,-2);
+  ctx.quadraticCurveTo(-22,-3,-30,-16);
+  ctx.quadraticCurveTo(-20,-4,-12,0);
+  ctx.quadraticCurveTo(-20,4,-30,16);
+  ctx.quadraticCurveTo(-22,3,0,2);
+  ctx.closePath();ctx.fill();
+  ctx.restore();
+
+  // body
+  const bg=ctx.createLinearGradient(0,-Hh,0,Hh);
+  bg.addColorStop(0,'#16384a');
+  bg.addColorStop(0.5,'#0d2636');
+  bg.addColorStop(1,'#091a26');
+  ctx.fillStyle=bg;
+  ctx.beginPath();
+  ctx.moveTo(-L*0.5,0);
+  ctx.quadraticCurveTo(-L*0.3,-Hh, L*0.18,-Hh*0.85);
+  ctx.quadraticCurveTo(L*0.5,-Hh*0.5, L*0.56,0);          // head
+  ctx.quadraticCurveTo(L*0.5,Hh*0.55, L*0.12,Hh*0.92);
+  ctx.quadraticCurveTo(-L*0.3,Hh, -L*0.5,0);
+  ctx.closePath();ctx.fill();
+
+  // belly highlight (ventral pleats feel)
+  ctx.fillStyle='rgba(150,210,235,0.10)';
+  ctx.beginPath();
+  ctx.moveTo(-L*0.3,Hh*0.5);
+  ctx.quadraticCurveTo(L*0.1,Hh*0.95,L*0.4,Hh*0.4);
+  ctx.quadraticCurveTo(L*0.1,Hh*0.7,-L*0.3,Hh*0.35);
+  ctx.closePath();ctx.fill();
+
+  // rim light on top edge
+  ctx.strokeStyle='rgba(127,230,255,0.5)';ctx.lineWidth=1.4;
+  ctx.beginPath();
+  ctx.moveTo(-L*0.45,-Hh*0.25);
+  ctx.quadraticCurveTo(-L*0.25,-Hh*0.95, L*0.18,-Hh*0.82);
+  ctx.quadraticCurveTo(L*0.46,-Hh*0.5, L*0.54,-Hh*0.05);
+  ctx.stroke();
+
+  // pectoral fin
+  ctx.fillStyle='#0a1f2c';
+  ctx.beginPath();
+  ctx.moveTo(L*0.05,Hh*0.4);
+  ctx.quadraticCurveTo(L*0.0,Hh*0.95,-L*0.18,Hh*0.8);
+  ctx.quadraticCurveTo(-L*0.02,Hh*0.55,L*0.05,Hh*0.4);
+  ctx.closePath();ctx.fill();
+
+  // eye
+  ctx.fillStyle='#cdeeff';
+  ctx.beginPath();ctx.arc(L*0.34,-Hh*0.12,1.7,0,7);ctx.fill();
+
+  // hit overlay
+  if(whale.hit){
+    ctx.fillStyle='rgba(255,90,77,0.35)';
+    ctx.beginPath();ctx.ellipse(0,0,L*0.56,Hh,0,0,7);ctx.fill();
+  }
+  ctx.restore();
+}
+
+// ---------- HUD update ----------
+const elDepth=document.getElementById('mDepth'),elTime=document.getElementById('mTime'),
+      elBreath=document.getElementById('mBreath'),elFill=document.getElementById('breathFill'),
+      vign=document.getElementById('vignette'),elLabel=document.getElementById('breathLabel');
+function hud(){
+  const sy=surfaceY();
+  const depthM=Math.max(0,Math.round((whale.y-sy)/ (H-sy) * 200));
+  elDepth.textContent=depthM+'m';
+  elTime.textContent=Math.floor(S.t)+'s';
+  elBreath.textContent=S.breaths;
+  elFill.style.width=(S.oxygen*100).toFixed(1)+'%';
+  if(S.oxygen<0.3){
+    elFill.style.background='linear-gradient(90deg,#ff5a4d,#ffb35c)';
+    elLabel.textContent= S.oxygen<0.18 ? '숨이 차···' : '숨';
+    elLabel.style.color='rgba(255,120,100,.8)';
+  }else{
+    elFill.style.background='linear-gradient(90deg,#7fe6ff,#baf4ff)';
+    elLabel.textContent='숨';elLabel.style.color='rgba(234,246,255,.45)';
+  }
+  // danger vignette
+  const dv = S.mode==='playing'? S.danger : 0;
+  vign.style.opacity=dv.toFixed(2);
+  vign.style.boxShadow='inset 0 0 '+(80+dv*120)+'px '+(20+dv*50)+'px rgba(255,90,77,'+(dv*0.5)+')';
+}
+
+// ---------- loop ----------
+function frame(now){
+  let dt=(now-S.last)/1000;S.last=now;
+  if(dt>0.05)dt=0.05;
+  // brief slow-mo on the breath moment
+  if(S.slow>0){S.slow=Math.max(0,S.slow-dt);dt*=0.45;}
+  if(S.mode==='playing')update(dt);
+  else{ // idle ambience on title/over
+    for(const k of plankton){k.p+=dt*0.4;k.x-=0.05*k.z;if(k.x<-4)k.x=W+4;}
+    for(const s of ships){s.x+=s.speed*dt*60;s.glow+=dt*2;s.bob+=dt*1.4;s.base=surfaceY();}
+    ships=ships.filter(s=>s.x>-s.len-80&&s.x<W+s.len+80);while(ships.length<5)spawnShip(false);
+    whale.phase+=dt*1.4;
+    if(S.mode==='title'){ // gentle drift
+      whale.tx=W*0.5+Math.sin(S.last*0.0003)*W*0.12;
+      whale.ty=H*0.6+Math.cos(S.last*0.0004)*30;
+      whale.vx+=(whale.tx-whale.x)*0.0006;whale.vy+=(whale.ty-whale.y)*0.0006;
+      whale.vx*=0.92;whale.vy*=0.92;whale.x+=whale.vx;whale.y+=whale.vy;
+      whale.dir=whale.vx>=0?1:-1;
+    }
+    if(S.flash>0)S.flash-=dt*1.5;
+  }
+  draw();hud();
+  requestAnimationFrame(frame);
+}
+
+// boot ambience
+resetWhale();initShips();initPlankton();
+requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
